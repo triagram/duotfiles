@@ -1,21 +1,31 @@
 # Allow-list: `dof adopt` imports only these paths from ~/.claude.
 #
-# ~/.claude mixes configuration with machine-local state; projects/ holds full
-# transcripts of every session. This list is the first gate keeping them out of
-# the repo (.gitignore is the second). Add a line for anything else you want synced.
+# ~/.claude mixes configuration with machine-local state — projects/ holds full
+# transcripts of every session. This list is the first gate; .dofignore is the
+# second. Add a line for anything else you want synced.
+#
+# Matching is segment-aware (see path_matches in bin/dof):
+#   settings.json   top level only    — NOT plugins/settings.json
+#   *.sh            top level only    — NOT shell-snapshots/x.sh
+#   commands/       that whole subtree
+#
+# A bare "*.sh" used to sweep in shell-snapshots/, jobs/ and plugins/ scripts,
+# because shell's case-glob lets "*" cross "/". Hence the anchoring above.
 
+# ── Instructions and settings ───────────────────────────────────────────────
 CLAUDE.md
 settings.json
 keybindings.json
+
+# ── Status line. If settings.json points at it, use a path starting with
+#    $HOME or ~ — never a literal /home/... or /Users/..., which breaks on the
+#    other platform.
+statusline.sh
+
+# ── Things you author ───────────────────────────────────────────────────────
 commands/
 skills/
 agents/
 hooks/
 output-styles/
-
-# Status-line and hook scripts. When settings.json references them, use a path
-# starting with $HOME or ~ — never a literal /Users/... or /home/..., which
-# breaks on the other platform.
-statusline.sh
-*.sh
 scripts/

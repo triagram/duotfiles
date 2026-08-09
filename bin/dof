@@ -104,41 +104,59 @@ $_line"
   done < "$_f"
 }
 
-is_kept() {
-  [ -n "$KEEP" ] || return 0        # no allow-list means everything passes
-  _rel="$1"; _old="$IFS"; IFS='
+# Does relative path $1 match pattern $2?
+#
+# Shell's `case` globbing lets "*" cross "/", which makes a bare "*.sh" match
+# "shell-snapshots/whatever.sh" — far too greedy for an allow-list. So paths are
+# matched segment-aware instead:
+#
+#   settings.json   top level only        matches settings.json, not a/settings.json
+#   *.sh            top level only        matches statusline.sh, not jobs/x.sh
+#   commands/       that subtree          matches commands/a/b.md
+#   *.userdb/       subtree, glob 1st seg matches luna_pinyin.userdb/CURRENT
+#   lua/cold/       that subtree          matches lua/cold/x.lua
+#
+# Patterns must stay unquoted inside `case` so their wildcards still work.
+path_matches() {
+  _r="$1"; _p="$2"
+  case "$_p" in
+    */)                                   # directory form
+      _pd="${_p%/}"
+      case "$_pd" in
+        */*) # shellcheck disable=SC2254
+             case "$_r" in $_pd/*) return 0 ;; esac ;;
+        *)   _seg="${_r%%/*}"
+             [ "$_seg" != "$_r" ] || return 1     # no subpath, so not inside a dir
+             # shellcheck disable=SC2254
+             case "$_seg" in $_pd) return 0 ;; esac ;;
+      esac ;;
+    */*) # shellcheck disable=SC2254
+      case "$_r" in $_p) return 0 ;; esac ;;
+    *)                                    # no slash: top level only
+      case "$_r" in */*) return 1 ;; esac
+      # shellcheck disable=SC2254
+      case "$_r" in $_p) return 0 ;; esac ;;
+  esac
+  return 1
+}
+
+_match_any() {                            # $1 = rel, $2 = newline-separated patterns
+  _rel="$1"; _pats="$2"; _old="$IFS"; IFS='
 '
-  for _p in $KEEP; do
-    [ -n "$_p" ] || continue
-    # shellcheck disable=SC2254
-    case "$_rel" in $_p) IFS="$_old"; return 0 ;; esac
-    # Directory-form rule "foo/" matches everything under foo.
-    # The pattern must stay unquoted so wildcards in it (e.g. "*.userdb/") work.
-    case "$_p" in
-      */) _pd="${_p%/}"
-          # shellcheck disable=SC2254
-          case "$_rel" in $_pd/*) IFS="$_old"; return 0 ;; esac ;;
-    esac
+  for _pp in $_pats; do
+    [ -n "$_pp" ] || continue
+    if path_matches "$_rel" "$_pp"; then IFS="$_old"; return 0; fi
   done
   IFS="$_old"; return 1
 }
 
+is_kept() {
+  [ -n "$KEEP" ] || return 0              # no allow-list means everything passes
+  _match_any "$1" "$KEEP"
+}
+
 is_ignored() {
-  _rel="$1"; _old="$IFS"; IFS='
-'
-  for _p in $IGNORE; do
-    [ -n "$_p" ] || continue
-    # shellcheck disable=SC2254
-    case "$_rel" in $_p) IFS="$_old"; return 0 ;; esac
-    # Directory-form rule "foo/" matches everything under foo.
-    # The pattern must stay unquoted so wildcards in it (e.g. "*.userdb/") work.
-    case "$_p" in
-      */) _pd="${_p%/}"
-          # shellcheck disable=SC2254
-          case "$_rel" in $_pd/*) IFS="$_old"; return 0 ;; esac ;;
-    esac
-  done
-  IFS="$_old"; return 1
+  _match_any "$1" "$IGNORE"
 }
 
 # ── source resolution: common/ first, <platform>/ on top ────────────────────
@@ -357,15 +375,25 @@ cmd_adopt() {
   mkdir -p "$dest"
   printf '%s%s%s  machine → repo/tools/%s/%s/\n' "$C_B" "$TOOL" "$C_OFF" "$TOOL" "$PLATFORM"
   if [ $# -gt 0 ]; then scope="$*"; else scope='.'; fi
+  # Skipped paths are reported individually only at the top level — those are the
+  # ones worth eyeballing (.credentials.json, history.jsonl). Anything deeper is
+  # counted, so a directory of 600 session files does not bury the real output.
+  _skipped="$(mktemp "${TMPDIR:-/tmp}/dof.XXXXXX")"
   for sub in $scope; do
     ( cd "$TARGET" && find "$sub" -type f -print ) | sed 's|^\./||' | sort | while IFS= read -r rel; do
       [ -n "$rel" ] || continue
       if is_ignored "$rel"; then
-        printf '  %s·%s  %s %s(excluded by .dofignore)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF"
+        echo i >> "$_skipped"
+        case "$rel" in */*) : ;; *)
+          printf '  %s·%s  %s %s(excluded by .dofignore)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF" ;;
+        esac
         continue
       fi
       if ! is_kept "$rel"; then
-        printf '  %s·%s  %s %s(not in .dofkeep allow-list)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF"
+        echo k >> "$_skipped"
+        case "$rel" in */*) : ;; *)
+          printf '  %s·%s  %s %s(not in .dofkeep allow-list)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF" ;;
+        esac
         continue
       fi
       # Already in common/ and byte-identical: importing it into the platform
@@ -384,6 +412,14 @@ cmd_adopt() {
       fi
     done
   done
+  # grep -c prints 0 *and* exits 1 when there is no match, so capture then default.
+  _ni=$(grep -c '^i$' "$_skipped" 2>/dev/null) || _ni=0
+  _nk=$(grep -c '^k$' "$_skipped" 2>/dev/null) || _nk=0
+  rm -f "$_skipped"
+  if [ "$((_ni + _nk))" -gt 0 ]; then
+    printf '  %s· %s path(s) skipped: %s by .dofignore, %s not in .dofkeep%s\n' \
+      "$C_DIM" "$((_ni + _nk))" "$_ni" "$_nk" "$C_OFF"
+  fi
   printf '  %sImported. Review with git status / git diff, drop what does not belong, then commit.%s\n' "$C_DIM" "$C_OFF"
   printf '  %sNote: adopt copies. Machine files are untouched. Run dof pull %s to switch to link-managed.%s\n' \
     "$C_DIM" "$TOOL" "$C_OFF"

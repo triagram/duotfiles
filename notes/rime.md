@@ -6,6 +6,10 @@
 > 词库里有人名、地址、私人用语；同步方式也是机器相关的。
 > 相关文件（`*.userdb*`、`sync/`、`rime-sync.sh`、`installation.yaml`）全部在 `.dofignore` 里，
 > dof 不碰，也不进 git。这块请在本机自行维护。
+>
+> 同步的**设计推理**（两层机制的区分、为什么不走网盘、Syncthing `.stversions/` 的陷阱）
+> 保留在 `tools/rime/linux/designLog.md §7.5` —— 那是判断记录，值得留；
+> 但**机制本身**（脚本、主机地址、词库文件）不进本仓库。
 
 ## ① 部署时从上游拉（不进仓库，约 92 MB）
 
