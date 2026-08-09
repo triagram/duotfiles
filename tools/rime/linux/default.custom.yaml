@@ -1,0 +1,11 @@
+# default.custom.yaml
+patch:
+  schema_list:
+    - schema: double_pinyin_flypy    # 小鶴雙拼 (霧凇)
+    - schema: luna_pinyin            # 明月拼音
+    - schema: japanese               # 日 —— 漢字變換（Mozc + JMdict 詞典）
+    # nihongo（仮）已於 2026-08-08 移除：japanese 的假名層經訓令式派生、
+    # 單假名置頂、促音寫法補全後，已完全覆蓋它的能力，且多了漢字變換。
+    # melt_eng 已移除：它作為次翻譯器 (table_translator@melt_eng)
+    # 內建於 double_pinyin_flypy，直接打字母即出英文候選，無需獨立方案。
+    # 注意 melt_eng.custom.yaml 必須保留，寄生的那份仍需要雙拼 algebra 適配。

@@ -1,0 +1,35 @@
+# Rime table
+# coding: utf-8
+#@/db_name	japanese_custom_phrase.txt
+#@/db_type	tabledb
+#
+# 單假名置頂表（japanese 方案）
+#
+# 上游 gkovacs/rime-japanese 採嚴格ヘボン式，並把訓令式拼法挪去表示外來音：
+#     si→すぃ   ti→てぃ   tu→とぅ   hu→ほぅ   zi→ずぃ
+# japanese.custom.yaml 的 speller/algebra 已派生出訓令式拼法，
+# 但派生拼寫的優先度低於原生拼寫，導致罕用的外來音排在首位。
+#
+# 此表以 initial_quality: 99 把常用單假名釘在第一位。
+# 外來音（すぃ/てぃ/とぅ）仍在候選列表中，只是退到後面。
+#
+# 格式：假名<Tab>編碼<Tab>權重
+#
+# 此行之後不能寫註解
+
+し	si	100
+ち	ti	100
+つ	tu	100
+ふ	hu	100
+じ	zi	100
+ぢ	di	100
+づ	du	100
+しゃ	sya	100
+しゅ	syu	100
+しょ	syo	100
+ちゃ	tya	100
+ちゅ	tyu	100
+ちょ	tyo	100
+じゃ	zya	100
+じゅ	zyu	100
+じょ	zyo	100
