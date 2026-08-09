@@ -1,0 +1,21 @@
+# Allow-list: `dof adopt` imports only these paths from ~/.claude.
+#
+# ~/.claude mixes configuration with machine-local state; projects/ holds full
+# transcripts of every session. This list is the first gate keeping them out of
+# the repo (.gitignore is the second). Add a line for anything else you want synced.
+
+CLAUDE.md
+settings.json
+keybindings.json
+commands/
+skills/
+agents/
+hooks/
+output-styles/
+
+# Status-line and hook scripts. When settings.json references them, use a path
+# starting with $HOME or ~ — never a literal /Users/... or /home/..., which
+# breaks on the other platform.
+statusline.sh
+*.sh
+scripts/

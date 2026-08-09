@@ -1,0 +1,410 @@
+#!/usr/bin/env bash
+#
+# dof — deploy and collect config files, one tool at a time.
+# Design rationale: DESIGN.md   Usage: README.md
+
+set -eu
+
+# Locate the repo. By default, derive it from the script's own location, but
+# resolve symlinks on $0 first — otherwise invoking it through a symlink such as
+# ~/.local/bin/dof would compute the repo as ~/.local.
+# Not using `readlink -f`: older macOS does not have that option.
+if [ -n "${DOF_REPO:-}" ]; then
+  REPO="$DOF_REPO"                       # escape hatch: repo lives elsewhere
+else
+  _self="$0"
+  while [ -L "$_self" ]; do
+    _link="$(readlink "$_self")"
+    case "$_link" in
+      /*) _self="$_link" ;;
+      *)  _self="$(dirname "$_self")/$_link" ;;
+    esac
+  done
+  REPO="$(cd "$(dirname "$_self")/.." && pwd)"
+fi
+[ -f "$REPO/manifest" ] || {
+  printf 'dof: repo not found (computed %s). Set DOF_REPO=<path> to override.\n' "$REPO" >&2
+  exit 1
+}
+MANIFEST="$REPO/manifest"
+TOOLSDIR="$REPO/tools"
+
+case "$(uname -s)" in
+  Linux)  PLATFORM=linux ;;
+  Darwin) PLATFORM=macos ;;
+  *) printf 'dof: unsupported platform %s\n' "$(uname -s)" >&2; exit 1 ;;
+esac
+
+if [ -t 1 ]; then
+  C_OK=$'\033[32m'; C_WARN=$'\033[33m'; C_ERR=$'\033[31m'
+  C_DIM=$'\033[2m'; C_B=$'\033[1m'; C_OFF=$'\033[0m'
+else
+  C_OK=''; C_WARN=''; C_ERR=''; C_DIM=''; C_B=''; C_OFF=''
+fi
+
+# Never synced, for any tool.
+BUILTIN_IGNORE='.gitkeep
+.DS_Store
+*.dof-bak-*'
+
+die() { printf 'dof: %s\n' "$*" >&2; exit 1; }
+
+expand_tilde() {
+  case "$1" in
+    '~/'*) printf '%s\n' "$HOME/${1#\~/}" ;;
+    '~')   printf '%s\n' "$HOME" ;;
+    *)     printf '%s\n' "$1" ;;
+  esac
+}
+
+# ── manifest ────────────────────────────────────────────────────────────────
+
+manifest_rows() {
+  awk 'NF && $1 !~ /^#/ { print }' "$MANIFEST"
+}
+
+# Load one tool's entry; sets TOOL / MODE / TARGET / BASE.
+load_tool() {
+  _row="$(manifest_rows | awk -v want="$1" '$1 == want { print; exit }')"
+  [ -n "$_row" ] || die "no tool '$1' in manifest (run 'dof list' to see them)"
+  # shellcheck disable=SC2086
+  set -- $_row
+  TOOL="$1"; MODE="$2"
+  if [ "$PLATFORM" = linux ]; then _t="$3"; else _t="$4"; fi
+  [ "$_t" != '-' ] || die "'$TOOL' is marked not-deployed on $PLATFORM ('-' in manifest)"
+  TARGET="$(expand_tilde "$_t")"
+  case "$MODE" in link|copy) ;; *) die "'$TOOL' has invalid mode '$MODE' (must be link or copy)" ;; esac
+  BASE="$TOOLSDIR/$TOOL"
+  [ -d "$BASE" ] || die "directory not found: tools/$TOOL/"
+}
+
+# ── .dofignore / .dofkeep ───────────────────────────────────────────────────
+
+load_ignore() {
+  IGNORE="$BUILTIN_IGNORE"
+  _f="$BASE/.dofignore"
+  [ -f "$_f" ] || return 0
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    case "$_line" in ''|'#'*) continue ;; esac
+    IGNORE="$IGNORE
+$_line"
+  done < "$_f"
+}
+
+# .dofkeep is an allow-list. When present, `adopt` imports only matching paths.
+# For tools like ~/.claude where config and local state share one directory.
+load_keep() {
+  KEEP=''
+  _f="$BASE/.dofkeep"
+  [ -f "$_f" ] || return 0
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    case "$_line" in ''|'#'*) continue ;; esac
+    KEEP="$KEEP
+$_line"
+  done < "$_f"
+}
+
+is_kept() {
+  [ -n "$KEEP" ] || return 0        # no allow-list means everything passes
+  _rel="$1"; _old="$IFS"; IFS='
+'
+  for _p in $KEEP; do
+    [ -n "$_p" ] || continue
+    # shellcheck disable=SC2254
+    case "$_rel" in $_p) IFS="$_old"; return 0 ;; esac
+    case "$_p" in
+      */) case "$_rel" in "${_p}"*) IFS="$_old"; return 0 ;; esac ;;
+    esac
+  done
+  IFS="$_old"; return 1
+}
+
+is_ignored() {
+  _rel="$1"; _old="$IFS"; IFS='
+'
+  for _p in $IGNORE; do
+    [ -n "$_p" ] || continue
+    # shellcheck disable=SC2254
+    case "$_rel" in $_p) IFS="$_old"; return 0 ;; esac
+    # Directory-form rule: foo/ matches everything under foo.
+    case "$_p" in
+      */) case "$_rel" in "${_p}"*) IFS="$_old"; return 0 ;; esac ;;
+    esac
+  done
+  IFS="$_old"; return 1
+}
+
+# ── source resolution: common/ first, <platform>/ on top ────────────────────
+
+# Writes SRCLIST, one line per file: "relative-path<TAB>absolute-source-path"
+resolve_sources() {
+  # Explicit template: BSD mktemp on macOS errors out when called with no args.
+  _raw="$(mktemp "${TMPDIR:-/tmp}/dof.XXXXXX")"
+  SRCLIST="$(mktemp "${TMPDIR:-/tmp}/dof.XXXXXX")"
+  for _layer in common "$PLATFORM"; do
+    _d="$BASE/$_layer"
+    [ -d "$_d" ] || continue
+    ( cd "$_d" && find . \( -type f -o -type l \) -print ) \
+      | sed 's|^\./||' \
+      | while IFS= read -r _rel; do
+          [ -n "$_rel" ] || continue
+          printf '%s\t%s/%s\n' "$_rel" "$_d" "$_rel"
+        done >> "$_raw"
+  done
+  # Name collisions: the later layer (platform) wins over the earlier (common).
+  awk -F'\t' '{ m[$1] = $2 } END { for (k in m) printf "%s\t%s\n", k, m[k] }' "$_raw" \
+    | sort > "$_raw.dedup"
+  : > "$SRCLIST"
+  while IFS=$'\t' read -r _rel _src; do
+    if is_ignored "$_rel"; then continue; fi
+    printf '%s\t%s\n' "$_rel" "$_src" >> "$SRCLIST"
+  done < "$_raw.dedup"
+  rm -f "$_raw" "$_raw.dedup"
+}
+
+backup() {
+  _b="$1.dof-bak-$(date +%Y%m%d-%H%M%S)"
+  mv "$1" "$_b"
+  printf '    %sbacked up%s %s\n' "$C_WARN" "$C_OFF" "$(basename "$_b")"
+}
+
+# One file's state: ok / missing / UNLINKED / MISLINKED / BROKEN / drift
+file_state() {
+  _src="$1"; _dst="$2"
+  if [ "$MODE" = link ]; then
+    if [ -L "$_dst" ]; then
+      if [ "$(readlink "$_dst")" = "$_src" ]; then
+        [ -e "$_dst" ] && echo ok || echo BROKEN
+      else
+        echo MISLINKED
+      fi
+    elif [ -e "$_dst" ]; then
+      echo UNLINKED
+    else
+      echo missing
+    fi
+  else
+    if [ ! -e "$_dst" ]; then echo missing
+    elif cmp -s "$_src" "$_dst"; then echo ok
+    else echo drift
+    fi
+  fi
+}
+
+state_line() {
+  case "$1" in
+    ok)        printf '  %s✓%s  %s\n' "$C_OK" "$C_OFF" "$2" ;;
+    missing)   printf '  %s·%s  %s %s(not deployed)%s\n' "$C_DIM" "$C_OFF" "$2" "$C_DIM" "$C_OFF" ;;
+    drift)     printf '  %s~%s  %s %s(machine differs from repo → dof diff / dof push)%s\n' "$C_WARN" "$C_OFF" "$2" "$C_WARN" "$C_OFF" ;;
+    UNLINKED)  printf '  %s!%s  %s %s(regular file, expected a symlink → see note below)%s\n' "$C_ERR" "$C_OFF" "$2" "$C_ERR" "$C_OFF" ;;
+    MISLINKED) printf '  %s!%s  %s %s(symlink points elsewhere → dof pull to fix)%s\n' "$C_ERR" "$C_OFF" "$2" "$C_ERR" "$C_OFF" ;;
+    BROKEN)    printf '  %s!%s  %s %s(dangling symlink, source is gone → dof pull to fix)%s\n' "$C_ERR" "$C_OFF" "$2" "$C_ERR" "$C_OFF" ;;
+  esac
+}
+
+# ── subcommands ─────────────────────────────────────────────────────────────
+
+cmd_list() {
+  printf '%splatform%s %s   %srepo%s %s\n\n' "$C_B" "$C_OFF" "$PLATFORM" "$C_B" "$C_OFF" "$REPO"
+  printf '  %-10s %-6s %-34s %s\n' TOOL MODE TARGET STATUS
+  printf '  %-10s %-6s %-34s %s\n' '----------' '------' '----------------------------------' '------------'
+  manifest_rows | while read -r name mode tl tm; do
+    if [ "$PLATFORM" = linux ]; then t="$tl"; else t="$tm"; fi
+    if [ "$t" = '-' ]; then
+      printf '  %-10s %-6s %-34s %snot on this platform%s\n' "$name" "$mode" '-' "$C_DIM" "$C_OFF"
+      continue
+    fi
+    ( load_tool "$name"; load_ignore; resolve_sources
+      total=0; bad=0; ok=0
+      while IFS=$'\t' read -r rel src; do
+        total=$((total + 1))
+        st="$(file_state "$src" "$TARGET/$rel")"
+        case "$st" in ok) ok=$((ok + 1)) ;; missing) ;; *) bad=$((bad + 1)) ;; esac
+      done < "$SRCLIST"
+      rm -f "$SRCLIST"
+      if [ "$total" -eq 0 ]; then
+        s="${C_DIM}no files in repo yet${C_OFF}"
+      elif [ "$bad" -gt 0 ]; then
+        s="${C_ERR}$bad need attention${C_OFF} (dof status $name)"
+      elif [ "$ok" -eq "$total" ]; then
+        s="${C_OK}deployed $ok/$total${C_OFF}"
+      elif [ "$ok" -eq 0 ]; then
+        s="${C_DIM}not deployed 0/$total${C_OFF}"
+      else
+        s="${C_WARN}partial $ok/$total${C_OFF}"
+      fi
+      printf '  %-10s %-6s %-34s %b\n' "$name" "$mode" "$t" "$s" )
+  done
+}
+
+cmd_status() {
+  if [ $# -eq 0 ]; then
+    manifest_rows | while read -r name _rest; do cmd_status "$name"; done
+    return
+  fi
+  load_tool "$1"; load_ignore; resolve_sources
+  printf '\n%s%s%s  %s  →  %s\n' "$C_B" "$TOOL" "$C_OFF" "$MODE" "$TARGET"
+  n=0; unlinked=0
+  while IFS=$'\t' read -r rel src; do
+    n=$((n + 1))
+    st="$(file_state "$src" "$TARGET/$rel")"
+    [ "$st" = UNLINKED ] && unlinked=$((unlinked + 1))
+    state_line "$st" "$rel"
+  done < "$SRCLIST"
+  [ "$n" -eq 0 ] && printf '  %sno files for this tool in the repo yet (try: dof adopt %s)%s\n' "$C_DIM" "$TOOL" "$C_OFF"
+  if [ "$unlinked" -gt 0 ]; then
+    printf '\n  %sNote%s the destination should be a symlink but is a regular file. Two causes:\n' "$C_WARN" "$C_OFF"
+    printf '       (a) never deployed — this is your machine-local file\n'
+    printf '           → dof adopt to import it, or dof pull to overwrite (backs up first)\n'
+    printf '       (b) it was a symlink, but the app replaced it via write-temp-then-rename\n'
+    printf '           → this tool is unsuited to link; switch it to copy in the manifest\n'
+  fi
+  rm -f "$SRCLIST"
+}
+
+cmd_pull() {
+  [ $# -ge 1 ] || die 'usage: dof pull <tool>'
+  load_tool "$1"; load_ignore; resolve_sources
+  printf '%s%s%s  repo → machine  (%s, %s)\n' "$C_B" "$TOOL" "$C_OFF" "$MODE" "$TARGET"
+  n=0
+  while IFS=$'\t' read -r rel src; do
+    dst="$TARGET/$rel"
+    mkdir -p "$(dirname "$dst")"          # parents are always real dirs, never linked
+    st="$(file_state "$src" "$dst")"
+    if [ "$st" = ok ]; then
+      printf '  %s=%s  %s\n' "$C_DIM" "$C_OFF" "$rel"
+      continue
+    fi
+    if [ -e "$dst" ] || [ -L "$dst" ]; then backup "$dst"; fi
+    if [ "$MODE" = link ]; then
+      ln -s "$src" "$dst"
+    else
+      cp "$src" "$dst"
+    fi
+    printf '  %s+%s  %s\n' "$C_OK" "$C_OFF" "$rel"
+    n=$((n + 1))
+  done < "$SRCLIST"
+  rm -f "$SRCLIST"
+  printf '  %s%s file(s) updated%s\n' "$C_DIM" "$n" "$C_OFF"
+}
+
+cmd_push() {
+  [ $# -ge 1 ] || die 'usage: dof push <tool>'
+  load_tool "$1"; load_ignore; load_keep; resolve_sources
+  if [ "$MODE" = link ]; then
+    printf '%s%s%s is in link mode: your edits already landed in the repo. Nothing to push.\n' "$C_B" "$TOOL" "$C_OFF"
+    printf 'Run %sgit status%s to see them, and %sdof status %s%s to check the links.\n' \
+      "$C_B" "$C_OFF" "$C_B" "$TOOL" "$C_OFF"
+    rm -f "$SRCLIST"; return
+  fi
+  printf '%s%s%s  machine → repo  (copy, %s)\n' "$C_B" "$TOOL" "$C_OFF" "$TARGET"
+  n=0
+  while IFS=$'\t' read -r rel src; do
+    dst="$TARGET/$rel"
+    if [ ! -e "$dst" ]; then
+      printf '  %s·%s  %s %s(absent on this machine, skipped)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF"
+      continue
+    fi
+    if cmp -s "$src" "$dst"; then
+      printf '  %s=%s  %s\n' "$C_DIM" "$C_OFF" "$rel"; continue
+    fi
+    cp "$dst" "$src"
+    printf '  %s↑%s  %s\n' "$C_OK" "$C_OFF" "$rel"
+    n=$((n + 1))
+  done < "$SRCLIST"
+  # Files present on the machine but not in the repo: report only, never auto-import.
+  if [ -d "$TARGET" ]; then
+    ( cd "$TARGET" && find . -type f -print ) | sed 's|^\./||' | sort | while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      if is_ignored "$rel"; then continue; fi
+      if ! is_kept "$rel"; then continue; fi
+      if ! cut -f1 "$SRCLIST" | grep -qxF "$rel"; then
+        printf '  %s?%s  %s %s(on machine, not in repo → dof adopt %s to import)%s\n' \
+          "$C_WARN" "$C_OFF" "$rel" "$C_DIM" "$TOOL" "$C_OFF"
+      fi
+    done
+  fi
+  rm -f "$SRCLIST"
+  printf '  %s%s file(s) collected — remember to git commit%s\n' "$C_DIM" "$n" "$C_OFF"
+}
+
+cmd_diff() {
+  [ $# -ge 1 ] || die 'usage: dof diff <tool>'
+  load_tool "$1"; load_ignore; resolve_sources
+  while IFS=$'\t' read -r rel src; do
+    dst="$TARGET/$rel"
+    if [ ! -e "$dst" ]; then
+      printf '%srepo only: %s%s\n' "$C_DIM" "$rel" "$C_OFF"; continue
+    fi
+    if cmp -s "$src" "$dst"; then continue; fi
+    diff -u -L "repo/$rel" -L "machine/$rel" "$src" "$dst" || true
+  done < "$SRCLIST"
+  rm -f "$SRCLIST"
+}
+
+cmd_adopt() {
+  [ $# -ge 1 ] || die 'usage: dof adopt <tool> [subpath...]'
+  load_tool "$1"; shift; load_ignore; load_keep
+  [ -d "$TARGET" ] || die "no such directory on this machine: $TARGET"
+  dest="$BASE/$PLATFORM"
+  mkdir -p "$dest"
+  printf '%s%s%s  machine → repo/tools/%s/%s/\n' "$C_B" "$TOOL" "$C_OFF" "$TOOL" "$PLATFORM"
+  if [ $# -gt 0 ]; then scope="$*"; else scope='.'; fi
+  for sub in $scope; do
+    ( cd "$TARGET" && find "$sub" -type f -print ) | sed 's|^\./||' | sort | while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      if is_ignored "$rel"; then
+        printf '  %s·%s  %s %s(excluded by .dofignore)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF"
+        continue
+      fi
+      if ! is_kept "$rel"; then
+        printf '  %s·%s  %s %s(not in .dofkeep allow-list)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF"
+        continue
+      fi
+      mkdir -p "$dest/$(dirname "$rel")"
+      cp "$TARGET/$rel" "$dest/$rel"
+      if [ -e "$BASE/common/$rel" ]; then
+        printf '  %s+%s  %s %s(note: common/ has the same path; the platform layer will shadow it)%s\n' \
+          "$C_WARN" "$C_OFF" "$rel" "$C_WARN" "$C_OFF"
+      else
+        printf '  %s+%s  %s\n' "$C_OK" "$C_OFF" "$rel"
+      fi
+    done
+  done
+  printf '  %sImported. Review with git status / git diff, drop what does not belong, then commit.%s\n' "$C_DIM" "$C_OFF"
+  printf '  %sNote: adopt copies. Machine files are untouched. Run dof pull %s to switch to link-managed.%s\n' \
+    "$C_DIM" "$TOOL" "$C_OFF"
+}
+
+usage() {
+  cat <<'EOF'
+dof — deploy and collect config files, one tool at a time.
+
+  dof list                 status of every tool on this machine
+  dof status [tool]        per-file check, including symlink health
+  dof pull   <tool>        repo → machine (deploy); backs up before overwriting
+  dof push   <tool>        machine → repo (collect); only needed in copy mode
+  dof diff   <tool>        differences between repo and machine
+  dof adopt  <tool> [path] import this machine's existing config into the repo
+
+Env:
+  DOF_REPO   repo path, when dof is not run from inside the repo
+
+Design rationale: DESIGN.md   Usage: README.md
+EOF
+}
+
+# ── entry point ─────────────────────────────────────────────────────────────
+
+[ $# -ge 1 ] || { usage; exit 1; }
+sub="$1"; shift
+case "$sub" in
+  list|ls)   cmd_list "$@" ;;
+  status|st) cmd_status "$@" ;;
+  pull)      cmd_pull "$@" ;;
+  push)      cmd_push "$@" ;;
+  diff)      cmd_diff "$@" ;;
+  adopt)     cmd_adopt "$@" ;;
+  -h|--help|help) usage ;;
+  *) die "unknown command '$sub' (dof --help)" ;;
+esac

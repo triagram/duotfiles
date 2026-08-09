@@ -1,0 +1,44 @@
+# ── First line of defence: credentials never enter the repo ─────────────────
+# Deliberately over-broad. Force a legitimate file through with `git add -f`.
+**/.credentials.json
+**/credentials.json
+**/*.key
+**/*.pem
+**/*.p12
+**/*token*
+**/*secret*
+.env
+.env.*
+
+# ── Claude Code machine-local state (not configuration) ─────────────────────
+# projects/ holds full transcripts of every session — never publish these.
+tools/claude/**/projects/
+tools/claude/**/todos/
+tools/claude/**/shell-snapshots/
+tools/claude/**/statsig/
+tools/claude/**/history*
+tools/claude/**/*.jsonl
+tools/claude/**/.claude.json*
+
+# ── agy / Gemini CLI machine-local state ────────────────────────────────────
+tools/agy/**/tmp/
+tools/agy/**/oauth_creds.json
+
+# ── Rime ────────────────────────────────────────────────────────────────────
+# build/            build artifacts, regenerated on every deploy
+# *.userdb*         user dictionary — synced by Rime itself, never by git
+# sync/             Rime's sync directory
+# installation.yaml differs per machine (installation_id / sync_dir)
+# upstream/         upstream schemas, cloned at deploy time
+tools/rime/**/build/
+tools/rime/**/*.userdb/
+tools/rime/**/*.userdb.txt
+tools/rime/**/sync/
+tools/rime/**/installation.yaml
+tools/rime/**/upstream/
+
+# ── dof's own output ────────────────────────────────────────────────────────
+*.dof-bak-*
+
+# ── OS noise ────────────────────────────────────────────────────────────────
+.DS_Store

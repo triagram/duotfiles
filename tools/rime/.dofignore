@@ -1,0 +1,20 @@
+# Paths inside the Rime user directory that dof never touches.
+# Full reasoning: notes/rime.md
+
+# Build artifacts, regenerated on every deploy
+build/
+
+# User dictionary: binary, and only Rime's own sync can merge it across machines
+*.userdb/
+*.userdb.txt
+sync/
+
+# Differs per machine (installation_id / sync_dir); maintained locally, once
+installation.yaml
+
+# Upstream schemas (rime-ice etc.): cloned at deploy time, never vendored
+upstream/
+
+# Rime's own runtime logs
+*.log
+rime.*

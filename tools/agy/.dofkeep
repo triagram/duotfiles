@@ -1,0 +1,6 @@
+# Allow-list: `dof adopt` imports only these paths from ~/.gemini.
+# The target is all of ~/.gemini because the global instruction file GEMINI.md
+# lives there, while agy's own settings sit in the antigravity-cli/ subdirectory.
+
+GEMINI.md
+antigravity-cli/settings.json

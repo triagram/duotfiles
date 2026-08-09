@@ -1,0 +1,19 @@
+# manifest — one line per tool: where it is deployed and how.
+#
+# Fields (whitespace-separated, 4 columns):
+#   1. name          matches the tools/<name>/ directory
+#   2. mode          link = symlink (prefer this) / copy = copy files
+#   3. linux target  where this tool's config lives on Linux
+#   4. macos target  where this tool's config lives on macOS
+#
+# A target of - means "do not deploy this tool on that platform".
+# Paths must not contain spaces (none of ours do; see DESIGN.md).
+# A leading ~ expands to the current user's home directory.
+
+# name     mode   linux target                      macos target
+tmux       link   ~/.config/tmux                    ~/.config/tmux
+kitty      link   ~/.config/kitty                   ~/.config/kitty
+ghostty    link   ~/.config/ghostty                 ~/.config/ghostty
+claude     link   ~/.claude                         ~/.claude
+agy        link   ~/.gemini                         ~/.gemini
+rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
