@@ -1,20 +1,45 @@
 # Paths inside the Rime user directory that dof never touches.
-# Full reasoning: notes/rime.md
+# Full reasoning and the upstream fetch list: notes/rime.md
+#
+# Only whole-line comments are recognised, same as .gitignore —
+# a "#" after a pattern is part of the pattern, not a comment.
 
-# Build artifacts, regenerated on every deploy
+# ── Build artifacts, regenerated on every deploy ────────────────────────────
 build/
 
-# User dictionary: binary, and only Rime's own sync can merge it across machines
+# ── User dictionary and its sync ────────────────────────────────────────────
+# Out of scope for this repo: the dictionary contains names, addresses and
+# private wording, and the sync mechanism is machine-specific.
 *.userdb/
 *.userdb.txt
 sync/
+rime-sync.sh
 
-# Differs per machine (installation_id / sync_dir); maintained locally, once
+# ── Machine-local state ─────────────────────────────────────────────────────
+# installation.yaml: installation_id / sync_dir differ per machine
+# user.yaml:         Rime records the active schema here
+# .claude/:          Claude Code local settings, if you ever ran it in this dir
 installation.yaml
+user.yaml
+.claude/
 
-# Upstream schemas (rime-ice etc.): cloned at deploy time, never vendored
+# ── Bulk data with a known upstream, fetched at deploy time ─────────────────
+# Pure upstream, verified byte-identical or version-skew only. ~92 MB total.
+# Sources and commands: notes/rime.md
+cn_dicts/
+essay.txt
+luna_pinyin.dict.yaml
+stroke.dict.yaml
+radical_pinyin.dict.yaml
+japanese.schema.yaml
+japanese.dict.yaml
+japanese.kana.dict.yaml
+japanese.mozc.dict.yaml
+japanese.jmdict.dict.yaml
+
+# ── Upstream schemas cloned at deploy time ──────────────────────────────────
 upstream/
 
-# Rime's own runtime logs
+# ── Rime's own runtime logs ─────────────────────────────────────────────────
 *.log
 rime.*

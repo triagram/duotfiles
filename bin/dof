@@ -112,8 +112,12 @@ is_kept() {
     [ -n "$_p" ] || continue
     # shellcheck disable=SC2254
     case "$_rel" in $_p) IFS="$_old"; return 0 ;; esac
+    # Directory-form rule "foo/" matches everything under foo.
+    # The pattern must stay unquoted so wildcards in it (e.g. "*.userdb/") work.
     case "$_p" in
-      */) case "$_rel" in "${_p}"*) IFS="$_old"; return 0 ;; esac ;;
+      */) _pd="${_p%/}"
+          # shellcheck disable=SC2254
+          case "$_rel" in $_pd/*) IFS="$_old"; return 0 ;; esac ;;
     esac
   done
   IFS="$_old"; return 1
@@ -126,9 +130,12 @@ is_ignored() {
     [ -n "$_p" ] || continue
     # shellcheck disable=SC2254
     case "$_rel" in $_p) IFS="$_old"; return 0 ;; esac
-    # Directory-form rule: foo/ matches everything under foo.
+    # Directory-form rule "foo/" matches everything under foo.
+    # The pattern must stay unquoted so wildcards in it (e.g. "*.userdb/") work.
     case "$_p" in
-      */) case "$_rel" in "${_p}"*) IFS="$_old"; return 0 ;; esac ;;
+      */) _pd="${_p%/}"
+          # shellcheck disable=SC2254
+          case "$_rel" in $_pd/*) IFS="$_old"; return 0 ;; esac ;;
     esac
   done
   IFS="$_old"; return 1
@@ -359,6 +366,12 @@ cmd_adopt() {
       fi
       if ! is_kept "$rel"; then
         printf '  %s·%s  %s %s(not in .dofkeep allow-list)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF"
+        continue
+      fi
+      # Already in common/ and byte-identical: importing it into the platform
+      # layer would only duplicate it and pollute the linux↔macos comparison.
+      if [ -e "$BASE/common/$rel" ] && cmp -s "$TARGET/$rel" "$BASE/common/$rel"; then
+        printf '  %s·%s  %s %s(identical to common/, skipped)%s\n' "$C_DIM" "$C_OFF" "$rel" "$C_DIM" "$C_OFF"
         continue
       fi
       mkdir -p "$dest/$(dirname "$rel")"

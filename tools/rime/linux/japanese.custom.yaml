@@ -1,0 +1,169 @@
+# japanese.custom.yaml
+#
+# 上游：https://github.com/gkovacs/rime-japanese （2024-07 更新，397 stars，無授權聲明）
+# 詞典來源：Mozc (30 MB) + JMdict (6.4 MB)，純 table/script translator，不依賴 lua 或 MeCab，
+#           因此可在本機的 librime 1.10.0 上運行。詳見 designLog.md §6。
+#
+# 本 patch 做三件事：
+#   1. 拆除三組反查機制 —— 它們依賴的詞典在本機並不存在，留著會導致部署失敗：
+#        putonghua_to_kanji_lookup → terra_pinyin.extended（缺）+ prism td_pinyin_flypy（缺）
+#        hannom_lookup            → hannomPS（缺，越南喃字）
+#        hanja_lookup             → hangyl（缺，韓國漢字）
+#      這三者都是給非日語母語者的便利反查，日常日文輸入用不到。
+#   2. 移除 simplifier 濾鏡與 simplification 開關 —— 那是中文簡繁轉換，
+#      套在日文上會把日本漢字轉成simplified中文字形，語種錯誤。
+#   3. 介面標籤改為日文，標點改為日文標點。
+
+patch:
+  "schema/name": "日"
+
+  # 移除已拆掉的反查所宣告的依賴，否則每次部署都會留下
+  # 「missing input schema; skipped unsatisfied dependency: terra_pinyin.extended」警告
+  "schema/dependencies":
+    - stroke
+
+  # ── 1. 精簡引擎，只保留：日文輸入 + 筆畫反查（stroke 本機存在）
+  "engine/segmentors":
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+
+  "engine/translators":
+    - punct_translator
+    - table_translator@custom_phrase   # 單假名置頂，須排在 script_translator 之前
+    - script_translator
+    - reverse_lookup_translator
+
+  "engine/filters":
+    - lua_filter@*katakana_filter
+    - uniquifier
+
+  # ── 3. 日文介面
+  switches:
+    - name: ascii_mode
+      reset: 0
+      states: [ かな, Ａ ]
+    # 強制轉片假名。詞典本身已含 29.7 萬條片假名，平時不需要開；
+    # 此開關用於詞典裡沒有的詞（人名、擬聲詞、強調用法）。
+    # 列在方案選單（F4）裡是刻意的 —— 幾個月後想不起 F7 時，
+    # 打開選單就能看見「ひら/カタ」。
+    - name: katakana
+      reset: 0
+      states: [ ひら, カタ ]
+    - name: full_shape
+      states: [ 半角, 全角 ]
+    - name: ascii_punct
+      states: [ 、。, ，． ]
+
+  # 只留筆畫反查的觸發規則，其餘三組一併移除
+  "recognizer/patterns":
+    reverse_lookup: "`H[a-z]*`?$"
+
+  # 上游的 key_binder 綁定了 korean / vietnamese / double_jyutping_extra 等
+  # 本機不存在的方案，且未 import_preset，會少掉翻頁等基本鍵位。
+  # 上游設 spelling_hints: 5，會把讀音附在候選後面 —— 但只對音節數 ≤5 的詞生效，
+  # 所以表現為「有時出現、有時不出現」的臃腫感。設 0 完全關閉。
+  "translator/spelling_hints": 0
+
+  # ── 單假名置頂
+  # 訓令式拼法與上游的外來音條目衝突：si 同時匹配「すぃ」（原生拼寫）和
+  # 「し」（派生拼寫），Rime 讓原生拼寫優先，導致罕用的すぃ排在第一。
+  # 用 custom_phrase 以高權重把常用單假名釘在首位，成本為零（不影響 prism）。
+  custom_phrase:
+    dictionary: ""
+    user_dict: japanese_custom_phrase
+    db_class: stabledb
+    enable_completion: false
+    enable_sentence: false
+    initial_quality: 99
+
+  # ── 羅馬字拼法擴充
+  #
+  # 上游詞典採「嚴格ヘボン式」：し=shi、ち=chi、つ=tsu、ふ=fu、じ=ji，
+  # 詞典正文亦然（寿司=sushi、新聞=shinbun、社会=shakai）。
+  # 更麻煩的是，它把訓令式拼法【挪去表示外來音】了：
+  #     si→すぃ   ti→てぃ   tu→とぅ   hu→ほぅ   zi→ずぃ   tya→てゃ
+  # 因此按訓令式習慣打字會得到完全不相干的片假名。
+  #
+  # Mozc / MS-IME 的預設是【兩種都收】。以下派生規則補上這個行為。
+  # 派生（derive）只【增加】可接受的拼法，不移除原有的，所以外來音仍可輸入。
+  #
+  # 注意：本段會整段取代上游的 speller/algebra，故上游原有的三條必須一併列出。
+  "speller/algebra":
+    # 上游原有（勿刪）
+    - derive/_/x/           # 小假名：_ya → xya
+    - derive/-/q/           # 長音符：-  → q
+    - derive/i_e/ye/
+
+    # 訓令式／日本式羅馬字
+    - derive/shi/si/
+    - derive/chi/ti/
+    - derive/tsu/tu/
+    - derive/fu/hu/
+    - derive/ji/zi/
+    - derive/sha/sya/
+    - derive/shu/syu/
+    - derive/sho/syo/
+    - derive/cha/tya/
+    - derive/chu/tyu/
+    - derive/cho/tyo/
+    - derive/ja/zya/
+    - derive/ju/zyu/
+    - derive/jo/zyo/
+
+    # 小假名的 l 前綴（多數輸入法 x 與 l 兩者皆收）。
+    # 只影響含 '_' 的條目（假名詞典 24 條 + 詞條約 2000 條），成本可忽略。
+    - derive/_/l/
+
+    # 單獨的促音っ：上游只有 '_tsu' 一條編碼。
+    # 明確派生成各家慣用寫法，只作用於這一條條目，成本為零。
+    # 注意：詞【中】的促音是靠雙輔音表示的（一生懸命 = isshoukenmei、
+    # 学校 = gakkou、切手 = kitte），不需要也不應該用 xtu 拼寫。
+    - derive/^_tsu$/xtu/
+    - derive/^_tsu$/ltu/
+    - derive/^_tsu$/ltsu/
+
+    # ── 以下為「拗音小假名分解」寫法（ki+xya=きゃ，詞中亦成立，如 toukixyou→東京）。
+    # 【已停用】實測代價：prism 由 90 MB 增至 143 MB（+53 MB）。
+    # 停用理由：x+ya/yu/yo 打【單獨】小假名靠的是上游的 derive/_/x/，與這幾條無關；
+    #           這幾條只負責「在詞中用分解寫法」，而平常直接打 kya 即可。
+    # 若日後確實需要，取消註解重新部署即可。
+#    - derive/([kgnhbpmr])y([auo])/$1ixy$2/
+#    - derive/sh([auo])/shixy$1/
+#    - derive/sh([auo])/sixy$1/
+#    - derive/ch([auo])/chixy$1/
+#    - derive/ch([auo])/tixy$1/
+#    - derive/j([auo])/jixy$1/
+#    - derive/j([auo])/zixy$1/
+
+  key_binder:
+    import_preset: default
+
+  # F7 切換片假名 —— Mozc / Google 日本語入力 / macOS 內建 / MS-IME 全都是這個鍵，
+  # 屬跨平台通用慣例，非本配置私設。
+  "key_binder/bindings/@next":
+    { when: always, accept: F7, toggle: katakana }
+
+  # 日文標點。注意 speller/alphabet 含 '-' 與 '_'（'-' 經 algebra 派生為長音符 ー），
+  # 因此不可將 '-' 挪作標點使用。
+  punctuator:
+    half_shape:
+      ',' : '、'
+      '.' : '。'
+      '[' : '「'
+      ']' : '」'
+      '{' : '『'
+      '}' : '』'
+      '/' : '・'
+      '?' : '？'
+      '!' : '！'
+      ':' : '：'
+      ';' : '；'
+      '~' : '〜'
+      '(' : '（'
+      ')' : '）'
+      '"' : '”'
+      '<' : '＜'
+      '>' : '＞'
