@@ -1,0 +1,28 @@
+#!/bin/bash
+# Apply a Rime config change without replacing the fcitx5 process.
+#
+# Never use `fcitx5 -r` for this. Replacing the process orphans the
+# input-method connection held by long-lived clients, above all gnome-shell,
+# which is never restarted within a session. The symptom is specific and
+# misleading: the lock screen types Chinese again, while fcitx5-lock-guard.sh
+# fires correctly and logs `fcitx5-remote reports: 1` (inactive). The guard
+# looks broken and is not. Only `Alt+F2` -> `r` (X11) recovers it.
+#
+# ReloadAddonConfig("rime") makes librime redeploy in-process, so no client
+# ever loses its connection. Same thing the tray menu's "Deploy" does.
+set -euo pipefail
+
+before=$(pgrep -f '^/usr/bin/fcitx5' | head -1)
+
+gdbus call --session --dest org.fcitx.Fcitx5 \
+    --object-path /controller \
+    --method org.fcitx.Fcitx.Controller1.ReloadAddonConfig rime >/dev/null
+
+sleep 2
+after=$(pgrep -f '^/usr/bin/fcitx5' | head -1)
+[ "$before" = "$after" ] || { echo "fcitx5 pid changed ($before -> $after); press Alt+F2 then r" >&2; exit 1; }
+
+echo "rime redeployed in-process, fcitx5 pid $after unchanged"
+echo -n "  schemas: "
+gdbus call --session --dest org.fcitx.Fcitx5 --object-path /rime \
+    --method org.fcitx.Fcitx.Rime1.ListAllSchemas

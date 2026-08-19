@@ -1,0 +1,12 @@
+[Unit]
+Description=Force fcitx5 to English before lock screen / suspend
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/fcitx5-lock-guard.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target
