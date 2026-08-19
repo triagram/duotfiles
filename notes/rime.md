@@ -8,7 +8,7 @@
 > dof 不碰，也不进 git。这块请在本机自行维护。
 >
 > 同步的**设计推理**（两层机制的区分、为什么不走网盘、Syncthing `.stversions/` 的陷阱）
-> 保留在 `tools/rime/linux/designLog.md §7.5` —— 那是判断记录，值得留；
+> 保留在 `tools/rime/linux/devlog.md §7.5` —— 那是判断记录，值得留；
 > 但**机制本身**（脚本、主机地址、词库文件）不进本仓库。
 
 ## ① 部署时从上游拉（不进仓库，约 92 MB）
@@ -26,7 +26,7 @@
 | `stroke.dict.yaml` | `github.com/rime/rime-stroke` | 2.1 MB | 版本差 |
 | `japanese.{schema,dict,kana.dict,mozc.dict,jmdict.dict}.yaml` | `github.com/gkovacs/rime-japanese` | 36 MB | **逐字节相同** |
 
-日语方案的选型理由见 `tools/rime/linux/designLog.md §6.3`（对比过 DreamAfar，选了 star 更多、维护更新的 gkovacs）。
+日语方案的选型理由见 `tools/rime/linux/devlog.md §6.3`（对比过 DreamAfar，选了 star 更多、维护更新的 gkovacs）。
 
 拉取（Rime 用户目录记作 `$R`）：
 
@@ -50,7 +50,7 @@ cp    "$C/japanese/japanese."*.yaml          "$R/"
 
 **顺序很重要：先铺上游，再 `dof pull rime`**，让你的 `*.custom.yaml` 盖在上面。
 Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 custom 打补丁，从不改上游文件
-（`designLog.md` 的「原則二」）。
+（`devlog.md` 的「原則二」）。
 
 > 例外：`custom_phrase.txt` 是**你改过的上游文件**（注释掉了 `噷/呣/呒`，加了
 > `啊对对对`、`不不不` 和邮箱短语）。它在仓库里，`dof pull` 会覆盖上游那份 —— 这正是要的效果。
@@ -72,14 +72,14 @@ macOS `dof adopt rime` 时不会再复制一份，`linux/` ↔ `macos/` 的比�
 **`linux/`（63 个，1.9 MB）—— 其余一切：**
 
 你自己写的 10 个（5 个 `*.custom.yaml`、`custom_phrase.txt`、`custom_phrase_double.txt`、
-`japanese_custom_phrase.txt`、`designLog.md`、**`lua/katakana_filter.lua`**），
+`japanese_custom_phrase.txt`、`devlog.md`、**`lua/katakana_filter.lua`**），
 加上上游的小文件（`lua/` 31、`opencc/` 3、`en_dicts/` 10、各 schema、`symbols*.yaml`）。
 
 上游小文件也留在仓库里，是刻意的：它们总共才 1.9 MB，而**万一你哪天改了其中一个
 （比如 `opencc/emoji.txt`），严格白名单会静默丢掉你的修改**。宁可多收，不可漏收。
 
 > `lua/katakana_filter.lua` 是你自己写的（强制转片假名，等同 IME 的 F7，15 行 Lua 零数据文件，
-> 见 `designLog.md §6.8`），由 `japanese.custom.yaml:40` 的 `lua_filter@*katakana_filter`
+> 见 `devlog.md §6.8`），由 `japanese.custom.yaml:40` 的 `lua_filter@*katakana_filter`
 > 接入、绑定 `F7`。第一版白名单差点把它丢掉 —— 这就是改用黑名单的直接原因。
 
 ## 为什么用 copy 而不是 link
@@ -100,9 +100,9 @@ Linux  (ibus-rime)    ~/.config/ibus/rime/         ← 用 ibus 的话改 manife
 
 ## 延伸阅读
 
-`tools/rime/linux/designLog.md` 是你自己的设计记录，比这份笔记详细得多：
+`tools/rime/linux/devlog.md` 是你自己的设计记录，比这份笔记详细得多：
 三层模型、为什么不 fork rime-ice、皮肤系统的四种前端差异、日语方案的演进、体积账。
-本文件只记「duotfiles 怎么管 rime」，设计判断以 designLog 为准。
+本文件只记「duotfiles 怎么管 rime」，设计判断以 devlog 为准。
 
 ## 平台差异
 

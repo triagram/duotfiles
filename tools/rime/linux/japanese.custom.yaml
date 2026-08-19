@@ -2,7 +2,7 @@
 #
 # 上游：https://github.com/gkovacs/rime-japanese （2024-07 更新，397 stars，無授權聲明）
 # 詞典來源：Mozc (30 MB) + JMdict (6.4 MB)，純 table/script translator，不依賴 lua 或 MeCab，
-#           因此可在本機的 librime 1.10.0 上運行。詳見 designLog.md §6。
+#           因此可在本機的 librime 1.10.0 上運行。詳見 devlog.md §6。
 #
 # 本 patch 做三件事：
 #   1. 拆除三組反查機制 —— 它們依賴的詞典在本機並不存在，留著會導致部署失敗：
