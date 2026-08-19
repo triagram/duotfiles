@@ -418,6 +418,47 @@ fcitx5 只是眾多跟隨者之一。它不放在本目錄，而應歸屬 dotfil
 > 但**日照時數仍然完全正確** —— 只驗算時數會漏掉這個錯誤，
 > 必須拿真實日出時刻對照才發現。修正後四季誤差均在 1–2 分鐘內。
 
+### 7.6 絕不用 `fcitx5 -r` 套用設定（2026-08-19）
+
+**症狀**：改完 `default.custom.yaml` 後，鎖屏密碼框又開始出中文。表面看像是
+`fcitx5-lock-guard.sh` 壞了，但它其實**每次都正常開火並且打中**——日誌裡
+`-> fcitx5-remote reports: 1`（1 = inactive = 英文）。guard 和 YAML 都是無辜的。
+
+**真因**：套用設定時執行了 `fcitx5 -r`（replace）。它換掉整個 fcitx5 進程，
+而 **gnome-shell 在一次登入內永不重啟**（當時該實例已跑 21 天），它持有的
+輸入法連線就此成為孤兒。**具體斷在哪一層沒有深究**，但因果鏈是閉合的：
+`fcitx5` 重啟於 8-18 17:46:33、`gnome-shell` 起於 7-28 23:11、guard 每次都
+打中（`reports: 1`）、密碼框照樣出中文、原地重啟 gnome-shell 後立即恢復。
+
+**修法**：改用 `~/.local/bin/rime-reload`，它呼叫
+`org.fcitx.Fcitx.Controller1.ReloadAddonConfig("rime")` 讓 librime **在進程內
+重新部署**，不換進程、不斷任何客戶端連線（等同托盤選單的「重新部署」）。
+
+**已經踩下去了怎麼救**：`Alt+F2` → `r` → Enter，X11 下原地重啟 gnome-shell，
+**所有視窗和終端都保留**（Wayland 沒有這功能）。注銷也行但會殺掉整個會話。
+
+**版控位置**：這三個檔案已收進 `~/.duotfiles` 的 `fcitx5-guard` 工具
+（2026-08-19），manifest 一行搞定：
+
+```
+fcitx5-guard link ~/.local  -
+```
+
+`~/.local` 同時涵蓋 `bin/` 與 `share/systemd/user/`——後者是 systemd 合法的
+用戶單元搜尋路徑（`systemd-analyze --user unit-paths` 可驗證），所以不必為了
+service 檔另開一條 manifest 條目。**換機器時**：
+
+```bash
+dof pull fcitx5-guard
+systemctl --user enable --now fcitx5-lock-guard.service   # dof 不管 enable
+```
+
+**定位手法（可移植到任何「改完設定就壞了」的排查）**：先別看設定內容，
+用 `ps -eo pid,lstart,cmd` 比對**進程年齡**——找出那一分鐘裡除了設定還重啟了
+什麼、以及哪些長命進程比它更老。本例中 `fcitx5` 啟動於 8-18 17:46:33、
+`gnome-shell` 啟動於 7-28 23:11，21 天的落差就是答案。
+「100% 必現」排除競態，只可能是某個持續存在的壞狀態。
+
 ---
 
 ## 8 · 附錄
@@ -467,6 +508,15 @@ grep -v "Encode failure" /tmp/rime.tools.WARNING     # Encode failure 是上游�
 # 目前載入了哪些方案
 gdbus call --session --dest org.fcitx.Fcitx5 --object-path /rime \
   --method org.fcitx.Fcitx.Rime1.ListAllSchemas
+
+# 套用設定變更（絕不用 fcitx5 -r，理由見 7.6）
+rime-reload
+
+# 「改完設定就壞了」的第一手排查：比對進程年齡，找出誰在那一分鐘被換掉了
+ps -eo pid,lstart,cmd | grep -E "[f]citx5|[g]nome-shell"
+
+# guard 每次鎖屏到底打中沒有（1 = 英文，2 = 中文，空 = 完全落空）
+journalctl --user -u fcitx5-lock-guard.service -n 10 --no-pager
 
 # 區分上游檔案與自己改過的（權限位是可靠線索）
 find . -maxdepth 1 -perm 644 -name "*.yaml"   # 通常是自己動過的
