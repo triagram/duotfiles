@@ -20,8 +20,16 @@
 ## 主题文件为什么不收
 
 `current-theme.conf`、`dark-theme.auto.conf`、`light-theme.auto.conf`、
-`no-preference-theme.auto.conf`。**核实过**（`kitten themes --dump-theme` 逐字节比对）：
-四个文件的前 81 行都是上游 Catppuccin（MIT）原样输出，本地改动只有追加在末尾的两行
+`no-preference-theme.auto.conf`。**四个都逐字节核实过**（2026-08-23）：
+
+```
+dark-theme.auto.conf 前 81 行  ==  kitten themes --dump-theme Catppuccin-Mocha
+light-theme.auto.conf 前 81 行 ==  kitten themes --dump-theme Catppuccin-Frappe
+current-theme.conf             ==  dark-theme.auto.conf
+no-preference-theme.auto.conf  ==  light-theme.auto.conf
+```
+
+即前 81 行都是上游 Catppuccin（MIT）原样输出，本地改动只有追加在末尾的两行
 
 ```
 # 背景圖與標籤欄顏色（見 theme-overrides.conf 開頭的說明）
@@ -50,6 +58,11 @@ include theme-overrides.conf
 ## 平台差异
 
 macOS 侧还没进仓库，`tools/kitty/{common,macos}/` 仍是空的。
+
+> **所以现在在 Mac 上跑 `dof pull kitty` 是个空操作** —— `resolve_sources` 只走
+> `common/` 和 `<platform>/`，两边都只有 `.gitkeep`（还会被 `BUILTIN_IGNORE` 滤掉），
+> 结果是「0 file(s) updated」，不报错也不部署任何东西。Mac 上要先
+> `dof adopt kitty` 把本机配置收进来，才有东西可比对、可部署。
 
 | 配置项 | linux | macos | 能否合并 | 判断日期 |
 |---|---|---|---|---|
