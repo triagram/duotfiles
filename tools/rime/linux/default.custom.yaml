@@ -9,3 +9,5 @@ patch:
     # melt_eng 已移除：它作為次翻譯器 (table_translator@melt_eng)
     # 內建於 double_pinyin_flypy，直接打字母即出英文候選，無需獨立方案。
     # 注意 melt_eng.custom.yaml 必須保留，寄生的那份仍需要雙拼 algebra 適配。
+  "switcher/hotkeys":
+    - "Control+grave"
