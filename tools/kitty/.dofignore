@@ -1,0 +1,48 @@
+# Paths inside the kitty config directory that dof never touches.
+#
+# Only whole-line comments are recognised, same as .gitignore —
+# a "#" after a pattern is part of the pattern, not a comment.
+
+# ── Background images ───────────────────────────────────────────────────────
+# ~7 MB of wallpapers against ~170 KB of actual config: adopting them would
+# grow the repo roughly 40x for content that is neither portable nor shared.
+#
+# The consequence is deliberate and documented: on a fresh machine the
+# background_image path in theme-overrides.conf points at a file that is not
+# there, and kitty renders no background without reporting an error.
+# Recovery steps, and why the images must be PNG (kitty bundles libpng only,
+# every other format needs ImageMagick), are in ~/.config/kitty/README.md.
+backgrounds/
+
+# ── Icons ───────────────────────────────────────────────────────────────────
+# icons/ is the same trade as backgrounds/: image assets, not configuration.
+#
+# kitty.app.png is excluded for a second reason. switch-icon.py copies the
+# chosen icon onto it, so under link mode that write would land straight in
+# the repo — a 128 KB binary churning on every icon switch.
+# Rebuilding both is switch-icon.py's whole job; README.md has the steps.
+icons/
+kitty.app.png
+
+# ── Themes ──────────────────────────────────────────────────────────────────
+# All four are upstream Catppuccin (MIT) reproduced verbatim, and the only
+# local content is the two lines appended at the end of each:
+#
+#     # 背景圖與標籤欄顏色（見 theme-overrides.conf 開頭的說明）
+#     include theme-overrides.conf
+#
+# current-theme.conf is byte-identical to dark-theme.auto.conf, so adopting
+# the set would commit the same third-party palette twice over for one line
+# that is actually ours. The theme names are recorded in README.md instead —
+# regenerating from them is one command per file.
+#
+# It also removes a recurring annoyance: the themes kitten rewrites these as
+# real files, which would replace dof's symlinks and leave dof status
+# reporting UNLINKED after every theme change.
+current-theme.conf
+*-theme.auto.conf
+
+# ── Stale backup ────────────────────────────────────────────────────────────
+# A hand-made backup from before this config was tracked. The built-in
+# *.dof-bak-* pattern does not cover it.
+kitty.conf.bak
