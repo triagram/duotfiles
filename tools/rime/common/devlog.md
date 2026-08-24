@@ -263,6 +263,22 @@ Rime YAML 用 `0xBBGGRR`（**BGR**），fcitx5 theme.conf 用 `#RRGGBB`（**RGB*
 
 ### 6.3 選定 gkovacs/rime-japanese
 
+當時擺在檯面上的三條路：
+
+| | 方案 | 漢字 | 片假名 | 前提 |
+|---|---|---|---|---|
+| **T1** | 修補現有的手寫 `nihongo` | ✗ | ✓ | 無，30 分鐘 |
+| **T2** | 換 DreamAfar 或 gkovacs 的社群方案 | ✓ 查表式 | ✓ | librime 1.10 可跑 |
+| **T3** | [rime-kagiroi](https://github.com/rimeinn/rime-kagiroi) | ✓ 連文節變換 | ✓ | **需升級 librime**（見 §6.2） |
+
+**決定：T2 ＋ T1 的片假名 filter。** 需求是「綁定已知方案而非硬編碼」，
+T2 正是「刪掉自己手寫的 225 行表，換成社群維護的詞典」；片假名那 15 行 Lua
+（§6.8）則是 T1 唯一值得留下的產物。T3 雖然最好，但為單一方案手動編譯 librime
+會讓整個環境脫離 apt 管理，與「可重建、最小化」的核心原則直接衝突。
+
+T2 的兩個候選之間：
+
+
 | | gkovacs | DreamAfar |
 |---|---|---|
 | Stars | 397 | 16 |

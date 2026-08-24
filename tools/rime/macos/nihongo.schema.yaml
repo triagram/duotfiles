@@ -10,7 +10,7 @@ schema:
     日語羅馬字假名輸入方案。
     現況：僅支援假名（平假名 + 片假名），無漢字變換。
     片假名由 lua/katakana_filter.lua 以碼位偏移動態生成，詞典中不含片假名條目。
-    漢字變換的升級路線見 DESIGN.md §7.3。
+    漢字變換的升級路線見 devlog.md §6.3。
 
 switches:
   - name: ascii_mode

@@ -8,7 +8,7 @@
 > dof 不碰，也不进 git。这块请在本机自行维护。
 >
 > 同步的**设计推理**（两层机制的区分、为什么不走网盘、Syncthing `.stversions/` 的陷阱）
-> 保留在 `tools/rime/linux/devlog.md §7.5` —— 那是判断记录，值得留；
+> 保留在 `tools/rime/common/devlog.md §7.5` —— 那是判断记录，值得留；
 > 但**机制本身**（脚本、主机地址、词库文件）不进本仓库。
 
 ## ① 部署时从上游拉（不进仓库，约 92 MB）
@@ -26,7 +26,7 @@
 | `stroke.dict.yaml` | `github.com/rime/rime-stroke` | 2.1 MB | 版本差 |
 | `japanese.{schema,dict,kana.dict,mozc.dict,jmdict.dict}.yaml` | `github.com/gkovacs/rime-japanese` | 36 MB | **逐字节相同** |
 
-日语方案的选型理由见 `tools/rime/linux/devlog.md §6.3`（对比过 DreamAfar，选了 star 更多、维护更新的 gkovacs）。
+日语方案的选型理由见 `tools/rime/common/devlog.md §6.3`（对比过 DreamAfar，选了 star 更多、维护更新的 gkovacs）。
 
 拉取（Rime 用户目录记作 `$R`）：
 
@@ -100,7 +100,7 @@ Linux  (ibus-rime)    ~/.config/ibus/rime/         ← 用 ibus 的话改 manife
 
 ## 延伸阅读
 
-`tools/rime/linux/devlog.md` 是你自己的设计记录，比这份笔记详细得多：
+`tools/rime/common/devlog.md` 是你自己的设计记录，比这份笔记详细得多：
 三层模型、为什么不 fork rime-ice、皮肤系统的四种前端差异、日语方案的演进、体积账。
 本文件只记「duotfiles 怎么管 rime」，设计判断以 devlog 为准。
 
