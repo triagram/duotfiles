@@ -133,8 +133,10 @@ grep -rl "SOMEDICT" --include="*.yaml" . | grep -v -e plum -e sync -e build
 > **`cn_dicts_cell/` 目前也是孤兒**（2026-08-24 複查）：`rime_ice.dict.yaml` 的
 > `import_tables` 只掛 `cn_dicts/` 底下的 8105 / base / ext / tencent / others，
 > 全倉庫與兩台機器都搜不到任何一處引用這 22 個檔。它佔 23 MB，卻不影響任何輸入行為。
-> 之所以還沒刪，是因為它不可重建（見上），刪掉就只剩 scel2txt 重轉一條路。
-> **待決**：要嘛掛進 `import_tables` 讓它真正生效，要嘛移出版本庫另存。
+> **已於 2026-08-24 刪除。** 掛進 `import_tables` 這條路被否掉了：22 個細胞詞庫
+> （食物 14 萬條、遊戲 15 萬條、醫藥 13 萬條）掛上去會明顯拖慢部署、稀釋候選品質，
+> 而它閒置一年多都沒掛，說明並不需要。移出版本庫另存也沒必要 —— git 歷史
+> 本身就是那份另存，`git show 71eb777^:tools/rime/common/cn_dicts_cell/…` 隨時取回。
 
 ## 3 · 為什麼不用現成方案
 
