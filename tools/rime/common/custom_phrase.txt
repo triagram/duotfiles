@@ -63,5 +63,6 @@ main	main
 Amazon	amazon
 NASA	nasa
 gone	gone
+Go程	gocheng
 code	code
 SOHO	soho
