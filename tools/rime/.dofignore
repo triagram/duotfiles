@@ -7,6 +7,12 @@
 # ── Build artifacts, regenerated on every deploy ────────────────────────────
 build/
 
+# ── 上游 clone 的自带物 ───────────────────────────────────────────────────
+# macOS 侧的 ~/Library/Rime 本身就是 iDvel/rime-ice 的 git clone，
+# 这两个目录是仓库元数据与 CI 配置，不是配置，且 .git 有 16 MB。
+.git/
+.github/
+
 # ── User dictionary and its sync ────────────────────────────────────────────
 # Out of scope for this repo: the dictionary contains names, addresses and
 # private wording, and the sync mechanism is machine-specific.

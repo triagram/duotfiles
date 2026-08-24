@@ -1,0 +1,80 @@
+# japanese.custom.yaml
+#
+# 上游：https://github.com/gkovacs/rime-japanese （2024-07 更新，397 stars，無授權聲明）
+# 詞典來源：Mozc (30 MB) + JMdict (6.4 MB)，純 table/script translator，不依賴 lua 或 MeCab，
+#           因此可在本機的 librime 1.10.0 上運行。詳見 DESIGN.md §7.3。
+#
+# 本 patch 做三件事：
+#   1. 拆除三組反查機制 —— 它們依賴的詞典在本機並不存在，留著會導致部署失敗：
+#        putonghua_to_kanji_lookup → terra_pinyin.extended（缺）+ prism td_pinyin_flypy（缺）
+#        hannom_lookup            → hannomPS（缺，越南喃字）
+#        hanja_lookup             → hangyl（缺，韓國漢字）
+#      這三者都是給非日語母語者的便利反查，日常日文輸入用不到。
+#   2. 移除 simplifier 濾鏡與 simplification 開關 —— 那是中文簡繁轉換，
+#      套在日文上會把日本漢字轉成simplified中文字形，語種錯誤。
+#   3. 介面標籤改為日文，標點改為日文標點。
+
+patch:
+  "schema/name": "日"
+
+  # 移除已拆掉的反查所宣告的依賴，否則每次部署都會留下
+  # 「missing input schema; skipped unsatisfied dependency: terra_pinyin.extended」警告
+  "schema/dependencies":
+    - stroke
+
+  # ── 1. 精簡引擎，只保留：日文輸入 + 筆畫反查（stroke 本機存在）
+  "engine/segmentors":
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+
+  "engine/translators":
+    - punct_translator
+    - script_translator
+    - reverse_lookup_translator
+
+  "engine/filters":
+    - uniquifier
+
+  # ── 3. 日文介面
+  switches:
+    - name: ascii_mode
+      reset: 0
+      states: [ かな, Ａ ]
+    - name: full_shape
+      states: [ 半角, 全角 ]
+    - name: ascii_punct
+      states: [ 、。, ，． ]
+
+  # 只留筆畫反查的觸發規則，其餘三組一併移除
+  "recognizer/patterns":
+    reverse_lookup: "`H[a-z]*`?$"
+
+  # 上游的 key_binder 綁定了 korean / vietnamese / double_jyutping_extra 等
+  # 本機不存在的方案，且未 import_preset，會少掉翻頁等基本鍵位。
+  key_binder:
+    import_preset: default
+
+  # 日文標點。注意 speller/alphabet 含 '-' 與 '_'（'-' 經 algebra 派生為長音符 ー），
+  # 因此不可將 '-' 挪作標點使用。
+  punctuator:
+    half_shape:
+      ',' : '、'
+      '.' : '。'
+      '[' : '「'
+      ']' : '」'
+      '{' : '『'
+      '}' : '』'
+      '/' : '・'
+      '?' : '？'
+      '!' : '！'
+      ':' : '：'
+      ';' : '；'
+      '~' : '〜'
+      '(' : '（'
+      ')' : '）'
+      '"' : '”'
+      '<' : '＜'
+      '>' : '＞'

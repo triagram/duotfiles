@@ -1,0 +1,17 @@
+# default.custom.yaml
+patch:
+  schema_list:
+    - schema: double_pinyin_flypy   # 鶴 —— 小鹤双拼（雾凇）
+    - schema: luna_pinyin           # 朙 —— 朙月拼音
+    - schema: japanese              # 日 —— 汉字变换（Mozc + JMdict 词典）
+    - schema: nihongo               # 仮 —— 纯假名，对照组／退路，确认 japanese 稳定后可移除
+    # melt_eng 已移除：它作为次翻译器 (table_translator@melt_eng)
+    # 内建于 double_pinyin_flypy，直接打字母即出英文候选，无需独立方案。
+    # 注意 melt_eng.custom.yaml 必须保留，寄生的那份仍需要双拼 algebra 适配。
+
+  menu/page_size: 6               # 候选词个数
+
+  # 快捷键切换方案：Ctrl + ` 或 F5
+  "switcher/hotkeys":
+    - "Control+grave"
+    - "F5"

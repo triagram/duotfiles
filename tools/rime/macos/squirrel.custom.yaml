@@ -1,0 +1,134 @@
+patch:
+  # 皮肤配置
+  style/color_scheme: vermilion_ink
+  style/color_scheme_dark: ink_bamboo
+
+  # 控制水平排版（linear）
+  style/candidate_list_layout: linear
+  style/text_orientation: horizontal
+
+  style/font_face: "LXGW WenKai"           # 字体
+  style/font_point: 16                     # 字体大小
+  style/corner_radius: 8                   # 窗口圆角
+  style/border_height: 6
+  style/border_width: 6
+
+  # 注册您的自定义和备选皮肤
+  preset_color_schemes:
+    # 1. 宫墙红 (palace_red) - 紫禁城红墙琉璃瓦风
+    palace_red:
+      name: "宫墙红 / Palace Red"
+      author: "Triagram"
+      back_color: 0xEFE3F4                   # 汉白玉白 (#F4F3EF)
+      border_color: 0xB3D2E2                 # 琉璃金瓦 (#E2D2B3)
+      text_color: 0x5C5C5C                   # 浅黑
+      hilited_text_color: 0x232B99            # 朱红拼音 (#992B23)
+      hilited_back_color: 0xDCE0E5            # 浅灰高亮
+      candidate_text_color: 0x2C2C2C          # 墨黑候选字
+      hilited_candidate_text_color: 0xFFFFFF  # 纸白 (#FFFFFF)
+      hilited_candidate_back_color: 0x232B99  # 宫墙朱红 (#992B23)
+      label_color: 0x8E8E8E                   # 灰序号
+      hilited_candidate_label_color: 0xB3D2E2 # 金色高亮序号
+      comment_text_color: 0x8E8E8E
+      hilited_comment_text_color: 0xB3D2E2
+
+    # 2. 朱砂印 (vermilion_ink) - 金石篆刻朱砂印泥风
+    vermilion_ink:
+      name: "朱砂印 / Vermilion Ink"
+      author: "Triagram"
+      back_color: 0xD9ECF2                   # 古法宣纸色 (#F2ECD9)
+      border_color: 0xC4BCA5                 # 灰黄边框
+      text_color: 0x5C5C5C
+      hilited_text_color: 0x1E2CC1            # 朱砂红拼音
+      hilited_back_color: 0xCCD4DC
+      candidate_text_color: 0x1C1C1C          # 黛墨候选字
+      hilited_candidate_text_color: 0xF7F7F7  # 象牙白
+      hilited_candidate_back_color: 0x1E2CC1  # 鲜艳朱砂红 (#C12C1E)
+      label_color: 0x8C8C8C                   # 灰色序号
+      hilited_candidate_label_color: 0xF7F7F7
+      comment_text_color: 0x8C8C8C
+      hilited_comment_text_color: 0xF7F7F7
+
+    # 3. 墨竹 (ink_bamboo) - 中式水墨偏暖风
+    ink_bamboo:
+      name: "墨竹 / Ink Bamboo"
+      author: "Triagram"
+      back_color: 0xEBF2F5                   # 宣纸白偏暖黄 (#F5F2EB)
+      border_color: 0xC9DEE2                 # 浅灰绿 (#E2DEC9)
+      text_color: 0x4D4D4D                   # 墨灰 (#4D4D4D)
+      hilited_text_color: 0x2C2C2C            # 浓墨 (#2C2C2C)
+      hilited_back_color: 0xDBE5E8            # 浅宣纸高亮
+      candidate_text_color: 0x2C2C2C          # 墨黑 (#2C2C2C)
+      hilited_candidate_text_color: 0xFFFFFF  # 纸白 (#FFFFFF)
+      hilited_candidate_back_color: 0x435F3A  # 竹绿 (#3A5F43)
+      label_color: 0x7A8D80                   # 灰绿 (#808D7A)
+      hilited_candidate_label_color: 0xA3C9A8 # 浅绿 (#A8C9A3)
+      comment_text_color: 0x7A8D80            # 灰绿注释
+      hilited_comment_text_color: 0x9CBBA5    # 亮灰绿注释
+
+    # 4. 徽州灰 (huizhou_gray) - 水墨徽派粉墙黛瓦风
+    huizhou_gray:
+      name: "徽州灰 / Huizhou Gray"
+      author: "Triagram"
+      back_color: 0xF7F7F7                   # 粉墙白 (#F7F7F7)
+      border_color: 0xE0E0E0                 # 瓦灰边框
+      text_color: 0x757575                   # 浅瓦灰
+      hilited_text_color: 0x1A1A1A            # 瓦黑
+      hilited_back_color: 0xEAEAEA
+      candidate_text_color: 0x2B2B2B          # 炭黑候选字 (#2B2B2B)
+      hilited_candidate_text_color: 0xFFFFFF  # 白
+      hilited_candidate_back_color: 0x45413E  # 黛瓦深灰 (#3E4145)
+      label_color: 0x8E8E8E                   # 序号灰
+      hilited_candidate_label_color: 0xCCCCCC # 高亮序号灰
+      comment_text_color: 0x8E8E8E
+      hilited_comment_text_color: 0xCCCCCC
+
+    # 5. 粽香 (zongzi) - 中式墨绿经典搭配
+    zongzi:
+      name: "粽香 / Zongzi Green"
+      author: "Triagram"
+      back_color: 0xF2F5F0                   # 粽叶浅绿 (#F0F5F2)
+      border_color: 0xD3DBD0                 # 边框浅绿
+      text_color: 0x666666                   # 灰
+      hilited_text_color: 0x2C2C2C            # 墨黑
+      hilited_back_color: 0xE1EBE0
+      candidate_text_color: 0x2C2C2C          # 墨黑候选字
+      hilited_candidate_text_color: 0xFFFFFF  # 白字
+      hilited_candidate_back_color: 0x5C8047  # 粽叶绿 (#47805C)
+      label_color: 0x8AA87D                   # 浅粽绿序号
+      hilited_candidate_label_color: 0xC6DDC0 # 高亮序号
+      comment_text_color: 0x8AA87D
+      hilited_comment_text_color: 0xC6DDC0
+
+    # 6. 大唐金沙 (tang_gold) - 华丽富贵国风
+    tang_gold:
+      name: "大唐金沙 / Tang Gold"
+      author: "Triagram"
+      back_color: 0xF7FBFD                   # 砂石亮黄 (#FDFBF7)
+      border_color: 0xE8DFD0                 # 金粉边框
+      text_color: 0x8E8E8E                   # 灰
+      hilited_text_color: 0x192D8C            # 朱砂红
+      hilited_back_color: 0xEBF2F5
+      candidate_text_color: 0x192D8C          # 朱砂红候选字
+      hilited_candidate_text_color: 0x1A1A1A  # 墨黑
+      hilited_candidate_back_color: 0x37AFD4  # 金沙黄 (#D4AF37)
+      label_color: 0x507CA5                   # 古铜序号
+      hilited_candidate_label_color: 0x1A1A1A
+      comment_text_color: 0x507CA5
+      hilited_comment_text_color: 0x1A1A1A
+
+    # 7. 现代明亮 (modern_light) - 经典亮色高对比
+    modern_light:
+      name: "现代明亮 / Modern Light"
+      author: "Mengyuan"
+      back_color: 0xFBFBFB
+      border_color: 0xEAEAEA
+      text_color: 0x333333
+      hilited_text_color: 0x000000
+      hilited_back_color: 0xE0E0E0
+      hilited_candidate_text_color: 0xFFFFFF
+      hilited_candidate_back_color: 0xEE7600 # 橙色高亮
+      label_color: 0x8E8E8E
+      hilited_candidate_label_color: 0xFFFFFF
+      comment_text_color: 0x8E8E8E
+      hilited_comment_text_color: 0xFFFFFF

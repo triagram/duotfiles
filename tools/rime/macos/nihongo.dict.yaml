@@ -1,0 +1,225 @@
+# Rime dictionary
+# encoding: utf-8
+
+---
+name: nihongo
+version: "1.2"
+...
+
+# ==== 清音 (Seion) ====
+あ	a
+い	i
+う	u
+え	e
+お	o
+か	ka
+き	ki
+く	ku
+け	ke
+こ	ko
+さ	sa
+し	shi
+し	si
+す	su
+せ	se
+そ	so
+た	ta
+ち	chi
+ち	ti
+つ	tsu
+つ	tu
+て	te
+と	to
+な	na
+に	ni
+ぬ	nu
+ね	ne
+の	no
+は	ha
+ひ	hi
+ふ	fu
+ふ	hu
+へ	he
+ほ	ho
+ま	ma
+み	mi
+む	mu
+め	me
+も	mo
+や	ya
+ゆ	yu
+よ	yo
+ら	ra
+り	ri
+る	ru
+れ	re
+ろ	ro
+わ	wa
+を	wo
+ん	n
+ん	nn
+
+# ==== 浊音 (Dakuon) & 半浊音 (Handakuon) ====
+が	ga
+ぎ	gi
+ぐ	gu
+げ	ge
+ご	go
+ざ	za
+じ	ji
+じ	zi
+ず	zu
+ぜ	ze
+ぞ	zo
+だ	da
+ぢ	di
+ぢ	dji
+づ	du
+づ	dzu
+で	de
+ど	do
+ば	ba
+び	bi
+ぶ	bu
+べ	be
+ぼ	bo
+ぱ	pa
+ぴ	pi
+ぷ	pu
+ぺ	pe
+ぽ	po
+
+# ==== 拗音 (Yoon) ====
+きゃ	kya
+きゅ	kyu
+きょ	kyo
+しゃ	sha
+しゃ	sya
+しゅ	shu
+しゅ	syu
+しょ	sho
+しょ	syo
+ちゃ	cha
+ちゃ	tya
+ちゅ	chu
+ちゅ	tyu
+ちょ	cho
+ちょ	tyo
+にゃ	nya
+にゅ	nyu
+にょ	nyo
+ひゃ	hya
+ひゅ	hyu
+ひょ	hyo
+みゃ	mya
+みゅ	myu
+みょ	myo
+りゃ	rya
+りゅ	ryu
+りょ	ryo
+ぎゃ	gya
+ぎゅ	gyu
+ぎょ	gyo
+じゃ	ja
+じゃ	zya
+じゅ	ju
+じゅ	zyu
+じょ	jo
+じょ	zyo
+ぢゃ	dya
+ぢゅ	dyu
+ぢょ	dyo
+びゃ	bya
+びゅ	byu
+びょ	byo
+ぴゃ	pya
+ぴゅ	pyu
+ぴょ	pyo
+
+# ==== 单独的小字/促音 (Sokuon) ====
+っ	xtsu
+っ	xtu
+っ	ltsu
+っ	ltu
+ぁ	la
+ぁ	xa
+ぃ	li
+ぃ	xi
+ぅ	lu
+ぅ	xu
+ぇ	le
+ぇ	xe
+ぉ	lo
+ぉ	xo
+ゃ	lya
+ゃ	xya
+ゅ	lyu
+ゅ	xyu
+ょ	lyo
+ょ	xyo
+ゎ	lwa
+ゎ	xwa
+
+# ==== 双写辅音自动输入促音 (如 tta -> った) ====
+っか	kka
+っき	kki
+っく	ccu
+っく	kku
+っけ	kke
+っこ	kko
+っし	ssi
+っさ	ssa
+っし	sshi
+っす	ssu
+っせ	sse
+っそ	sso
+った	tta
+っち	cchi
+っち	tchi
+っつ	ttsu
+って	tte
+っと	tto
+っぱ	ppa
+っぴ	ppi
+っぷ	ppu
+っぺ	ppe
+っぽ	ppo
+
+# ==== 带促音的拗音 ====
+っちゃ	ccha
+っちゅ	cchu
+っcho	ccho
+っちょ	ccho
+っしゃ	ssha
+っしゅ	sshu
+っしょ	ssho
+っじゃ	jja
+っじゅ	jju
+っじょ	jjo
+
+# ==== 常用外来语组合 ====
+ふぁ	fa
+ふぃ	fi
+ふぇ	fe
+ふぉ	fo
+うぃ	wi
+うぇ	we
+うぉ	wo
+ゔ	vu
+ゔぁ	va
+ゔぃ	vi
+ゔぇ	ve
+ゔぉ	vo
+てぃ	ti
+てぃ	tyi
+でぃ	di
+でぃ	dyi
+でゅ	dyu
+とぅ	tu
+どぅ	du
+しぇ	she
+じぇ	je
+ちぇ	che
+
+# ==== 长音符号 ====
+ー	-
