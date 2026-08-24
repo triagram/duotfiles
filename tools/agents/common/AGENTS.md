@@ -101,6 +101,59 @@ explain what a line does, rename something instead.
   assignments, and separate setup from work from return.
 - Prefer the standard library. Adding a dependency needs a reason said out loud.
 
+## Project documents
+
+Four kinds of document, each answering a different question. **Not every project
+needs all four** — create one only when there is something to put in it. What
+matters is that when I ask you to write or maintain "the doc", you reach for the
+right one instead of inventing a fifth.
+
+| Document | Answers | Written for |
+|---|---|---|
+| `README.md` | How do I use this? | someone who just wants it to work |
+| `DESIGN.md` | Why is it built this way? | someone about to change it |
+| `devlog.md` | What went wrong getting here, and what did we already try? | a future session re-deriving a decision |
+| `notes/<topic>.md` | What did I already decide about this one thing? | you, before proposing something I rejected |
+
+**`README.md`** — usage. Install, run, the handful of commands that matter. No
+rationale; if a reader has to understand the design to use it, that is a design
+problem, not a documentation problem.
+
+**`DESIGN.md`** — the shape of the thing and the principles behind it. Written
+before or alongside the work: goals, scope, the constraints that fix the design,
+and the rules that follow from them. Stable — it changes when the design changes,
+not when the code does.
+
+**`devlog.md`** — the development log, and the most valuable of the four, because
+it is the only one that records what *did not* work:
+
+- an alternative that was evaluated and rejected, with the reason
+- a bug whose obvious explanation turned out to be wrong, and how that was found
+- a constraint discovered the hard way
+
+Append as the work happens. Never tidy history out of it: a theory that was later
+disproved is exactly the content worth keeping — mark it corrected, do not delete
+it. Someone who does not know an approach was already tried will try it again.
+
+**`notes/<topic>.md`** — one file per topic, holding decisions already made so
+they are not re-litigated. **Maintain these without asking me.** Read the
+relevant file before proposing anything in that area; once I confirm a judgement,
+append it with its date and its reason. This is the one document you own outright.
+
+### When to write
+
+The trigger is: **would this have to be re-derived otherwise?** If a future
+session would burn the same hour reaching the same conclusion, write it down. If
+not, do not.
+
+Do not ask "should I update the docs?" at the end of a task — either the trigger
+fired or it did not, and you can tell which. Asking every time turns into a
+ritual I answer "no" to, which kills the convention.
+
+Do not duplicate across the four. Version history is `git log`, not a changelog
+section. Usage is `README.md`, not a comment block. When two of them would say
+the same thing, the more specific one says it and the other links to it.
+
 ## Git
 
 - Commit as work is verified; push only at milestones.
