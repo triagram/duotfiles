@@ -1,6 +1,0 @@
-# nihongo.custom.yaml
-# 自建的純假名方案。保留為 japanese（漢字變換）的對照組與退路，
-# 顯示名改為「仮」以與 japanese 的「日」區分。
-# 確認 japanese 穩定後，可從 schema_list 移除本方案。見 devlog.md §6.3。
-patch:
-  "schema/name": "仮"

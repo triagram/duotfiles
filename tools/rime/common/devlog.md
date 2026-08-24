@@ -126,9 +126,21 @@ cmp -s /usr/share/rime-data/FILE ./FILE && echo "可刪"
 grep -rl "SOMEDICT" --include="*.yaml" . | grep -v -e plum -e sync -e build
 ```
 
-2026-08-03 依此清出 186 MB：`plum/`（80 MB，內含比頂層更舊的 rime-ice）、
-`sync/` 的非 userdb 部分、`cangjie5.dict.yaml`（770 KB 孤兒）、
-`luna_pinyin.schema.yaml` 等與系統版相同的副本、`ibus_rime.custom.yaml`（fcitx5 不讀）。
+2026-08-03 依此清出 186 MB，逐項如下：
+
+| 對象 | 大小 | 為什麼是垃圾 |
+|---|---|---|
+| `plum/` | 80 MB | 套件管理器 checkout，內含 rime-ice **2025-02-24**，比頂層的 **2026-02-06** 更舊。留著只會讓人搞不清哪份生效 |
+| `sync/` 非 userdb 部分 | 14 MB | schema/dict 的完整副本，與頂層重複 |
+| `cangjie5.dict.yaml` | 770 KB | 孤兒檔，全目錄無任何 schema 引用 |
+| `luna_pinyin.schema.yaml` | 2 KB | `cmp` 驗證與 `/usr/share/rime-data/` 逐位元組相同 |
+| `punctuation.yaml` `key_bindings.yaml` `zhuyin.yaml` | 6 KB | 同上，完全相同 |
+| `rime_ice.custom.yaml` | 53 B | 該方案已移出 `schema_list`，patch 永不生效 |
+| `ibus_rime.custom.yaml` | 4 KB | fcitx5 前端不讀此檔（見 §5.1） |
+| themes/`ink_bamboo` | 1 KB | debug 殘留的第三個皮膚 |
+
+> 當時還記著一條「原則二的違規項」：`stroke.schema.yaml` 是被手動改過的系統檔副本。
+> 已在同一輪清理中刪除本地副本、交還系統版，`d→n` / `t→h` 相容鍵位隨之恢復（見 §7.3）。
 
 > **`cn_dicts_cell/` 目前也是孤兒**（2026-08-24 複查）：`rime_ice.dict.yaml` 的
 > `import_tables` 只掛 `cn_dicts/` 底下的 8105 / base / ext / tencent / others，
