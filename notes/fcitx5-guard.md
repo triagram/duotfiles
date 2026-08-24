@@ -1,7 +1,7 @@
 # fcitx5-guard
 
 锁屏/休眠前把 fcitx5 强制切回英文的守卫，外加 `rime-reload`。
-设计过程与故障史见 `tools/rime/linux/devlog.md §7.6`。
+设计过程与故障史见 `tools/rime/common/devlog.md §7.6`。
 
 ## 平台差异
 
