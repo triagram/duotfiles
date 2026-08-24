@@ -17,9 +17,10 @@ Why it works this way: [DESIGN.md](DESIGN.md).
 | tmux | link | `~/.config/tmux` | `~/.config/tmux` |
 | kitty | link | `~/.config/kitty` | `~/.config/kitty` |
 | ghostty | link | `~/.config/ghostty` | `~/.config/ghostty` |
-| claude | link | `~/.claude` | `~/.claude` |
 | agy | link | `~/.gemini` | `~/.gemini` |
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
+| fcitx5-guard | link | `~/.local` | — (Linux only) |
+| agents | link | `~/.config/agents` | `~/.config/agents` |
 
 To add a tool: append a line to [`manifest`](manifest), then
 `mkdir -p tools/<name>/{common,linux,macos}`.
