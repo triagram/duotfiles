@@ -24,7 +24,9 @@ claude     link   ~/.claude                         ~/.claude
 `statusline.sh`（350 行）做过跨平台预检，结论是**它本身没有移植问题**：
 没有写死的家目录路径（`settings.json` 用的是 `bash ~/.claude/statusline.sh`）、
 没有 GNU 专属参数、自包含不引用其他文件、可执行位正常。
-唯一在 macOS 上缺的外部依赖是 **`jq`**（用了 2 处），`brew install jq` 即可。
+用到 2 处 `jq`。**macOS 上零外部依赖** —— `jq` 自 macOS 15 起随系统附带，
+本机 `/usr/bin/jq` 是 `jq-1.7.1-apple`，2026-08-09 实测通过。
+只有 macOS 14 及更早才需要 `brew install jq`。
 
 ## 附带产出
 
