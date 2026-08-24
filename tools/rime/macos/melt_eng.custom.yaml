@@ -1,5 +1,0 @@
-# melt_eng.custom.yaml
-patch:
-  "schema/name": "EN"
-  speller/algebra:
-    __include: melt_eng.schema.yaml:/algebra_double_pinyin_flypy

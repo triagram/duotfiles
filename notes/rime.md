@@ -57,17 +57,25 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 
 ## ② 仓库里的 common/ 与 linux/ 怎么分
 
-**`common/`（22 个，23 MB）—— 只剩出处查不到的一组：**
+**`common/`（6 个，52 KB）—— 两个平台逐字节相同、且与平台无关的：**
 
-`cn_dicts_cell/` 22 个细胞词库。搜狗细胞词库转换而来，具体来源已不可考 ——
-不在 rime-ice 的 git 仓库里，也不在它的 release zip（`all_dicts.zip` / `full.zip`）里。
-将来想重建可以用 `github.com/lewangdev/scel2txt` 从搜狗重新转换。
+| 文件 | 是什么 |
+|---|---|
+| `devlog.md` | 设计记录，两边共用一份（见「延伸阅读」） |
+| `custom_phrase.txt` | 自定义短语，2026-08-24 两边合并而来 |
+| `double_pinyin_flypy.custom.yaml` | 改显示名为「鶴」 |
+| `luna_pinyin.custom.yaml` | 改显示名为「朙」 |
+| `melt_eng.custom.yaml` | 改显示名为「EN」，并让寄生的英文方案用双拼 algebra |
 
-放 `common/` 而不是 `linux/` 的原因：**词库是平台无关的**。放 common 里只存一份，
-macOS `dof adopt rime` 时不会再复制一份，`linux/` ↔ `macos/` 的比对也不会被它们淹没。
+进 `common/` 的判据是**两边逐字节相同 + 内容与平台无关**，不是「文件小」。
+`dof adopt` 会跳过与 `common/` 同名且逐字节相同的目标文件，所以平台层不会出现重复。
 
-> 这一条是 `dof adopt` 的内建行为：目标文件若与 `common/` 里的同名文件逐字节相同，
-> 直接跳过，不进平台层。
+> **`cn_dicts_cell/`（22 个，23 MB）已于 2026-08-24 删除。** 三条实测结论：
+> 上游 rime-ice 的 clone 里 `git ls-files | grep cn_dicts_cell` 为 0 笔（不是它的东西）；
+> `rime_ice.dict.yaml` 的 `import_tables` 只挂 `cn_dicts/` 下五项，**全仓库与两台机器零引用**；
+> 不可重建，只能用 `github.com/lewangdev/scel2txt` 从搜狗重转。
+> 既然不影响任何输入行为，就没有理由让每次 clone 多下 23 MB ——
+> git 历史本身就是那份「另存」，`git show 71eb777^:tools/rime/common/cn_dicts_cell/...` 随时取回。
 
 **`linux/`（63 个，1.9 MB）—— 其余一切：**
 
