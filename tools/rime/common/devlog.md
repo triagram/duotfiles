@@ -1,8 +1,15 @@
 # Rime 配置設計記錄
 
-> 環境：Ubuntu 24.04.3 LTS / GNOME 46 / X11 / fcitx5 5.1.7 / librime 1.10.0
+> 位置：`tools/rime/common/devlog.md`，兩個平台共用一份
+> 主環境：Ubuntu 24.04.3 LTS / GNOME 46 / X11 / fcitx5 5.1.7 / librime 1.10.0
+> 次環境：macOS / Squirrel 鼠鬚管（`~/Library/Rime` 是 iDvel/rime-ice 的 git clone）
 > 現況：3 個方案 —— `double_pinyin_flypy`（鶴）、`luna_pinyin`（朙）、`japanese`（日）
-> 最後更新：2026-08-09
+> 最後更新：2026-08-24
+
+> **本檔的來歷**：曾經一分為二 —— Linux 側叫 `devlog.md`，macOS 的 Rime 目錄裡
+> 躺著一份 2026-08-03 的 `DESIGN.md`。後者不是 macOS 版本，只是同一份文檔的舊快照
+> （它的環境行寫的也是 Ubuntu / fcitx5）。2026-08-24 合併：以較新的 devlog 為主體，
+> 補回舊版獨有的 §2.1 資產分級與 §8.6 歷史路線圖，其餘章節舊版皆已被涵蓋。
 
 這個目錄裡的檔案來自三處：上游 rime-ice、系統 rime-data、自己寫的。Rime 沒有任何機制
 區分它們，全部平鋪在同一層。這份文檔記錄的是**如何在這個平鋪結構上強加秩序**，
@@ -68,6 +75,66 @@ Rime 提供 `*.custom.yaml` patch 機制，任何修改都走這條路。直接�
 把 userdb 交給 chezmoi 這類宣告式工具，每次 apply 都會抹掉一台機器的學習成果。
 
 ---
+
+### 2.1 資產分級
+
+三層模型講的是「檔案屬於哪一層」，這一節講的是「丟了要付多少代價」。
+兩者交叉使用：決定要不要備份看這裡，決定要不要進版本庫看三層模型。
+
+**A 級 —— 不可重建，必須保存**
+
+| 檔案 | 大小 | 是什麼 |
+|---|---|---|
+| `sync/*/rime_ice.userdb.txt` | 337 KB / 7572 行 | 打字累積的詞頻與自造詞 |
+| `*.custom.yaml` | ~1 KB | 全部自訂配置 |
+| `custom_phrase*.txt` | 3 KB | 自訂短語 |
+| `lua/katakana_filter.lua` | 1 KB | 自己寫的片假名 filter（見 §6.8） |
+| fcitx5 `themes/*/theme.conf` | 2 KB | 自製配色（僅 Linux） |
+| `classicui.conf` | 200 B | 前端外觀設定（僅 Linux） |
+
+`luna_pinyin.userdb.txt`（8 行）與 `melt_eng.userdb.txt`（9 行）實質為空，不必保存。
+
+**B 級 —— 可重建，記錄來源即可**
+
+`cn_dicts/`、`en_dicts/`、`opencc/`、上游的 `lua/`、`symbols*.yaml`、`essay.txt`，
+以及所有 rime-ice 的 `*.schema.yaml` / `*.dict.yaml`。合計約 250 MB，
+全部來自 `github.com/iDvel/rime-ice`，用版本號 + 下載腳本描述即可。
+
+日語方案的 `japanese.*.yaml`（36 MB）同理，來自 `github.com/gkovacs/rime-japanese`，
+經 git blob SHA 核對為逐字節相同。
+
+> **訂正（2026-08-24）**：舊版把 `cn_dicts_cell/` 也列進 B 級，說它「來自 iDvel/rime-ice」。
+> **這是錯的。** 拿 rime-ice 的完整 clone 驗證：`git ls-files | grep cn_dicts_cell` 為 0 筆，
+> 它既不在上游倉庫裡，也不在 release zip 裡。它是搜狗細胞詞庫的轉換產物，來源已不可考，
+> 因此屬於 A 級的邊緣情況 —— 不可重建，但**目前全目錄零引用**（見下）。
+> 若要重建，可用 `github.com/lewangdev/scel2txt` 從搜狗重新轉換。
+
+**C 級 —— 純衍生物，可隨時丟棄**
+
+`build/`（部署時重建）、`*.userdb/`（LevelDB 二進位，可由 userdb.txt 還原）、
+`installation.yaml`（機器 UUID）、`user.yaml`（執行期狀態）。
+
+**D 級 —— 垃圾，應刪除**
+
+判定垃圾的兩個可靠手法：
+
+```bash
+# 1. 與系統版逐位元組相同 → 本地副本沒有存在意義
+cmp -s /usr/share/rime-data/FILE ./FILE && echo "可刪"
+
+# 2. 孤兒檔：全目錄無任何 schema 引用
+grep -rl "SOMEDICT" --include="*.yaml" . | grep -v -e plum -e sync -e build
+```
+
+2026-08-03 依此清出 186 MB：`plum/`（80 MB，內含比頂層更舊的 rime-ice）、
+`sync/` 的非 userdb 部分、`cangjie5.dict.yaml`（770 KB 孤兒）、
+`luna_pinyin.schema.yaml` 等與系統版相同的副本、`ibus_rime.custom.yaml`（fcitx5 不讀）。
+
+> **`cn_dicts_cell/` 目前也是孤兒**（2026-08-24 複查）：`rime_ice.dict.yaml` 的
+> `import_tables` 只掛 `cn_dicts/` 底下的 8105 / base / ext / tencent / others，
+> 全倉庫與兩台機器都搜不到任何一處引用這 22 個檔。它佔 23 MB，卻不影響任何輸入行為。
+> 之所以還沒刪，是因為它不可重建（見上），刪掉就只剩 scel2txt 重轉一條路。
+> **待決**：要嘛掛進 `import_tables` 讓它真正生效，要嘛移出版本庫另存。
 
 ## 3 · 為什麼不用現成方案
 
@@ -567,3 +634,53 @@ Color=#3E4145
 - [gkovacs/rime-japanese](https://github.com/gkovacs/rime-japanese) —— 日語方案上游
 - [rimeinn/rime-kagiroi](https://github.com/rimeinn/rime-kagiroi) —— 未來升級目標（需 librime ≥ 1.11.2）
 - [ayaka14732/awesome-rime](https://github.com/ayaka14732/awesome-rime) —— 方案總覽
+
+### 8.6 歷史路線圖（2026-08-03 的 TODO List）
+
+這份路線圖來自合併前的舊版文檔。**階段四、五後來以另一種形式實現了** ——
+不是在 Rime 目錄裡建 git 倉庫，而是另起 `~/duotfiles` 這個按軟體分層的配置庫，
+Rime 只是其中一個工具。留檔的價值在於：它記錄了當時為什麼把版控排在清理之後。
+
+**階段一 · 清理** ✅ 2026-08-03 完成
+
+- [x] 回收站式清理，**266 MB → 80 MB**，186 MB 移入 `~/rime-trash-20260803/`
+- [x] 從 `schema_list` 移除 `melt_eng` 條目（`melt_eng.custom.yaml` 保留，理由見 §4）
+- [x] 刪除 `stroke.schema.yaml` 本地副本，系統版接手，`d→n`/`t→h` 相容鍵位恢復（見 §7.3）
+- [x] 刪除多餘的 `themes/ink_bamboo`，只留 `vermilion_ink` + `ink_bamboo_dark`
+- [ ] 觀察一週無異常後真正刪除 `~/rime-trash-20260803`
+
+**階段二 · 皮膚驗證** ✅ 觸發鏈已證實（見 §5.2）
+
+- [x] `gsettings prefer-dark` → portal 回報 `uint32 1`；還原 → `0`。配置無誤，
+      問題確係「系統從未進入深色模式」
+- [ ] 肉眼確認暗色下候選框確實變為墨竹綠（portal→fcitx5 這一跳無法用命令列驗證）
+
+**階段三 · 日語方案** ✅ 主體完成，演進全過程見 §6
+
+- [x] 修 `nihongo.dict.yaml:170` 的 `っ意` → `っし`
+- [x] 補日文標點、`switches:`、`lua/katakana_filter.lua`
+- [x] 選定 gkovacs/rime-japanese（對比 DreamAfar 的理由見 §6.3）
+- [x] 2026-08-08 刪除 `nihongo.*`，`japanese` 已完全覆蓋其能力（見 §6.9）
+- [ ] 〔長期〕關注 apt 源的 librime 版本，≥1.11.2 後評估遷移 kagiroi（見 §6.2）
+
+> **當時踩到的坑**：`-` 已被詞典末行用作長音符 `ー` 的編碼，必須留在
+> `speller/alphabet` 內，因此**不可**把 `-` 挪去做標點映射。這是設計標點表時
+> 唯一的硬約束。
+
+**階段四 · 版本控制**〔已由 duotfiles 取代〕
+
+原計畫是在 Rime 目錄裡建 git 倉庫 + `RIME-ICE.lock` + `install.sh`。
+實際做法是把 Rime 收進 `~/duotfiles`，用 `.dofignore` 表達「哪些不進版本庫」，
+上游版本以 `notes/rime.md` 的來源清單描述。效果相同，但配置庫是按軟體分層的，
+不只服務 Rime。
+
+**階段五 · 跨設備配置庫**〔已由 duotfiles 取代〕
+
+原計畫評估 chezmoi / GNU Stow / bare git repo，並用 `.chezmoiexternal.toml`
+宣告式拉取 rime-ice。實際選了自己寫的 `bin/dof`（bash 3.2 + POSIX，零依賴），
+`common/` + `linux/` + `macos/` 三層取代了 `.chezmoitemplates/`。
+當時列的 5.5「納入 Ghostty(macOS) / Kitty(Linux) / tmux(共用)」現已在 manifest 裡。
+
+> **當時的暫緩理由，事後看是對的**：「階段四、五的價值建立在『目錄已經乾淨』之上。
+> 在 266 MB 的混亂目錄上寫 `.gitignore`，等於把混亂固化進版本歷史。」
+> 後來 duotfiles 收 Rime 時確實是先做完分級再決定收什麼，只收了 40 KB。
