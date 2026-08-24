@@ -16,9 +16,10 @@
 | tmux | link | `~/.config/tmux` | `~/.config/tmux` |
 | kitty | link | `~/.config/kitty` | `~/.config/kitty` |
 | ghostty | link | `~/.config/ghostty` | `~/.config/ghostty` |
-| claude | link | `~/.claude` | `~/.claude` |
 | agy | link | `~/.gemini` | `~/.gemini` |
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
+| fcitx5-guard | link | `~/.local` | —（仅 Linux） |
+| agents | link | `~/.config/agents` | `~/.config/agents` |
 
 加新软件 = 在 [`manifest`](manifest) 里加一行，然后 `mkdir tools/<名字>/{common,linux,macos}`。
 
