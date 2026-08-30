@@ -106,11 +106,16 @@ done
 ### 6. 背景图：**不在仓库里**
 
 `backgrounds/` 目录下的图片体积约 7M，刻意不纳入同步。
-`theme-overrides.conf` 里的 `background_image` 指向 `backgrounds/` 下的文件，
-图不在就是没有背景（kitty 不会报错）。
 
-要恢复：把图放进 `backgrounds/`，然后确认 `theme-overrides.conf`
-里的文件名对得上。
+**背景图默认是关的**（2026-08-30 起）：`theme-overrides.conf` 里的
+`background_image` 已注释掉，新窗口一律不带背景，要背景按一次
+`Ctrl+中键`（`toggle-bg.sh` 在运行期用 `kitty @ set-background-image` 设进去）。
+
+所以图不在时不会有任何异常 —— 配置里根本没有指向它的路径，
+只是 `Ctrl+中键` 找不到 PNG，脚本直接 `exit 0`，按了没反应。
+
+要恢复：把 PNG 放进 `backgrounds/` 就行，**不需要改配置**，
+脚本是扫目录取的（`find backgrounds -maxdepth 1 -name '*.png' | sort`）。
 
 **必须是 PNG。** kitty 只捆绑了 `libpng`，JPEG/WEBP 等格式要靠外部
 ImageMagick 解码；没装 ImageMagick 的机器上，非 PNG 的背景图会
@@ -208,6 +213,38 @@ GNOME 在「深色样式」未启用时，通过 portal 上报的是 **`no-prefe
 找不到通道，静默失败。
 
 改完 `listen_on` 只对**新开的窗口**生效，老窗口里手势不会有反应。
+
+### 坑 4b：手势在 tmux 里用不了，这是刻意的
+
+mouse_map 第三个字段写的是 `ungrabbed`。kitty 文档：
+
+> modes indicates whether the action is performed when the mouse is grabbed by
+> the program running in the terminal, or not. **`grabbed` refers to when the
+> program running in the terminal has requested mouse events.**
+
+而 `~/.config/tmux/tmux.conf.local` 里是 `set -g mouse on`。所以**只要你在 tmux
+里（或任何开了鼠标上报的 TUI），`Ctrl+中键` 根本不会触发** —— 不是偶发，是必然。
+
+改成 `ungrabbed,grabbed` 就能在 tmux 里用，代价是 kitty 截下这个事件、不再传给
+里面的程序。**2026-08-30 评估过，选择保持 `ungrabbed` 不改。**
+下次再遇到「手势没反应」，先看自己是不是在 tmux 里，别当成 bug 查。
+
+### 坑 4c：曾经的「要多按几次才行」
+
+症状是按 `Ctrl+中键` 经常没反应，多按几次才切换。原因是
+**`set-background-image` 默认只改当前活动的 OS 窗口**（kitty 文档原话），
+而 `toggle-bg.sh` 当时把开关状态存在**一份全局文件**里：
+
+```
+A 窗口点一下 → 状态 1→0，A 的背景关掉        状态文件 = "1 0"
+B 窗口点一下 → 读到 on=0，翻成 1，给 B 设图
+              可 B 本来就开着 → 看起来毫无反应
+B 窗口再点   → 这次才关掉
+```
+
+已修：状态文件按 kitty 实例分开存
+（`kitty-bg.<PID>.state`，键取自 `KITTY_LISTEN_ON`）。
+**残留侷限**：同一个 kitty 实例底下开多个 OS 窗口时，它们仍共用一份状态。
 
 ### 坑 5：`remember_window_size` 会覆盖初始尺寸
 
