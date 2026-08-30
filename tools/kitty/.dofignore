@@ -7,11 +7,13 @@
 # ~7 MB of wallpapers against ~170 KB of actual config: adopting them would
 # grow the repo roughly 40x for content that is neither portable nor shared.
 #
-# The consequence is deliberate and documented: on a fresh machine the
-# background_image path in theme-overrides.conf points at a file that is not
-# there, and kitty renders no background without reporting an error.
-# Recovery steps, and why the images must be PNG (kitty bundles libpng only,
-# every other format needs ImageMagick), are in ~/.config/kitty/README.md.
+# The consequence is deliberate and documented. Since 2026-08-30 the background
+# is off by default — theme-overrides.conf no longer sets background_image, so
+# nothing points at a missing file. Ctrl+middle simply finds no PNG and the
+# toggle script exits 0. Dropping an image into backgrounds/ is enough to
+# restore it; no config edit is needed, the script globs the directory.
+# That, and why the images must be PNG (kitty bundles libpng only, every other
+# format needs ImageMagick), are in ~/.config/kitty/README.md.
 backgrounds/
 
 # ── Icons ───────────────────────────────────────────────────────────────────
