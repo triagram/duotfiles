@@ -27,13 +27,13 @@
 
 ## 仓库放在哪
 
-**推荐 `~/.duotfiles`**，每台机器都用同一个路径。
+**`~/duotfiles`**，可见目录，每台机器都用同一个路径。
 
 和普通 git 仓库不同，这个仓库的位置不是随便挑的。四条理由：
 
 1. **link 模式建立的是指向本仓库的绝对软链。** `dof pull tmux` 之后，
    `~/.config/tmux/tmux.conf` 是一个指针，里面存的字面内容就是
-   `/home/you/.duotfiles/tools/tmux/linux/tmux.conf`。仓库一挪，所有指针失效。
+   `/home/you/duotfiles/tools/tmux/linux/tmux.conf`。仓库一挪，所有指针失效。
    （可以修复 —— 重跑 `dof pull <软件>` —— 但没必要给自己找事。）
 2. **必须在 `$HOME` 下面。** 两个平台的家目录绝对路径不同
    （`/Users/you` vs `/home/you`），但**相对 home 的路径**可以完全一致。
@@ -45,7 +45,13 @@
 4. **不要放会被清理的位置**（`/tmp`、Downloads）。link 模式下，
    这个仓库里存的是你配置的**唯一一份真身**。
 
-想用可见目录 `~/duotfiles` 也完全可以，保持两台机器一致就行。
+**为什么可见，不用 `~/.duotfiles`。** 本仓库部署到的其他每一个路径，都是软件自己
+选定的公认位置 —— `~/.config/kitty`、`~/.claude`。这个仓库不是：它是你天天进去改
+东西的工作目录，位置也没有任何共识，所以需要更显眼。藏起来的代价是 `ls ~` 看不见、
+Tab 补不出，以及 `rg` / `fd` 默认跳过点开头的目录。
+
+2026-08-31 定的；此前推荐的是 `~/.duotfiles`，而且本文写着「两种都行」—— 那句话
+正是两台机器分叉的源头。选一个，然后守住。
 
 ---
 
@@ -54,8 +60,8 @@
 ### 在一台新机器上
 
 ```bash
-git clone <你的仓库地址> ~/.duotfiles
-cd ~/.duotfiles
+git clone <你的仓库地址> ~/duotfiles
+cd ~/duotfiles
 
 ./bin/dof list                       # 看有哪些软件、本机是什么状态
 ./bin/dof pull tmux                  # 只部署你现在需要的
@@ -70,9 +76,9 @@ cd ~/.duotfiles
 
 | 方式 | 怎么做 | 说明 |
 |---|---|---|
-| **什么都不做** | `~/.duotfiles/bin/dof status` | 零配置，永远正确。日常其实很少用到 `dof` —— link 模式下改配置只要 `git commit` |
-| **加进 PATH**（推荐） | `echo 'export PATH="$HOME/.duotfiles/bin:$PATH"' >> ~/.zshrc` | 一行，每台机器一次。等 shell 配置本身也被 duotfiles 管起来，这行就在仓库里了 |
-| **软链到已在 PATH 的目录** | `ln -s ~/.duotfiles/bin/dof ~/.local/bin/dof` | Linux 上 `~/.local/bin` 通常已在 PATH；macOS 默认不在，还是得加一行 |
+| **什么都不做** | `~/duotfiles/bin/dof status` | 零配置，永远正确。日常其实很少用到 `dof` —— link 模式下改配置只要 `git commit` |
+| **加进 PATH**（推荐） | `echo 'export PATH="$HOME/duotfiles/bin:$PATH"' >> ~/.zshrc` | 一行，每台机器一次。等 shell 配置本身也被 duotfiles 管起来，这行就在仓库里了 |
+| **软链到已在 PATH 的目录** | `ln -s ~/duotfiles/bin/dof ~/.local/bin/dof` | Linux 上 `~/.local/bin` 通常已在 PATH；macOS 默认不在，还是得加一行 |
 
 `dof` 会先解开 `$0` 上的符号链接再定位仓库，所以第三种方式不会把仓库算错。
 仓库不在脚本旁边时，用 `DOF_REPO=<仓库路径> dof …` 覆盖。

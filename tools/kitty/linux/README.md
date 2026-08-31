@@ -1,13 +1,13 @@
 # kitty 配置说明
 
 这份配置**不是自包含的**。它依赖若干本目录之外的文件，本目录内部也有一部分
-刻意不纳入 `~/.duotfiles` 同步。新机器上 `dof pull kitty` 之后，会得到一个
+刻意不纳入 `~/duotfiles` 同步。新机器上 `dof pull kitty` 之后，会得到一个
 **配色回到默认、图标空白、没有背景图、字体回退**的 kitty。
 下面列出需要手工补齐的部分，以及几个改配置时容易踩的坑。
 
 进仓库的只有 5 个手写文件：`kitty.conf`、`theme-overrides.conf`、
 `toggle-bg.sh`、`switch-icon.py` 和本文件。其余都是可重建的上游内容或
-图片素材，排除规则和理由写在 `~/.duotfiles/tools/kitty/.dofignore` 里。
+图片素材，排除规则和理由写在 `~/duotfiles/tools/kitty/.dofignore` 里。
 
 ---
 
@@ -150,7 +150,7 @@ GdkPixbuf.Pixbuf.new_from_file('in.jpg').savev('out.png','png',[],[])
 Claude Code 默认**只在 Ghostty / kitty / iTerm2 里发桌面通知**（因为只有
 这几个终端支持转发），每次需要你决策时都会弹窗。这行把它改成响铃。
 
-`~/.duotfiles` 明确不同步 `~/.claude`，换机器要手工加回。
+`~/duotfiles` 明确不同步 `~/.claude`，换机器要手工加回。
 
 ---
 
@@ -258,7 +258,7 @@ B 窗口再点   → 这次才关掉
 
 ## 三、文件一览
 
-「同步」列指是否进 `~/.duotfiles`。
+「同步」列指是否进 `~/duotfiles`。
 
 | 文件 | 同步 | 作用 |
 |---|---|---|
