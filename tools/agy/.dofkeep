@@ -1,6 +1,25 @@
 # Allow-list: `dof adopt` imports only these paths from ~/.gemini.
-# The target is all of ~/.gemini because the global instruction file GEMINI.md
-# lives there, while agy's own settings sit in the antigravity-cli/ subdirectory.
+#
+# The target is all of ~/.gemini because agy scatters its files across that
+# directory, but almost nothing there belongs in git — hence the allow-list.
+#
+# ── Deliberately NOT listed ─────────────────────────────────────────────────
+#
+# config/AGENTS.md   The global working agreement. It does live at
+#                    ~/.gemini/config/AGENTS.md, but only as a symlink into
+#                    ~/.config/agents/ — the hub the `agents` tool deploys.
+#                    Adopting it would copy the content in here and create a
+#                    second source of truth for a file that already has one.
+#                    See notes/ai-context.md.
+#
+# config/config.json Mode 0600. Treat as credentials.
+# oauth_creds.json   Credentials (also caught by .gitignore).
+# google_accounts.json, installation_id, projects.json
+#                    Machine-local identity and state.
+# history/, tmp/, antigravity-cli/{brain,conversations,cache,crashes,log}/
+#                    Conversation logs, caches, crash dumps.
+#
+# An earlier version listed `GEMINI.md`, which exists on neither machine:
+# agy reads AGENTS.md, and under config/, not at the ~/.gemini root.
 
-GEMINI.md
 antigravity-cli/settings.json
