@@ -534,7 +534,7 @@ fcitx5 只是眾多跟隨者之一。它不放在本目錄，而應歸屬 dotfil
 **已經踩下去了怎麼救**：`Alt+F2` → `r` → Enter，X11 下原地重啟 gnome-shell，
 **所有視窗和終端都保留**（Wayland 沒有這功能）。注銷也行但會殺掉整個會話。
 
-**版控位置**：這三個檔案已收進 `~/.duotfiles` 的 `fcitx5-guard` 工具
+**版控位置**：這三個檔案已收進 `~/duotfiles` 的 `fcitx5-guard` 工具
 （2026-08-19），manifest 一行搞定：
 
 ```

@@ -29,13 +29,13 @@ To add a tool: append a line to [`manifest`](manifest), then
 
 ## Where to put this repo
 
-**Recommended: `~/.duotfiles`** — the same path on every machine.
+**`~/duotfiles`** — visible, and the same path on every machine.
 
 Unlike an ordinary git repo, this one's location is not a free choice. Four reasons:
 
 1. **`link` mode writes absolute symlinks *into* this repo.** After
    `dof pull tmux`, `~/.config/tmux/tmux.conf` is a pointer containing the literal
-   text `/home/you/.duotfiles/tools/tmux/linux/tmux.conf`. Move the repo and every
+   text `/home/you/duotfiles/tools/tmux/linux/tmux.conf`. Move the repo and every
    pointer goes stale. (Recoverable — re-run `dof pull <tool>` — but avoidable.)
 2. **It must live under `$HOME`.** Home directories differ across platforms
    (`/Users/you` vs `/home/you`), but a *home-relative* path is identical on both.
@@ -47,8 +47,13 @@ Unlike an ordinary git repo, this one's location is not a free choice. Four reas
 4. **Never anywhere that gets cleaned** (`/tmp`, Downloads). Under `link` mode this
    repo holds the *only* copy of your configs.
 
-`~/duotfiles` (visible) works equally well if you prefer it; just keep it consistent
-across machines.
+**Why visible, not `~/.duotfiles`.** Every other path this repo deploys to is a
+conventional location the software itself chose — `~/.config/kitty`, `~/.claude`.
+This repo is not: it is a working directory you edit daily, in a location nobody
+else agrees on. Hiding it costs you `ls ~`, tab completion, and `rg` / `fd`, which
+skip dotted directories by default. Decided 2026-08-31; the earlier recommendation
+was `~/.duotfiles`, and this file used to say either was fine — that is what let
+the two machines drift apart. Pick one and keep it.
 
 ---
 
@@ -57,8 +62,8 @@ across machines.
 ### On a new machine
 
 ```bash
-git clone <your-repo> ~/.duotfiles
-cd ~/.duotfiles
+git clone <your-repo> ~/duotfiles
+cd ~/duotfiles
 
 ./bin/dof list                       # what exists, what's deployed here
 ./bin/dof pull tmux                  # deploy only what you need right now
@@ -74,9 +79,9 @@ before anything is overwritten. Nothing is lost.
 
 | Approach | How | Notes |
 |---|---|---|
-| **Do nothing** | `~/.duotfiles/bin/dof status` | Zero setup, always correct. You rarely need `dof` day to day — under `link` mode, changing a config just means `git commit` |
-| **Add to PATH** (recommended) | `echo 'export PATH="$HOME/.duotfiles/bin:$PATH"' >> ~/.zshrc` | One line, once per machine. Once your shell config itself is managed here, that line lives in the repo |
-| **Symlink into an existing PATH dir** | `ln -s ~/.duotfiles/bin/dof ~/.local/bin/dof` | `~/.local/bin` is usually already on PATH on Linux; on macOS it is not, so you'd still add a line |
+| **Do nothing** | `~/duotfiles/bin/dof status` | Zero setup, always correct. You rarely need `dof` day to day — under `link` mode, changing a config just means `git commit` |
+| **Add to PATH** (recommended) | `echo 'export PATH="$HOME/duotfiles/bin:$PATH"' >> ~/.zshrc` | One line, once per machine. Once your shell config itself is managed here, that line lives in the repo |
+| **Symlink into an existing PATH dir** | `ln -s ~/duotfiles/bin/dof ~/.local/bin/dof` | `~/.local/bin` is usually already on PATH on Linux; on macOS it is not, so you'd still add a line |
 
 `dof` resolves symlinks on `$0` before locating the repo, so the third approach
 won't misidentify the repo root. If the script lives away from the repo, override
