@@ -1,0 +1,95 @@
+# NOTICE — third-party content
+
+This repository mixes original work with third-party configuration files that
+are redistributed under their own licenses. `LICENSE` (MIT) covers the original
+work only. This file says which is which.
+
+If you are looking for the short version: everything outside `tools/rime/` is
+original and MIT. Inside `tools/rime/`, assume a file is from iDvel/rime-ice
+under GPL-3.0 unless it is listed as original below.
+
+
+## Original work — MIT (see LICENSE)
+
+    bin/dof
+    manifest
+    AGENTS.md, DESIGN.md, README.md, README.zh-CN.md
+    notes/**
+    tools/agents/**
+    tools/fcitx5-guard/**
+    tools/kitty/**
+
+Inside `tools/rime/`, these are also original:
+
+    common/devlog.md                    design log
+    common/*.custom.yaml                patch files (Rime's `*.custom.yaml`
+    linux/*.custom.yaml                 mechanism: upstream ships the schema,
+    macos/*.custom.yaml                 you patch it, never editing upstream)
+    macos/squirrel.custom.yaml          macOS Squirrel appearance
+    linux/lua/katakana_filter.lua       force-katakana filter, written here
+    macos/lua/katakana_filter.lua       (see devlog.md §6.8)
+    linux/japanese_custom_phrase.txt    single-kana pinning table
+
+
+## iDvel/rime-ice — GPL-3.0-only
+
+    https://github.com/iDvel/rime-ice
+
+Redistributed unmodified unless noted. Under `tools/rime/linux/`:
+
+    default.yaml
+    double_pinyin_flypy.schema.yaml
+    melt_eng.schema.yaml, melt_eng.dict.yaml
+    radical_pinyin.schema.yaml
+    rime_ice.schema.yaml, rime_ice.dict.yaml
+    symbols.yaml, symbols_v.yaml, symbols_caps_v.yaml
+    en_dicts/**                         10 files
+    opencc/**                           3 files
+    lua/**                              every file EXCEPT katakana_filter.lua
+
+And under `tools/rime/common/`:
+
+    custom_phrase.txt                   MODIFIED: upstream's template with
+    (and linux/custom_phrase_double.txt) local entries added and three
+                                        single-character lines commented out
+
+GPL-3.0 requires that the license text accompany redistribution. The full text
+is not vendored here; it is at the upstream repository above, and at
+<https://www.gnu.org/licenses/gpl-3.0.txt>. If you redistribute this repository
+further, ship the license text with it.
+
+### lua/cold_word_drop/ — separate copyright, bundled by rime-ice
+
+    Copyright (C) 2023 yaoyuan.dou <douyaoyuan@126.com>
+
+Eight files under `tools/rime/linux/lua/cold_word_drop/`. They arrive as part
+of rime-ice and are covered by its GPL-3.0 terms, but carry their own
+copyright line, so it is reproduced here.
+
+### lua/lunar.lua, lua/lunar.db — provenance not verified
+
+Bundled with rime-ice. The original author is not named in the files and was
+not traced. Treat as GPL-3.0 with the rest of rime-ice.
+
+
+## Pulled at deploy time, NOT in this repository
+
+These are dependencies, not redistributed content — a fresh machine clones them
+directly from upstream (see `notes/rime.md`):
+
+    iDvel/rime-ice          cn_dicts/, radical_pinyin.dict.yaml     GPL-3.0
+    rime/rime-essay         essay.txt                               GPL-3.0
+    rime/rime-luna-pinyin   luna_pinyin.dict.yaml                   GPL-3.0
+    rime/rime-stroke        stroke.dict.yaml                        GPL-3.0
+    gkovacs/rime-japanese   japanese.*.yaml                         see upstream
+
+
+## Removed on 2026-09-03
+
+`tools/rime/common/cn_dicts_cell/` — 22 Sogou-derived cell dictionaries,
+23 MB, converted from Sogou by an unknown party. Provenance could not be
+established (they are not in rime-ice's repository or its release archives),
+so their redistribution terms are unknown. Deleted from the working tree on
+2026-08-24 and purged from git history on 2026-09-03, before this repository
+was made public. They are not recoverable from this repository. Regenerate
+with <https://github.com/lewangdev/scel2txt> if you ever need them.
