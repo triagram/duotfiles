@@ -74,8 +74,11 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 > 上游 rime-ice 的 clone 里 `git ls-files | grep cn_dicts_cell` 为 0 笔（不是它的东西）；
 > `rime_ice.dict.yaml` 的 `import_tables` 只挂 `cn_dicts/` 下五项，**全仓库与两台机器零引用**；
 > 不可重建，只能用 `github.com/lewangdev/scel2txt` 从搜狗重转。
-> 既然不影响任何输入行为，就没有理由让每次 clone 多下 23 MB ——
-> git 历史本身就是那份「另存」，`git show 71eb777^:tools/rime/common/cn_dicts_cell/...` 随时取回。
+> 既然不影响任何输入行为，就没有理由让每次 clone 多下 23 MB。
+>
+> **它们已不在 git 历史里了**（2026-09-03，仓库转 public 前重写历史时一并移除，
+> 理由是搜狗细胞词库来源不可考、重新分发的授权状态未知）。**没有备份，取不回来。**
+> 真要用只能用 `github.com/lewangdev/scel2txt` 从搜狗重新转换。
 
 **`linux/`（63 个，1.9 MB）—— 其余一切：**
 

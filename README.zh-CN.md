@@ -205,3 +205,13 @@ tools/<软件>/
 | [DESIGN.md](DESIGN.md) | 为什么这么设计：原则、框架、关键取舍 |
 | [AGENTS.md](AGENTS.md) | AI 在这个仓库里干活的规矩（`CLAUDE.md` 是它的软链） |
 | [notes/](notes/) | 一个软件一个文件：为什么这里必须分平台 |
+
+---
+
+## 许可
+
+本仓库的原创部分是 MIT，见 [LICENSE](LICENSE)。
+
+`tools/rime/` 里还重新分发了第三方配置，绝大部分来自
+[iDvel/rime-ice](https://github.com/iDvel/rime-ice)，许可是 **GPL-3.0-only**。
+那些文件保持上游许可，MIT 不适用于它们。逐文件的归属见 [NOTICE](NOTICE)。

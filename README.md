@@ -219,3 +219,14 @@ intended trade-off. Force a legitimate file through with `git add -f`.
 | [DESIGN.md](DESIGN.md) | Why it is built this way: principles, structure, trade-offs |
 | [AGENTS.md](AGENTS.md) | Rules for AI agents working in this repo (`CLAUDE.md` / `GEMINI.md` are symlinks to it) |
 | [notes/](notes/) | One file per tool: why these parts must stay platform-specific |
+
+---
+
+## License
+
+Original work here is MIT — see [LICENSE](LICENSE).
+
+`tools/rime/` also redistributes third-party configuration, most of it from
+[iDvel/rime-ice](https://github.com/iDvel/rime-ice) under **GPL-3.0-only**.
+Those files keep their upstream license; MIT does not apply to them.
+[NOTICE](NOTICE) has the file-by-file breakdown.
