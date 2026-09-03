@@ -14,7 +14,7 @@
 tmux       link   ~/.config/tmux                    ~/.config/tmux
 kitty      link   ~/.config/kitty                   ~/.config/kitty
 ghostty    link   ~/.config/ghostty                 ~/.config/ghostty
-agy        link   ~/.gemini                         ~/.gemini
+agy        copy   ~/.gemini                         ~/.gemini
 rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 # fcitx5-guard 部署到 ~/.local：bin/ 与 share/systemd/user/ 都在这个根下
 fcitx5-guard link ~/.local                        -
