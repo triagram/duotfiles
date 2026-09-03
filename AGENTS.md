@@ -37,6 +37,26 @@ merge(kitty): 把配色收敛到 common/，字号保持分平台
 
 这样 `git log -- tools/kitty` 就是这个软件的完整演化史。
 
+## 提交身份（每台新机器要设一次）
+
+这个仓库是 public，提交邮箱会永久公开。**每台机器 clone 之后先设仓库级配置**，
+不要依赖 global：
+
+```bash
+git config --local user.name  "$(git log -1 --format=%an)"
+git config --local user.email "$(git log -1 --format=%ae)"
+```
+
+从现有历史里取，而不是把地址写死在这里 —— 这个文件本身也是公开的。
+
+用 `--local` 是刻意的：global 那份是机构邮箱，其他仓库继续用它，只有这个仓库不用。
+2026-09-03 转 public 前重写过历史统一身份，
+**新提交如果沿用 global，就会把机构邮箱重新带进公开历史**。
+
+> 两种翻车方式都实际发生过：一台沿用了 global 的机构邮箱；
+> 另一台压根没设 `user.email`，git 拿主机名兜底编了个假地址出来。
+> 两批都在那次重写里统一掉了，但配置不设好就会再来一次。
+
 ## 改 bin/dof 时
 
 - 有改动就实际跑一遍验证：造一个假的 `$HOME`，`HOME=/tmp/xxx bin/dof …`
