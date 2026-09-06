@@ -1,0 +1,8 @@
+#!/bin/sh
+# Block a commit that would record an address, an absolute home path, a key or
+# a token. Scans the staged blobs, not the working tree — what git is about to
+# write, not what happens to be on disk.
+#
+# Enable per machine (hooks are not cloned):  git config core.hooksPath .githooks
+# Bypass for one commit, deliberately:        git commit --no-verify
+exec "$(git rev-parse --show-toplevel)/bin/audit-privacy" --staged
