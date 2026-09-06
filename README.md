@@ -65,13 +65,23 @@ the two machines drift apart. Pick one and keep it.
 git clone <your-repo> ~/duotfiles
 cd ~/duotfiles
 
+# Two one-time settings. This repo is public, and both of these keep it that
+# way safely — see AGENTS.md for why each exists.
+git config --local user.name  "$(git log -1 --format=%an)"
+git config --local user.email "$(git log -1 --format=%ae)"
+git config core.hooksPath .githooks
+
 ./bin/dof list                       # what exists, what's deployed here
-./bin/dof pull tmux                  # deploy only what you need right now
-./bin/dof pull claude
+./bin/dof pull kitty                 # deploy only what you need right now
 ```
 
 Existing files at the destination are backed up to `<name>.dof-bak-<timestamp>`
 before anything is overwritten. Nothing is lost.
+
+The identity lines matter because this repo's history was rewritten to carry a
+single author address; a machine falling back to a global or hostname-derived
+one would put that address into public history. `core.hooksPath` turns on the
+privacy gate below — git does not clone hooks, so every machine enables it once.
 
 ### Making `dof` callable (optional)
 
@@ -199,16 +209,36 @@ Use those when you eventually merge platform differences; no template engine nee
 
 ---
 
-## Before pushing to a public remote
+## Keeping a public repo clean
 
-Confirm none of these were ever committed:
+This repository is public, so anything that lands in it is public and permanent.
+Three layers, from coarse to fine:
 
-- `~/.claude/.credentials.json`, `~/.claude/projects/` (session transcripts)
-- any `*.key` / `*.pem` / token-bearing file
-- Rime's `installation.yaml` (contains machine-local paths)
+**1. `.gitignore`** blocks credential-shaped filenames aggressively —
+`*.key`, `*.pem`, anything matching `*token*` or `*secret*`, Claude Code session
+transcripts, Rime's `installation.yaml`. False positives are the intended
+trade-off; force a legitimate file through with `git add -f`.
 
-[`.gitignore`](.gitignore) blocks these aggressively — false positives are the
-intended trade-off. Force a legitimate file through with `git add -f`.
+**2. The commit hooks** scan what you are about to record — staged blobs and the
+commit message — for addresses, absolute home paths, institution names, keys,
+tokens and public IPs, and abort the commit if they find any. Enable once per
+machine:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+**3. `bin/audit-privacy --full`** scans the working tree and every historical
+version of every file, about two seconds. Run it before changing the
+repository's visibility, and after any history rewrite.
+
+A finding leaves you two options: fix the content, or add an entry to `ALLOW` in
+[`bin/audit-privacy`](bin/audit-privacy) **with a reason**. Do not reach for
+`git commit --no-verify`.
+
+What this does not catch: a leak shaped like an ordinary word. A directory name
+that happens to be an unpublished project name passes every check. New files
+still deserve a human read — see [AGENTS.md](AGENTS.md).
 
 ---
 

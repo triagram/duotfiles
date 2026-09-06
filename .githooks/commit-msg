@@ -1,0 +1,4 @@
+#!/bin/sh
+# Same check, applied to the commit message. A message quoting a config file
+# is how an address slipped through once before.
+exec "$(git rev-parse --show-toplevel)/bin/audit-privacy" --message "$1"

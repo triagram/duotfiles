@@ -63,10 +63,19 @@ Tab 补不出，以及 `rg` / `fd` 默认跳过点开头的目录。
 git clone <你的仓库地址> ~/duotfiles
 cd ~/duotfiles
 
+# 两条一次性设置。本仓库是 public，这两条都是为了让它安全地保持 public，
+# 各自的理由见 AGENTS.md。
+git config --local user.name  "$(git log -1 --format=%an)"
+git config --local user.email "$(git log -1 --format=%ae)"
+git config core.hooksPath .githooks
+
 ./bin/dof list                       # 看有哪些软件、本机是什么状态
-./bin/dof pull tmux                  # 只部署你现在需要的
-./bin/dof pull claude
+./bin/dof pull kitty                 # 只部署你现在需要的
 ```
+
+身份那两行有必要，是因为本仓库的历史被改写成统一的作者地址；哪台机器要是
+回退到 global 的或主机名兜底的地址，就会把它写进公开历史。`core.hooksPath`
+打开下面那道隐私闸门 —— git 不会 clone 钩子，所以每台机器要自己开一次。
 
 已存在的同名文件会被自动备份成 `xxx.dof-bak-<时间戳>`，不会丢。
 
@@ -187,14 +196,27 @@ tools/<软件>/
 
 ## 安全须知
 
-推到公开仓库前，确认这些**从来没有**被 commit 过：
+**本仓库是 public**，进去的东西就是公开的、永久的。三层防线，从粗到细：
 
-- `~/.claude/.credentials.json`、`~/.claude/projects/`（会话记录）
-- 任何 `*.key` / `*.pem` / 含 token 的文件
-- Rime 的 `installation.yaml`（含本机路径）
-
-[`.gitignore`](.gitignore) 已经按「宁可误伤」的方向拦了这些。
+**① `.gitignore`** 按「宁可误伤」拦掉长得像凭据的文件名 —— `*.key`、`*.pem`、
+带 `token` 或 `secret` 字样的、Claude Code 的会话记录、Rime 的 `installation.yaml`。
 被误伤的正常文件用 `git add -f` 单独放行。
+
+**② 提交钩子**检查你**正要记录**的东西 —— 暂存区的内容和提交信息 —— 找邮箱、
+家目录绝对路径、机构线索、密钥、token、公网 IP，发现就中止提交。每台机器启用一次：
+
+```bash
+git config core.hooksPath .githooks
+```
+
+**③ `bin/audit-privacy --full`** 扫工作区加每个文件的全部历史版本，约两秒。
+**改仓库可见性之前、任何一次历史改写之后，必须跑一遍。**
+
+被拦下时只有两条路：改掉内容，或者在 [`bin/audit-privacy`](bin/audit-privacy)
+的 `ALLOW` 里加一条**并写明理由**。不要用 `git commit --no-verify` 绕过去。
+
+抓不住的：长得像普通单词的泄露。一个恰好是未发表课题名的目录名会通过所有检查。
+新增文件仍然要人看一眼 —— 见 [AGENTS.md](AGENTS.md)。
 
 ---
 

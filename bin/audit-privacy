@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+"""Scan for things that must not become public in this repository.
+
+Three modes:
+
+    audit-privacy --staged        what `git commit` is about to record  (pre-commit hook)
+    audit-privacy --message FILE  a commit message file                 (commit-msg hook)
+    audit-privacy --full          working tree AND every blob in history
+
+`--staged` and `--message` are what the hooks run: they are fast and they fire
+at the moment content enters the repository, which is the only point where a
+leak is still cheap to fix. `--full` is the periodic check — run it before
+changing the repository's visibility, and after any history rewrite.
+
+Exit status is 0 when clean and 1 when anything is found, so it works as a gate.
+
+Scope and limits, stated plainly: this catches values with a *shape* — an
+address, an absolute home path, a key, a token. It cannot catch a leak that
+looks like an ordinary word. A directory name that happens to be an unpublished
+project name will pass every check here. New files still deserve human eyes;
+the hook at least guarantees you see that a new file is being added.
+
+Unlike bin/dof, this needs python3. That is deliberate: dof has to run on a
+stock macOS with bash 3.2 and nothing else, because it is what deploys your
+configuration. This is a development-time check and may assume more.
+"""
+
+import argparse
+import collections
+import re
+import subprocess
+import sys
+
+# ── What is allowed through ──────────────────────────────────────────────────
+#
+# Every entry needs a reason. An allow-list nobody can justify is how a real
+# finding gets waved through six months from now.
+ALLOW = re.compile(
+    # Upstream authors' own attribution lines. Normal OSS provenance, and
+    # removing them would be wrong — see NOTICE.
+    rb'douyaoyuan@126\.com|ipatrickmac@gmail\.com|tumuyan@21cn\.com'
+    # Addresses that are already anonymous by construction.
+    rb'|noreply@anthropic\.com|users\.noreply\.github\.com'
+    # Documentation placeholders.
+    rb'|example\.com|foo@bar|/Users/you|/home/you'
+    # An English word in en_dicts/en.dict.yaml, sitting between "shareholder"
+    # and "shares". Not a cloud tenant.
+    rb'|SharePoint'
+    # notes/claude.md's first version illustrates "an absolute path breaks on
+    # the other machine" with this path. It leaks the Linux account name, which
+    # is already the public commit author name, so it carries no new
+    # information. Assessed and accepted 2026-09-03.
+    rb'|/home/mengyuan'
+)
+
+CHECKS = [
+    ("email address",        rb'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'),
+    ("absolute home path",   rb'/(?:Users|home)/[a-z][a-z0-9_-]+'),
+    ("institution / cloud",  rb'OneDrive-[A-Za-z]+|SharePoint|\.ac\.uk|\.edu\b'
+                             rb'|[Uu]niversity[A-Za-z]*[Oo]f'),
+    ("CN mobile number",     rb'(?<![0-9])1[3-9][0-9]{9}(?![0-9])'),
+    ("key material",         rb'ssh-(?:rsa|ed25519)|BEGIN [A-Z ]*PRIVATE KEY'),
+    ("credential assignment",
+     rb'(?:[Aa][Pp][Ii][_-]?[Kk][Ee][Yy]|[Ss][Ee][Cc][Rr][Ee][Tt]'
+     rb'|[Tt][Oo][Kk][Ee][Nn]|[Pp][Aa][Ss][Ss][Ww][Oo][Rr][Dd])'
+     rb'\s*[:=]\s*["\']?[A-Za-z0-9_\-]{12,}'),
+    # Private ranges and loopback excluded; those say nothing about you.
+    ("public IP address",    rb'(?<![0-9.])(?!127\.|0\.|10\.|192\.168\.'
+                             rb'|172\.(?:1[6-9]|2[0-9]|3[01])\.)'
+                             rb'(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![0-9.])'),
+]
+CHECKS = [(name, re.compile(pattern)) for name, pattern in CHECKS]
+
+
+def run(*args, text=False):
+    return subprocess.run(args, capture_output=True, text=text)
+
+
+# This file necessarily contains every string it searches for, so scanning it
+# would report its own rule table. Excluding it is not a loophole worth
+# worrying about — a real address pasted in here would be visible in the diff
+# of the one file whose whole purpose is to be read carefully.
+SELF = "bin/audit-privacy"
+
+
+def scan(data, where, findings):
+    if where == SELF:
+        return
+    for name, pattern in CHECKS:
+        for match in pattern.finditer(data):
+            if ALLOW.search(match.group()):
+                continue
+            findings[name].add((where, match.group().decode("utf8", "replace")[:70]))
+
+
+def scan_staged(findings):
+    """Blob contents git is about to record, not the working tree."""
+    names = run("git", "diff", "--cached", "--name-only",
+                "--diff-filter=ACMR", text=True).stdout.split("\n")
+    paths = [n for n in names if n.strip()]
+    for path in paths:
+        # ":path" is the staged version, which is what actually gets committed.
+        scan(run("git", "show", f":{path}").stdout, path, findings)
+    return len(paths)
+
+
+def scan_message(path, findings):
+    with open(path, "rb") as handle:
+        scan(handle.read(), "<commit message>", findings)
+    return 1
+
+
+def scan_full(findings):
+    """Every blob reachable from HEAD, plus every commit message."""
+    listing = run("git", "rev-list", "--objects", "HEAD", text=True).stdout.splitlines()
+    path_of = {}
+    for line in listing:
+        parts = line.split(maxsplit=1)
+        if len(parts) == 2:
+            path_of[parts[0]] = parts[1]
+    kinds = subprocess.run(
+        ["git", "cat-file", "--batch-check=%(objecttype) %(objectname)"],
+        input="\n".join(line.split()[0] for line in listing if line.strip()),
+        capture_output=True, text=True).stdout
+    blobs = [fields[1] for fields in (line.split() for line in kinds.splitlines())
+             if fields and fields[0] == "blob"]
+    for sha in blobs:
+        scan(run("git", "cat-file", "blob", sha).stdout, path_of.get(sha, sha), findings)
+    scan(run("git", "log", "--format=%B").stdout, "<commit messages>", findings)
+    return len(blobs)
+
+
+def report_identities():
+    lines = run("git", "log", "--format=%an <%ae>", text=True).stdout.split("\n")
+    counted = collections.Counter(line for line in lines if line.strip())
+    print("Commit identities:")
+    for identity, count in counted.most_common():
+        print(f"  {count:>4} x {identity}")
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--staged", action="store_true")
+    group.add_argument("--message", metavar="FILE")
+    group.add_argument("--full", action="store_true")
+    args = parser.parse_args()
+
+    findings = collections.defaultdict(set)
+    if args.staged:
+        count = scan_staged(findings)
+        scope = f"{count} staged file(s)"
+    elif args.message:
+        count = scan_message(args.message, findings)
+        scope = "commit message"
+    else:
+        count = scan_full(findings)
+        scope = f"{count} blob(s) reachable from HEAD, every historical version"
+
+    if args.full:
+        print(f"Scope: {scope}\n")
+        report_identities()
+
+    total = 0
+    for name, _ in CHECKS:
+        hits = findings.get(name)
+        if hits:
+            total += len(hits)
+            print(f"FOUND  {name} -- {len(hits)}")
+            for where, what in sorted(hits)[:15]:
+                print(f"         {where}  <-  {what}")
+        elif args.full:
+            print(f"ok     {name}")
+
+    if total:
+        print(f"\n{total} finding(s) in {scope}.")
+        print("Fix them, or add a justified entry to ALLOW in bin/audit-privacy.")
+        return 1
+    if args.full:
+        print(f"\nClean: {scope}.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
