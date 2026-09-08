@@ -58,15 +58,29 @@ bin/audit-privacy --full          # 工作区 + 全部历史版本，约 2 秒
 
 ## commit message
 
-用 `<软件>(<平台>): <改了什么>`，融合类改动用 `merge(<软件>):`。
+**用英文写。** 仓库 public，`git log` 是它最直接的公开面 ——
+`README.md` 是英文、`README.zh-CN.md` 是译本，提交记录跟着同一个取向。
+（全局约定本来就要求「写下来的一律英文」；本仓库早期例外过一段，
+2026-09-08 转 public 前把 23 条中文消息统一重写成了英文。）
+
+> 中文只留给对话，以及 `notes/`、`devlog.md` 这类给自己看的判断记录 ——
+> 那些记的是取舍理由，中文表达更准确，且不属于「代码与提交」这一层。
+
+格式用 `<软件>(<平台>): <改了什么>`，融合类改动用 `merge(<软件>):`。
 
 ```
-tmux(macos): 前缀键改成 C-a
-rime: 加了几条自定义短语
-merge(kitty): 把配色收敛到 common/，字号保持分平台
+tmux(macos): move the prefix key to C-a
+rime: add a few custom phrases
+merge(kitty): converge the colour scheme into common/, keep font size per platform
 ```
 
 这样 `git log -- tools/kitty` 就是这个软件的完整演化史。
+
+正文写「为什么」，不写「改了什么」—— 改了什么看 diff。
+被否掉的替代方案、实测数字、踩过的坑，都值得写进去。
+
+**不要写 `Claude-Session:` 这类尾注。** 公开之后对读者没有意义，还带着会话 ID。
+`Co-Authored-By:` 保留，那是有效署名。
 
 ## 提交身份（每台新机器要设一次）
 
