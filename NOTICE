@@ -54,9 +54,9 @@ And under `tools/rime/common/`:
                                         single-character lines commented out
 
 GPL-3.0 requires that the license text accompany redistribution. The full text
-is not vendored here; it is at the upstream repository above, and at
-<https://www.gnu.org/licenses/gpl-3.0.txt>. If you redistribute this repository
-further, ship the license text with it.
+is vendored at `LICENSES/GPL-3.0.txt` (retrieved 2026-09-08 from
+<https://www.gnu.org/licenses/gpl-3.0.txt>). Keep it with any further
+redistribution of this repository.
 
 ### lua/cold_word_drop/ — separate copyright, bundled by rime-ice
 
