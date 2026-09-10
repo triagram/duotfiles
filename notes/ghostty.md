@@ -41,14 +41,63 @@ G=/Applications/Ghostty.app/Contents/MacOS/ghostty
 > `+validate-config` 的**退出码恒为 0**，输出才是信号。写个非法值试一次就知道 ——
 > 它会打印错误并列出合法取值集合（例如 `cursor-style` 的 `bar, block, underline, block_hollow`）。
 
+## 省电：关光标闪烁（2026-09-10）
+
+```
+cursor-style-blink = false
+```
+
+**空值不等于关。** 空值是「跟随终端程序」，多数程序会让它闪。必须显式写 false。
+
+依据 `ghostty-org/ghostty#10397`：ProMotion 屏上光标闪烁会让 Ghostty 按刷新率持续重绘，
+报告的 idle CPU 是 **10–15%**，关掉降到 **1–1.5%**。1.3.1 仍未修复，多位 M 系列 MBP 复现。
+本机内建屏正是 ProMotion（Liquid Retina XDR），外接 DELL P2423DE 是 60Hz。
+
+> **但本机实测基线只有 2.1–3.0%（均值 2.6%），远低于报告值。** 采样时 Ghostty 的聚焦
+> 状态未知，且跑在里面的 TUI（如 Claude Code）本来可能就没请求闪烁。
+> 所以这条在本机的实际收益可能远小于 −85%，**它更像是一道免费保险**：
+> 显式 false 之后，不管里面跑什么程序都不会闪。
+
+### 省电上做不到的事
+
+- **没有电源感知配置** —— 1.3.1 里 `power-mode` 一类选项数为 0。维护者在 #11941
+  确认配置解析器还不支持条件块，所以「插电一套、电池一套」目前无解。
+- **不能关 GPU 渲染** —— 架构上 GPU or nothing。
+- `window-vsync` 默认 true，**别关** —— 关掉是解除帧率上限，更费电。
+
+## `window-colorspace` 是「怎么解读色值」，不是「输出更宽色域」
+
+官方原文：*The color space to use when **interpreting** terminal colors.*
+
+| | 同一个 `#RRGGBB` |
+|---|---|
+| `srgb`（默认） | 按 sRGB 解读 —— 主题作者设计的那个颜色 |
+| `display-p3` | 按 P3 解读 —— 同样数值落在更宽色域上，**明显更饱和** |
+
+Catppuccin 和几乎所有终端主题都按 sRGB 画，用 P3 解读会比作者设计的更艳。
+**是口味，不是修正**，严格说反而更不忠实。默认别动。
+
+（2026-09-09 曾一度写成「默认 srgb 等于自我限制」，那是误读，已订正。）
+
 ## 〔搁置〕光标拖尾 —— 等装了 Neovim 再议（2026-08-24）
 
 kitty 有内建的 `cursor_trail`，Ghostty 没有对应配置项。查证过的结论，不用重查：
 
-**Ghostty 内建版没有可等的东西。** 追踪 issue `ghostty-org/ghostty#1934`（2024-07 开）
+> **订正（2026-09-10）：上面这段的结论是错的，保留原文见下。**
+> 官方 1.2.0 发布说明原文写着：*"We do eventually plan to add a first-party
+> animated cursor, so that users don't need to take on the additional
+> performance cost of a custom shader just to have a cursor that's easier to
+> follow as it moves"* —— **官方明确计划做内建动画光标，理由正是省掉着色器开销。**
+> 只是 "eventually"，没有时间表。
+>
+> 当初错在哪：只查了 issue 和 discussion，看到 #1934 已关闭、维护者说
+> 「已在 #7648 实现」，就推断官方认为着色器是终点。**没去读发布说明。**
+> 教训是 issue 的关闭状态不等于路线图。
+
+~~**Ghostty 内建版没有可等的东西。** 追踪 issue `ghostty-org/ghostty#1934`（2024-07 开）
 **已关闭**，无 assignee 无 milestone；discussion #4199 维护者最后一句是
-「已在 #7648 实现」—— 指的就是着色器方案。本机 Ghostty 1.3.1 的 `cursor-*`
-只有 6 个选项，没有 trail。
+「已在 #7648 实现」—— 指的就是着色器方案。~~
+（事实部分仍然成立：本机 Ghostty 1.3.1 的 `cursor-*` 只有 6 个选项，没有 trail。）
 
 **两条可行路线：**
 
