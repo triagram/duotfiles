@@ -41,29 +41,106 @@ G=/Applications/Ghostty.app/Contents/MacOS/ghostty
 > `+validate-config` 的**退出码恒为 0**，输出才是信号。写个非法值试一次就知道 ——
 > 它会打印错误并列出合法取值集合（例如 `cursor-style` 的 `bar, block, underline, block_hollow`）。
 
-## 省电：关光标闪烁（2026-09-10）
+## 省电：查了一圈，没有可信证据（2026-09-10）
+
+**结论：什么都没改。** 试过 `cursor-style-blink = false` + `shell-integration-features = no-cursor`，
+实测之后回退了。
+
+### 为什么回退
+
+`ghostty-org/ghostty#10397` 说 ProMotion 上光标闪烁让 idle CPU 从 ~1.5% 涨到 10–15%。
+本机实测（pid 685，20 次采样取收敛值）：
+
+| | 中位 |
+|---|---|
+| 闪烁开 | 2.65% |
+| 闪烁关 | 2.30% |
+
+差 0.35 个百分点，在噪声里。**而且这个测法本身不合格** —— `top` 的 `%CPU` 只算进程 CPU，
+抓不到 GPU，更抓不到「ProMotion 被钉在高刷新率」的显示链路能耗，而那才是关键。
+**我在用错误的仪器测这个问题。**
+
+### 社区也没有数字
+
+`#5063`（12 小时功耗比 alacritty/kitty 高 2–3 倍）**没有任何具体数值**，无瓦特无方法论。
+维护者 Mitchell 的回应：*"This is very, very hard to measure. I have doubts."* ——
+并指出测量必然把终端里跑的程序算进去，必须 "exact same shell-only zero input setup"。
+讨论至今标 `needs-confirmation`，未解决。`#10397` 同样是用户自报、无方法论。
+
+**他给的官方基准值反而最有用**：
+
+> "Ghostty idles at **0% unfocused and 1 to 4% focused** depending on config."
+
+本机测到 1.7–2.9%，**正落在这个区间**。所以这台机器表现完全正常，没有异常耗电可省。
+
+### 真要测只有一条路
+
+```bash
+sudo powermetrics --samplers cpu_power,gpu_power -i 1000 -n 20
+```
+瓦特级，需要 sudo。做对照要：拔电源、Ghostty 聚焦、零输入，两组配置各跑一轮。
+**没做过。哪天真觉得费电了再说，别凭 issue 里的传闻改配置。**
+
+### 关于 `cursor-style-blink` 的一个事实（留着，将来有用）
+
+`cursor-style-blink = false` **挡不住程序强制闪烁**。官方文档：设成非 null 值只让
+DEC mode 12 被忽略，**`DECSCUSR`（`CSI q`）仍然生效**。Ghostty 自带 shell 集成的
+`cursor` 特性（"Set the cursor to a bar at the prompt"）就在发它，要一并关需要
+`shell-integration-features = no-cursor`。但 zsh 主题和 TUI 自己发的序列仍然管不住。
+
+## SIGUSR2 能重载配置 —— macOS 上已实测（2026-09-10）
+
+```bash
+kill -USR2 $(pgrep -x ghostty)
+```
+
+**官方发布说明把这条只列在 GTK（Linux）下，但 macOS 同样支持**，已实测确认。
+线索是 macOS 二进制里那个字符串夹在 AppKit 专属字符串中间：
 
 ```
-cursor-style-blink = false
+Error requesting badge authorization: %@       ← Objective-C 格式符
+reloading configuration in response to SIGUSR2
+application will restore window state          ← NSApplication 生命周期
 ```
 
-**空值不等于关。** 空值是「跟随终端程序」，多数程序会让它闪。必须显式写 false。
+### 怎么安全地测（这个方法本身值得记）
 
-依据 `ghostty-org/ghostty#10397`：ProMotion 屏上光标闪烁会让 Ghostty 按刷新率持续重绘，
-报告的 idle CPU 是 **10–15%**，关掉降到 **1–1.5%**。1.3.1 仍未修复，多位 M 系列 MBP 复现。
-本机内建屏正是 ProMotion（Liquid Retina XDR），外接 DELL P2423DE 是 60Hz。
+风险在于：**若不被处理，SIGUSR2 的默认行为是终止进程**。而 macOS 上 Ghostty 是
+**单进程** —— 所有窗口共用一个 pid，所以「开个新窗口试」没有任何隔离作用，
+信号一发全部窗口一起没。
 
-> **但本机实测基线只有 2.1–3.0%（均值 2.6%），远低于报告值。** 采样时 Ghostty 的聚焦
-> 状态未知，且跑在里面的 TUI（如 Claude Code）本来可能就没请求闪烁。
-> 所以这条在本机的实际收益可能远小于 −85%，**它更像是一道免费保险**：
-> 显式 false 之后，不管里面跑什么程序都不会闪。
+隔离办法是开**第二个独立实例**：
 
-### 省电上做不到的事
+```bash
+pgrep -x ghostty                    # 记下原 pid
+open -n -a Ghostty                  # -n 强制新实例（Info.plist 无 LSMultipleInstancesProhibited）
+pgrep -x ghostty                    # ★ 安全阀：必须看到两个不同 pid，否则立刻放弃
+kill -USR2 <新 pid>                 # 只打新的
+```
 
-- **没有电源感知配置** —— 1.3.1 里 `power-mode` 一类选项数为 0。维护者在 #11941
-  确认配置解析器还不支持条件块，所以「插电一套、电池一套」目前无解。
-- **不能关 GPU 渲染** —— 架构上 GPU or nothing。
-- `window-vsync` 默认 true，**别关** —— 关掉是解除帧率上限，更费电。
+**判定**：进程存活 = 被处理；进程消失 = 不支持（且只损失测试窗口）。
+
+存活还不等于真的重载了。系统日志抓不到（Ghostty 默认日志级别不输出，
+`log show --predicate 'process CONTAINS "ghostty"'` 返回 0 条），所以做了功能验证：
+临时把 `background-opacity` 改成 1.0、只对测试实例发信号，
+**测试窗口变成完全不透明而原有窗口仍半透明** —— 重载确认。
+
+### 这解锁了什么
+
+电源联动（插电开特效／电池关特效）四个环节现在全通：
+
+| 环节 | 手段 |
+|---|---|
+| 查电源 | `pmset -g batt` |
+| 分片配置 | `config-file = ?power-current.conf` |
+| 改文件 | 脚本 |
+| 触发重载 | `kill -USR2` |
+
+分片机制也实测过：`config-file` 会跟进 include（在分片里放非法值，主配置校验会报出来），
+`?` 前缀缺文件时安静忽略。
+
+> **未实施。** 因为上面已经说明白：没有证据表明有电可省。
+> 等真有了可信的 powermetrics 数据再建。
 
 ## `window-colorspace` 是「怎么解读色值」，不是「输出更宽色域」
 
