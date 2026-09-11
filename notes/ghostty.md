@@ -87,6 +87,19 @@ A′ 那一组才是关键，它排除了漂移和后台任务撞车。
 用 `ps -Axo pid,comm | grep '/Ghostty.app/'`；`screencapture` 无屏幕录制权限，
 想截图看拖尾这条路走不通。
 
+### 不要再试 ioreg 那条路（2026-09-12）
+
+看起来很诱人：电池放电时 `ioreg -rn AppleSmartBattery` 的
+`InstantAmperage × Voltage` 就是**整机**瞬时功率，含 GPU 和显示链路，还不用 sudo。
+
+**但它 ~50 秒才更新一次。** 实测每 5 秒采一次、连采 90 秒，只出现 **2 个**不同取值。
+要凑够样本每组得跑十分钟，那个时长里背景噪声早就盖过信号了。
+
+两个解析陷阱一并记下：`InstantAmperage` 是 **64 位补码**（放电时是个接近 2⁶⁴ 的大数，
+要减 `2**64`），而且 awk 的双精度存不下这个量级 —— 用 python 读。
+
+**结论：GPU 功率只能靠 `sudo powermetrics`。**
+
 ### GPU 那一半
 
 全屏片段着色器的大头在 GPU，那部分**没有数字**。要瓦特得
@@ -131,6 +144,32 @@ kill -USR2 <新 pid>                       # 只打新的
 
 **CPU 数字本身就是激活的证据。** 别靠肉眼找拖尾：`cursor_tail` 只在光标移动时才画得出来，
 空闲窗口就算着色器活着也看不见东西，**肉眼验证会得出假阴性**。
+
+### 快捷键必须来自 Ghostty 之外
+
+`ghostty +list-actions` 共 **85 个动作，没有一个能执行外部命令**
+（`toggle_command_palette` 是 Ghostty 自己的面板，不是 shell）。
+所以「按一下键切换着色器」这件事 Ghostty 内部做不到，得靠 Raycast 脚本命令、
+macOS 快捷指令或 skhd 这类外部工具触发。
+
+### 手动开关已建（2026-09-12）
+
+**没有常驻进程。** 三样东西：
+
+| | 位置 |
+|---|---|
+| 开关分片（空 = 关） | `~/.config/ghostty/shader.conf` |
+| 主配置里的一行 | `config-file = ?shader.conf` |
+| 开关脚本 | `~/.config/ghostty/toggle-shader.sh` |
+
+脚本改分片再对所有 Ghostty 进程发 `SIGUSR2`，顺带在电池供电时打一行提示。
+文件头带 Raycast 脚本命令的元数据（对 bash 只是注释），所以同一个文件既能直接跑、
+也能被 Raycast 当命令用。
+
+分片路径**相对配置目录**解析 —— 验证方法是往分片里塞个非法键，
+`+validate-config` 会报 `unknown field`，报错就说明读到了。
+
+> **这三样都还不在仓库里**（`tools/ghostty/` 是空的）。收不收等配置整体收编时一起定。
 
 ### 电源联动：四个环节全通，但没接起来
 
