@@ -1,3 +1,9 @@
+# .zshrc — deployed by dof from duotfiles/tools/zsh/common/.zshrc
+#
+# ONE file for both machines. Everything here runs on Linux and macOS alike,
+# except the single `case "$(uname -s)"` block below, which is the only
+# per-machine part. Search for "PLATFORM-SPECIFIC" to find it.
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
@@ -70,8 +76,33 @@ ZSH_THEME="half-life"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-# Set FZF_BASE for the Oh My Zsh fzf plugin on Apple Silicon macOS
-export FZF_BASE=/opt/homebrew/opt/fzf
+# ═══════════════════════════════════════════════════════════════════════════
+# PLATFORM-SPECIFIC — the only part of this file that differs per machine.
+#
+# Stays above `source $ZSH/oh-my-zsh.sh` on purpose: the fzf plugin reads
+# FZF_BASE while oh-my-zsh loads, so setting it afterwards is too late.
+#
+# Where does a new line go?
+#   here    it names a path outside $HOME, a package manager, or an OS tool
+#   common  it uses only $HOME, or a command both machines have
+#
+# When unsure, put it here. Getting it wrong in this direction costs you the
+# line on the other machine, which you notice the first time you miss it.
+# Getting it wrong the other way puts a macOS-only line in the common part,
+# where it runs on Linux and errors on every single shell start.
+# ═══════════════════════════════════════════════════════════════════════════
+case "$(uname -s)" in
+
+  Darwin)
+    export FZF_BASE=/opt/homebrew/opt/fzf      # Homebrew prefix, Apple Silicon
+    ;;
+
+  Linux)
+    : # nothing yet — the Linux machine fills this in when it adopts
+    ;;
+
+esac
+# ══════════════════════════════════════ end PLATFORM-SPECIFIC ══════════════
 
 plugins=(git fast-syntax-highlighting zsh-autosuggestions fzf)
 
