@@ -19,3 +19,5 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 # fcitx5-guard 部署到 ~/.local：bin/ 与 share/systemd/user/ 都在这个根下
 fcitx5-guard link ~/.local                        -
 agents     link   ~/.config/agents                  ~/.config/agents
+# zsh 部署到 ~：zsh 只认家目录下的启动文件，没有它肯读的 XDG 路径
+zsh        link   ~                                 ~

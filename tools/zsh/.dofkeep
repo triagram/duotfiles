@@ -1,0 +1,24 @@
+# Allow-list: `dof adopt` imports only these paths from the home directory.
+#
+# The target is ~ itself because zsh insists on finding its startup files
+# there — there is no XDG path it will read without ZDOTDIR being exported
+# from somewhere even earlier. So the allow-list is doing real work here:
+# without it, `dof adopt zsh` would walk all of $HOME.
+#
+# Always scope the adopt anyway — `dof adopt zsh .zshrc`, never a bare
+# `dof adopt zsh`. The allow-list filters the *result* of the find; it does
+# not stop find from traversing every file under the home directory first.
+#
+# ── Deliberately NOT listed ─────────────────────────────────────────────────
+#
+# .zprofile      Also on this machine, also carrying a hardcoded PATH entry.
+#                Left alone until it is looked at on its own terms; adopting
+#                it as a side effect of the .zshrc work is how state files
+#                end up in git (see notes/ai-context.md).
+# .zsh_history   Command history. Machine-local, and reads like a diary.
+# .zshenv .zlogin .zlogout
+#                Do not exist here. Listing files that do not exist is how
+#                the agy allow-list grew a phantom GEMINI.md entry.
+# .oh-my-zsh/    Cloned by its own installer, ~2000 files, updates itself.
+
+.zshrc
