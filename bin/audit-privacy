@@ -58,7 +58,9 @@ CHECKS = [
     ("absolute home path",   rb'/(?:Users|home)/[a-z][a-z0-9_-]+'),
     ("institution / cloud",  rb'OneDrive-[A-Za-z]+|SharePoint|\.ac\.uk|\.edu\b'
                              rb'|[Uu]niversity[A-Za-z]*[Oo]f'),
-    ("CN mobile number",     rb'(?<![0-9])1[3-9][0-9]{9}(?![0-9])'),
+    # A decimal point before the run rules it out: 3.14159265359 is pi, not a
+    # phone number. Hit for real on a shader's PI constant, 2026-09-12.
+    ("CN mobile number",     rb'(?<![0-9.])1[3-9][0-9]{9}(?![0-9])'),
     ("key material",         rb'ssh-(?:rsa|ed25519)|BEGIN [A-Z ]*PRIVATE KEY'),
     ("credential assignment",
      rb'(?:[Aa][Pp][Ii][_-]?[Kk][Ee][Yy]|[Ss][Ee][Cc][Rr][Ee][Tt]'

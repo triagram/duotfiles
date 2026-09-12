@@ -1,0 +1,34 @@
+# Allow-list: `dof adopt` imports only these paths from ~/.config/ghostty.
+#
+# The directory holds more state and third-party material than config, so an
+# allow-list is shorter than the ignore-list would be.
+
+config
+toggle-shader.sh
+shaders/cursor_tail.glsl
+shaders/LICENSE
+
+# ── Deliberately NOT listed ─────────────────────────────────────────────────
+#
+# shader.conf        The on/off fragment toggle-shader.sh rewrites on every
+#                    keypress. It is state, not config. Under link mode each
+#                    toggle would dirty `git status`, which is exactly the
+#                    trustedWorkspaces mistake from the agy adoption. The main
+#                    config includes it with `?` so its absence is fine, and
+#                    the toggle script creates it on first use.
+#
+# shaders/.git/      shaders/ is a shallow clone of sahaj-b/ghostty-cursor-shaders
+# shaders/.gitignore (MIT). Its .git internals are not ours to version, and a
+# shaders/README.md  nested .gitignore would alter this repo's ignore rules for
+#                    the subtree. Once cursor_tail.glsl is link-managed from
+#                    here, that clone is vestigial anyway.
+#
+# shaders/*.glsl     The other seven shaders are upstream verbatim, unmodified.
+#  (except tail)     Same call as the kitty themes: do not vendor third-party
+#                    files we have not touched; record where they come from.
+#                    cursor_tail.glsl is different because THRESHOLD_MIN_DISTANCE
+#                    was changed (1.5 → 2.0, see notes/ghostty.md), which makes
+#                    it ours to keep. LICENSE rides along because MIT asks for it.
+#                    To try another shader: git clone the upstream repo.
+#
+# *.dof-bak-*        dof's own backups, already excluded by the built-in list.

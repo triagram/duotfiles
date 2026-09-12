@@ -1,0 +1,124 @@
+# ==============================================================================
+# MODULE 1: GLOBAL SHORTCUT & QUICK TERMINAL (快捷键全局显隐)
+# ==============================================================================
+
+# 全局快捷键绑定：触发 Quick Terminal 显隐
+# ⚠️ 注意：在 macOS 下，使用 `global:` 前缀需要您在「系统设置 -> 隐私与安全 -> 辅助功能」中为 Ghostty 授权。
+keybind = global:ctrl+alt+t=toggle_quick_terminal
+
+# 窗口停靠位置 (top / bottom / left / right / center)
+quick-terminal-position = top
+
+# 窗口尺寸大小 (占据屏幕上方一半的高度)
+quick-terminal-size = 50%
+
+# 失去焦点时自动隐藏 (设为 false，点击其他地方不隐藏)
+quick-terminal-autohide = false
+
+# 动画持续时间 (秒，0.15 秒带来更清脆的弹出感)
+quick-terminal-animation-duration = 0.15
+
+# 显示在哪个屏幕 (mouse 代表跟随鼠标所在的显示器弹出)
+quick-terminal-screen = mouse
+
+
+# ==============================================================================
+# MODULE 2: THEME & AUTO LIGHT/DARK SWITCHING (主题与跟随系统明暗切换)
+# ==============================================================================
+
+# 自动跟随系统的明暗模式切换
+# 暗色模式使用 Catppuccin Mocha，亮色模式使用 Rose Pine Dawn
+# 💡 注：新版 Ghostty 的内置主题名使用首字母大写和空格命名
+theme = dark:Catppuccin Mocha,light:Rose Pine Dawn
+
+# 背景透明度 (0.0 - 1.0)
+background-opacity = 0.85
+
+# 背景毛玻璃模糊半径 (macOS 特色，单位为像素)
+# 这才是「看起来透不透」的主要杠杆，不是 background-opacity。
+# macOS 的毛玻璃会把背景采样后混进一层浓重底色，半径越大越像磨砂玻璃；
+# 半径小才是真透光。kitty 那边 background_blur 1 几乎等于关闭，所以它
+# 在 opacity 0.95 反而比这里 0.90 看着更透。
+background-blur-radius = 5
+
+# 色彩空间：按 P3 解读色值。注意这不是「输出更宽色域」，而是改变
+# 「同一个 #RRGGBB 按哪个空间解读」—— Catppuccin 是按 sRGB 画的，
+# 用 P3 解读会比作者设计的更饱和。这是刻意选的口味，不是修正。
+window-colorspace = display-p3
+
+
+# ==============================================================================
+# MODULE 3: FONT CONFIGURATION (字体与特殊符号)
+# ==============================================================================
+
+# 字体家族 (已成功通过 Homebrew 安装 JetBrainsMono Nerd Font)
+font-family = "JetBrainsMono Nerd Font"
+
+# 字体大小
+font-size = 13
+
+# 字体微调 (对高分屏优化，让字体笔画稍微加粗，更易辨认)
+font-thicken = true
+
+
+
+# ==============================================================================
+# MODULE 4: WINDOW STYLING (窗口样式与标题栏)
+# ==============================================================================
+
+# 窗口装饰风格：将标签栏融入标题栏，红绿灯留在最左侧 (macOS 专属融合模式)
+# 💡 注：此模式下标题栏背景会自动匹配终端主题背景，无需额外设置透明
+macos-titlebar-style = tabs
+
+# 终端内边距 (padding，给文字四周留点呼吸空间)
+window-padding-x = 12
+window-padding-y = 12
+
+# 窗口默认尺寸（单位：字符格）
+# ⚠️ window-save-state = always 会记住上次拖拽的尺寸并盖掉下面两行，
+#    必须设为 never 才能让默认尺寸真正生效。代价是不再沿用上次的窗口大小。
+#    对应 kitty.conf 里 remember_window_size no 的同一个坑。
+window-save-state = never
+window-width  = 80
+window-height = 24
+
+
+# ==============================================================================
+# MODULE 5: KEYBINDINGS FOR TABS & SPLITS (本地分屏与标签页)
+# ==============================================================================
+
+# 1. 分屏 (与主流终端一致)
+# Cmd + d: 右侧垂直分屏
+keybind = cmd+d=new_split:right
+# Cmd + Shift + d: 下方水平分屏
+keybind = cmd+shift+d=new_split:down
+
+# 2. 分屏切换 (Cmd + Alt + H/J/K/L 方向导航)
+keybind = cmd+alt+h=goto_split:left
+keybind = cmd+alt+l=goto_split:right
+keybind = cmd+alt+k=goto_split:up
+keybind = cmd+alt+j=goto_split:down
+
+# 3. 标签页管理
+keybind = cmd+shift+left_bracket=previous_tab
+keybind = cmd+shift+right_bracket=next_tab
+
+# 4. 关闭当前分屏/标签页 (Cmd + w)
+keybind = cmd+w=close_surface
+
+
+# ==============================================================================
+# MODULE 6: GENERAL BEHAVIOR & INTERACTION (基础行为)
+# ==============================================================================
+
+clipboard-read = allow
+clipboard-write = allow
+copy-on-select = false
+mouse-hide-while-typing = true
+
+# 💡 注：确认退出提示的合法值为：true, false, always
+confirm-close-surface = true
+
+# On/off fragment for the cursor-trail shader; toggle-shader.sh rewrites it.
+# Empty file = off. `?` = ignore quietly when the file does not exist.
+config-file = ?shader.conf
