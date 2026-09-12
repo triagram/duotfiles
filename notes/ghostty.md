@@ -2,8 +2,16 @@
 
 macOS 侧的终端（Linux 侧对应 kitty，见 `notes/kitty.md`）。
 
-> **配置目前不在仓库里。** manifest 有 `ghostty` 这一行，但 `tools/ghostty/` 是空的，
-> 配置还躺在 `~/.config/ghostty/config`。要收进来跑 `dof adopt ghostty`。
+**已收进仓库（2026-09-12）**，link 模式，四个文件：`config`、`toggle-shader.sh`、
+`shaders/cursor_tail.glsl`、`shaders/LICENSE`。其余按 `tools/ghostty/.dofkeep` 的理由排除，
+最重要的两条：`shader.conf` 是开关状态不是配置，收了每按一次快捷键 git 就脏；
+`shaders/` 是上游 clone，只收改过的那一个。
+
+> `~/.config/ghostty/shaders/.git/` 现在是**残留物** —— 文件已从仓库软链过去，
+> 在那里 `git pull` 会跟软链打架。想试别的着色器就重新 clone 上游到别处。
+>
+> `config-file = ?shader.conf` 按**配置文件的给定路径**解析（`~/.config/ghostty/`），
+> 不是按软链目标（仓库）解析 —— 验过 `+show-config`。这一点成立，分片机制才能和 link 模式共存。
 
 ## 透明度：blur 才是主要杠杆，不是 opacity（2026-08-24 判断）
 

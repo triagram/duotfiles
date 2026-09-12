@@ -62,5 +62,8 @@ dof adopt zsh             # ✗ 会遍历整个家目录
 
 - **`~/.zprofile` 里有一行同样写死家目录的 `.local/bin`**，和 `.zshrc` 里那行重复。
   没收进仓库 —— 它不在这次的范围内，顺手 adopt 正是状态文件混进 git 的路径。
-- Linux 那台还没 adopt 进来。届时把它的平台专属行填进 `Linux)` 分支，
-  其余部分应该能直接复用。
+- Linux 那台还没接进来。**流程不是 adopt** —— b 方案下 `dof adopt zsh .zshrc` 会把
+  那台的文件复制成 `tools/zsh/linux/.zshrc`，平台层整个盖掉 `common/`，设计就废了。
+  正确顺序：`git pull` → 读那台的 `~/.zshrc` → 把平台专属行**手填**进 `common/.zshrc`
+  的 `Linux)` 分支（共享的行大概率已经在了）→ `dof pull zsh`（会先备份原文件）
+  → 开个新 shell 验证 → commit → push。
