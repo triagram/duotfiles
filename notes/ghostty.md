@@ -214,7 +214,27 @@ Catppuccin 和几乎所有终端主题都按 sRGB 画，用 P3 解读会比作�
 
 （2026-09-09 曾一度写成「默认 srgb 等于自我限制」，那是误读，已订正。）
 
-## 〔搁置〕光标拖尾 —— 等装了 Neovim 再议（2026-08-24）
+## 光标拖尾 —— 已装 `cursor_tail.glsl`，手动开关（2026-09-12）
+
+**现状**：着色器装在 `~/.config/ghostty/shaders/cursor_tail.glsl`，靠开关分片启用，
+Raycast 快捷键切换。功耗数字见上面。Neovim 那条线（`smear-cursor.nvim`）**仍然开着**，
+装了 Neovim 之后可以在编辑器内用更省电的方式拿到同样效果，两者不互斥。
+
+### 和 kitty 参数对齐 —— 只有一个能对，且有一个对不上
+
+| kitty | 着色器 | 结论 |
+|---|---|---|
+| `cursor_trail_start_threshold 2`（格） | `THRESHOLD_MIN_DISTANCE`（光标宽 = 格） | **同单位，已对齐** 1.5 → 2.0 |
+| `cursor_trail_decay 0.1 0.4`（秒） | `DURATION 0.09`（秒） | **刻意不对齐**，见下 |
+| `cursor_trail 20`（静止 ≥20ms 后的跳转才画） | 无 | **做不到** —— 着色器只拿到 `iTimeCursorChange`，没有「之前静止了多久」 |
+| — | `MAX_TRAIL_LENGTH 0.2`（大跳只画尾） | kitty 无对应，保持 |
+
+**为什么 DURATION 不能跟 kitty 走 0.4 秒**：kitty 那条 `cursor_trail 20` 的用途
+（kitty.conf 注释原话）是滤掉 Claude Code 这类 TUI 频繁重绘造成的满屏拖尾。
+着色器没有这道门，**压制 TUI 噪声的唯一手段就是短 DURATION** —— 90ms 一闪即灭。
+拉到 0.4 秒，TUI 里会满屏尾巴。**嫌吵调高阈值（3–4 格），别碰 DURATION。**
+
+### 当初的查证（保留）
 
 kitty 有内建的 `cursor_trail`，Ghostty 没有对应配置项（1.3.1 的 `cursor-*` 只有 6 个选项）。
 
@@ -261,7 +281,7 @@ kitty 有内建的 `cursor_trail`，Ghostty 没有对应配置项（1.3.1 的 `c
 | 配置项 | linux (kitty) | macos (ghostty) | 能否合并 | 判断日期 |
 |---|---|---|---|---|
 | 终端本身 | kitty | Ghostty | ❌ 不同软件，各自配置 | 2026-08-23 |
-| 光标拖尾 | `cursor_trail 20` 内建 | 无内建，需着色器或 Neovim 插件 | ❌ 搁置中，见上 | 2026-08-24 |
+| 光标拖尾 | `cursor_trail 20` 内建 | `cursor_tail.glsl` + 手动开关 | ❌ 机制不同，阈值已对齐、时长刻意不对齐，见上 | 2026-09-12 |
 | 背景图开关 | `toggle-bg.sh` + `listen_on` 远程控制 | ❌ Ghostty 无远程控制协议，做不到运行时切换 | ❌ 不可移植 | 2026-08-24 |
 | 分屏布局 | `enabled_layouts splits/stack/tall/grid` | ❌ 只有手动分屏，无布局引擎 | ❌ 不可移植 | 2026-08-24 |
 | 标签栏样式 | `tab_bar_style fade` + 模板 | ❌ macOS 原生标签页，无 powerline 样式 | ❌ 不可移植 | 2026-08-24 |
