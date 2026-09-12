@@ -143,3 +143,50 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # duotfiles: put `dof` (the config deployer) on PATH
 export PATH="$HOME/duotfiles/bin:$PATH"
+
+# --- version managers --------------------------------------------------
+# Both of these are guarded, so a machine without the tool skips the line
+# instead of erroring on every shell start. pyenv lives in the shared part
+# rather than a platform block because it is going on the Mac too; until it
+# is, `command -v` keeps it quiet there.
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init - zsh)"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# --- ls: directories first ---------------------------------------------
+# 目录在前、文件在后。--group-directories-first 是 GNU ls 独有的，macOS 自带的
+# BSD ls 没有；探测失败就保持原样，不会报错。
+#
+# Appends rather than overrides: oh-my-zsh's lib/theme-and-appearance.zsh has
+# already picked the right colour alias for this platform (ls --color=tty on
+# Linux, gls --color=tty with brew coreutils, plain ls -G on stock macOS), so
+# this only adds a flag on top of whatever it chose. Has to come after
+# `source $ZSH/oh-my-zsh.sh` to see that alias at all.
+if ${=${aliases[ls]:-ls}} --group-directories-first / > /dev/null 2>&1; then
+  alias ls="${aliases[ls]:-ls} --group-directories-first"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PLATFORM-SPECIFIC (late) — for platform lines that must run AFTER oh-my-zsh.
+#
+# The early block above exists because FZF_BASE is read while oh-my-zsh loads.
+# This one is for the opposite case: anything that has to see the finished
+# environment. Empty right now — every platform-specific line this machine had
+# turned out to be tool-managed, and those live in ~/.zshrc.local instead.
+# ═══════════════════════════════════════════════════════════════════════════
+case "$(uname -s)" in
+  Darwin) : ;;
+  Linux)  : ;;
+esac
+
+# --- machine-local, deliberately not in duotfiles ----------------------
+# Blocks that a tool writes and owns (`conda init`, `mamba shell init` — both
+# target ~/.zshrc directly), and anything naming an absolute path outside
+# $HOME. Keeping them out of the repo is what stops two machines from
+# overwriting each other's paths in this shared file. See notes/zsh.md.
+# Sourced last so it can override anything above.
+[ -r "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
