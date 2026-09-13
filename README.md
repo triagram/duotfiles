@@ -21,6 +21,8 @@ Why it works this way: [DESIGN.md](DESIGN.md).
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
 | fcitx5-guard | link | `~/.local` | — (Linux only) |
 | agents | link | `~/.config/agents` | `~/.config/agents` |
+| claude | link | `~/.claude` | `~/.claude` |
+| zsh | link | `~` | `~` |
 
 To add a tool: append a line to [`manifest`](manifest), then
 `mkdir -p tools/<name>/{common,linux,macos}`.

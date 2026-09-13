@@ -1,0 +1,32 @@
+# Allow-list: `dof adopt` imports only these paths from ~/.claude.
+#
+# One line, and that is the point. ~/.claude mixes a little configuration into
+# a lot of machine-local state — projects/ holds a full transcript of every
+# session. The directory was dropped from the manifest entirely once for that
+# reason; it is back only because statusline.sh is a program worth versioning.
+#
+# Matching is segment-aware (path_matches in bin/dof): a pattern without a
+# slash matches at the top level only, so this cannot reach into plugins/ or
+# shell-snapshots/. A bare `*.sh` once swept in 36 scripts from those
+# directories, because shell case-globs let `*` cross `/`.
+
+statusline.sh
+
+# ── Deliberately NOT listed ─────────────────────────────────────────────────
+#
+# settings.json   Not stable enough to version. It differs per machine, and
+#                 within a machine it changes per task and per session — model,
+#                 effort level, permissions, attribution. Versioning it would
+#                 mean committing noise and resolving conflicts over values
+#                 that were never meant to agree across machines.
+# CLAUDE.md       A symlink to ~/.config/agents/AGENTS.md, the vendor-neutral
+#                 hub the `agents` tool deploys. Adopting it would copy the
+#                 content in and give a file that already has one source of
+#                 truth a second one. Same reasoning as tools/agy/.dofkeep.
+# keybindings.json, commands/, skills/, agents/, hooks/, output-styles/,
+# scripts/        An earlier version of this list allowed all of these. None
+#                 exist here yet. Listing files that do not exist is how the
+#                 agy allow-list grew a phantom GEMINI.md entry — add a line
+#                 when there is something to put behind it.
+# everything else Credentials, transcripts, caches, daemon state. .dofignore
+#                 is the second gate for those.
