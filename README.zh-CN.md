@@ -20,6 +20,8 @@
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
 | fcitx5-guard | link | `~/.local` | —（仅 Linux） |
 | agents | link | `~/.config/agents` | `~/.config/agents` |
+| claude | link | `~/.claude` | `~/.claude` |
+| zsh | link | `~` | `~` |
 
 加新软件 = 在 [`manifest`](manifest) 里加一行，然后 `mkdir tools/<名字>/{common,linux,macos}`。
 
