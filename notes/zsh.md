@@ -127,7 +127,17 @@ git pull → 读那台的 ~/.zshrc → 把可共享的行手填进 common/ 的�
   顺手 adopt 正是状态文件混进 git 的路径。
 - Mac 上还没装 pyenv。装完不用改配置 —— 守卫会自己放行。
 
-## `~/.zshrc.local` 里的 cowsay 横幅 —— 两个坑（2026-09-13，macOS）
+## cowsay 横幅：从 `.zshrc.local` 提升进公共部分（2026-09-13）
+
+Linux 接入时把它放进了 `~/.zshrc.local`，那层的定位是「工具自己会改写的块」，
+cowsay 不属于这类，是顺手放的。macOS 也要同一段文字之后，
+「另一台也要同一行就提升进公共部分」那条规则触发 —— 现在在 `common/.zshrc`，
+晚 `case` 块之后、`source ~/.zshrc.local` 之前。
+
+**Linux 那台 pull 之后要删掉自己 `~/.zshrc.local` 里的那段**，否则两头牛。
+macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc` 里 `[ -r ]` 守着不会报错。
+
+### 两个坑（macOS 上踩的，公共部分已带上）
 
 - **要加 `[ -t 1 ]`**。Claude Code 的 Bash 工具每次调用起一个新 shell、读启动文件、
   捕获 stdout —— 不加这个守卫，每个工具结果开头都是一头牛。

@@ -183,6 +183,16 @@ case "$(uname -s)" in
   Linux)  : ;;
 esac
 
+# --- greeting -----------------------------------------------------------
+# [ -t 1 ]: no cow inside Claude Code's Bash tool, which captures stdout.
+# PERL_UNICODE=SDA: cowsay counts bytes, so the em dash misaligns the bubble without it.
+if command -v cowsay >/dev/null 2>&1 && [ -t 1 ]; then
+  PERL_UNICODE=SDA cowsay -n <<'COW'
+we must know, we will know
+           — David Hilbert
+COW
+fi
+
 # --- machine-local, deliberately not in duotfiles ----------------------
 # Blocks that a tool writes and owns (`conda init`, `mamba shell init` — both
 # target ~/.zshrc directly), and anything naming an absolute path outside
