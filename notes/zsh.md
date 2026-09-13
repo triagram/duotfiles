@@ -126,3 +126,10 @@ git pull → 读那台的 ~/.zshrc → 把可共享的行手填进 common/ 的�
   纯冗余、不报错，但该收拾。没顺手做：`.zprofile` 不在这次范围内，
   顺手 adopt 正是状态文件混进 git 的路径。
 - Mac 上还没装 pyenv。装完不用改配置 —— 守卫会自己放行。
+
+## `~/.zshrc.local` 里的 cowsay 横幅 —— 两个坑（2026-09-13，macOS）
+
+- **要加 `[ -t 1 ]`**。Claude Code 的 Bash 工具每次调用起一个新 shell、读启动文件、
+  捕获 stdout —— 不加这个守卫，每个工具结果开头都是一头牛。
+- **cowsay 3.8.4（Perl）按字节算气泡宽度**，`—`（em dash）3 字节 1 列，右边框会歪 2 列。
+  `PERL_UNICODE=SDA cowsay …` 让 Perl 按字符数，对齐，不用把破折号换成 `--`。
