@@ -143,3 +143,20 @@ macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc
   捕获 stdout —— 不加这个守卫，每个工具结果开头都是一头牛。
 - **cowsay 3.8.4（Perl）按字节算气泡宽度**，`—`（em dash）3 字节 1 列，右边框会歪 2 列。
   `PERL_UNICODE=SDA cowsay …` 让 Perl 按字符数，对齐，不用把破折号换成 `--`。
+
+## 晚 `Darwin)` 块里的 ssh-add 那行（2026-09-15）
+
+重启后 agent 是空的，密钥有密码短语，每次都要手动 `ssh-add`。标准答案是 `~/.ssh/config`
+加 `UseKeychain yes` —— **但这台不能用**：Brewfile 里有 `brew "openssh"`，PATH 上的 `ssh` 和
+`ssh-add` 都是 Homebrew 的，没有苹果的钥匙串补丁，`UseKeychain` 会让**每次** ssh 报
+`Bad configuration option`，`git push` 直接断。
+
+所以走另一条路，不碰 ssh config：
+1. 一次性 `/usr/bin/ssh-add --apple-use-keychain ~/.ssh/id_ed25519`（**全路径**，苹果那份才有这个选项）
+2. `.zshrc` 里 agent 空就 `/usr/bin/ssh-add --apple-load-keychain`
+
+agent 是 launchd 的全局 socket，Homebrew 的 `ssh` 和苹果的 `ssh-add` 用同一个，所以混着用没问题。
+实测：`ssh-add -D` 清空 → 开新 shell → 密钥回来；第二个 shell 不重复加。
+
+`security find-generic-password` **查不到**这条钥匙串项，别用它判断存没存 ——
+直接跑 `--apple-load-keychain` 看有没有 `Identity added`。
