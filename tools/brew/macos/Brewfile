@@ -10,8 +10,6 @@ brew "openssh"
 brew "syncthing"
 # Menu bar tool to limit maximum charging percentage
 cask "aldente"
-# Client for wireless screen sharing with Barco conferencing systems
-cask "clickshare"
 cask "font-jetbrains-mono-nerd-font"
 cask "font-lxgw-wenkai"
 # Terminal emulator that uses platform-native UI and GPU acceleration
