@@ -1,0 +1,52 @@
+# Resource monitor. C++ version and continuation of bashtop and bpytop
+brew "btop"
+# Apjanke's fork of the classic cowsay project
+brew "cowsay"
+# Command-line fuzzy finder written in Go
+brew "fzf"
+# OpenBSD freely-licensed SSH connectivity tools
+brew "openssh"
+# Open source continuous file synchronization application
+brew "syncthing"
+# Menu bar tool to limit maximum charging percentage
+cask "aldente"
+# Client for wireless screen sharing with Barco conferencing systems
+cask "clickshare"
+cask "font-jetbrains-mono-nerd-font"
+cask "font-lxgw-wenkai"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
+# Web browser
+cask "google-chrome"
+# Native desktop AI assistant from Google
+cask "google-gemini"
+# Markdown editor
+cask "mark-text"
+# Provides updates to various Microsoft products
+cask "microsoft-auto-update"
+# Spreadsheet software
+cask "microsoft-excel"
+# Presentation software
+cask "microsoft-powerpoint"
+# Meet, chat, call, and collaborate in just one place
+cask "microsoft-teams"
+# Word processor
+cask "microsoft-word"
+# Knowledge base that works on top of a local folder of plain text Markdown files
+cask "obsidian"
+# Cloud storage client
+cask "onedrive"
+# Control your tools with a few keystrokes
+cask "raycast"
+# Tool to reverse the direction of scrolling
+cask "scroll-reverser"
+# Rime input method engine
+cask "squirrel-app"
+# Text editor for code, markup and prose
+cask "sublime-text"
+# Messaging app with a focus on speed and security
+cask "telegram"
+# NetEase UU remote desktop access and control tool
+cask "uuremote"
+# Collect, organise, cite, and share research sources
+cask "zotero"
