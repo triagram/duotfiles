@@ -16,7 +16,7 @@
 | tmux | link | `~/.config/tmux` | `~/.config/tmux` |
 | kitty | link | `~/.config/kitty` | `~/.config/kitty` |
 | ghostty | link | `~/.config/ghostty` | `~/.config/ghostty` |
-| agy | link | `~/.gemini` | `~/.gemini` |
+| agy | copy | `~/.gemini` | `~/.gemini` |
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
 | fcitx5-guard | link | `~/.local` | —（仅 Linux） |
 | agents | link | `~/.config/agents` | `~/.config/agents` |
@@ -112,7 +112,7 @@ dof pull tmux                        # 改成链接托管（可选，但推荐�
 
 ### 改了配置，想同步到另一台
 
-**link 模式（tmux / kitty / ghostty / claude / agy）** —— 你改的就是仓库里的文件：
+**link 模式（tmux / kitty / ghostty / fcitx5-guard / agents / claude / zsh）** —— 你改的就是仓库里的文件：
 
 ```bash
 vim ~/.config/tmux/tmux.conf         # 或者用任何方式改
@@ -121,7 +121,7 @@ git add -A && git commit -m "tmux(macos): 前缀键改成 C-a"
 git push
 ```
 
-**copy 模式（rime）** —— 需要一次显式回收：
+**copy 模式（rime / agy）** —— 需要一次显式回收：
 
 ```bash
 dof diff rime                        # 先看本机和仓库差在哪
@@ -182,13 +182,14 @@ tools/<软件>/
 
 ## 各软件注意事项
 
-**rime** —— 唯一走 copy 模式的。用户词库（`*.userdb/`）**绝不进 git**，
+**rime** —— 走 copy 模式。用户词库（`*.userdb/`）**绝不进 git**，
 走 Rime 自带的同步机制；上游方案（rime-ice）部署时现拉，不进仓库。
 每台新机器要手工配一次 `installation.yaml`。完整说明见 [notes/rime.md](notes/rime.md)。
 
 **claude / agy** —— `~/.claude` 和 `~/.gemini` 里配置和本机状态是混在一起的，
 靠 `.dofkeep` 白名单只收编该收的。`~/.claude/projects/` 是你所有会话的完整记录，
-永远不要让它进仓库。全局指令文件的组织见 [notes/ai-context.md](notes/ai-context.md)。
+永远不要让它进仓库。agy 走 copy 模式，因为应用运行时会往 `settings.json` 里写本机状态；
+自己改过的配置用 `dof push agy` 回收。全局指令文件的组织见 [notes/ai-context.md](notes/ai-context.md)。
 
 **kitty / ghostty / tmux** —— 都自带 include 机制（`include ${KITTY_OS}.conf`、
 `config-file = ?platform-macos.conf`、`source-file -q`），
