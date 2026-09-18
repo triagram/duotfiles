@@ -17,7 +17,7 @@ Why it works this way: [DESIGN.md](DESIGN.md).
 | tmux | link | `~/.config/tmux` | `~/.config/tmux` |
 | kitty | link | `~/.config/kitty` | `~/.config/kitty` |
 | ghostty | link | `~/.config/ghostty` | `~/.config/ghostty` |
-| agy | link | `~/.gemini` | `~/.gemini` |
+| agy | copy | `~/.gemini` | `~/.gemini` |
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
 | fcitx5-guard | link | `~/.local` | — (Linux only) |
 | agents | link | `~/.config/agents` | `~/.config/agents` |
@@ -118,7 +118,7 @@ dof pull tmux                        # switch to link-managed (optional, recomme
 
 ### You changed a config and want it on your other machine
 
-**`link` tools (tmux / kitty / ghostty / claude / agy)** — you edited the repo file
+**`link` tools (tmux / kitty / ghostty / fcitx5-guard / agents / claude / zsh)** — you edited the repo file
 directly:
 
 ```bash
@@ -128,7 +128,7 @@ git add -A && git commit -m "tmux(macos): prefix key -> C-a"
 git push
 ```
 
-**`copy` tools (rime)** — needs one explicit collection step:
+**`copy` tools (rime / agy)** — needs one explicit collection step:
 
 ```bash
 dof diff rime                        # see what differs first
@@ -195,15 +195,16 @@ files into `common/` after you have compared them and decided they should be sha
 
 ## Per-tool notes
 
-**rime** — the only `copy` tool. The user dictionary (`*.userdb/`) **never goes into
+**rime** — `copy` mode. The user dictionary (`*.userdb/`) **never goes into
 git**; it syncs through Rime's own mechanism. Upstream schemas (rime-ice) are cloned
 at deploy time rather than vendored. Each new machine needs `installation.yaml`
 configured once. Full details: [notes/rime.md](notes/rime.md).
 
 **claude / agy** — `~/.claude` and `~/.gemini` mix configuration with local state,
 so a `.dofkeep` allow-list controls what may be imported. `~/.claude/projects/` holds
-full transcripts of every session and must never enter the repo. How the instruction
-files are organised: [notes/ai-context.md](notes/ai-context.md).
+full transcripts of every session and must never enter the repo. agy is `copy` mode
+because the application writes local state into `settings.json` at runtime; collect
+your own edits with `dof push agy`. How the instruction files are organised: [notes/ai-context.md](notes/ai-context.md).
 
 **kitty / ghostty / tmux** — all three have native include mechanisms
 (`include ${KITTY_OS}.conf`, `config-file = ?platform-macos.conf`, `source-file -q`).
