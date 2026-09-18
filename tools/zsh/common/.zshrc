@@ -179,7 +179,11 @@ fi
 # turned out to be tool-managed, and those live in ~/.zshrc.local instead.
 # ═══════════════════════════════════════════════════════════════════════════
 case "$(uname -s)" in
-  Darwin) : ;;
+  Darwin)
+    # Refill the agent from Keychain after a reboot. Full path: the ssh-add on
+    # PATH is Homebrew's, which has no Keychain support.
+    ssh-add -l >/dev/null 2>&1 || /usr/bin/ssh-add --apple-load-keychain 2>/dev/null
+    ;;
   Linux)  : ;;
 esac
 
