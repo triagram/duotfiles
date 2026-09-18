@@ -264,7 +264,17 @@ cmd_list() {
 
 cmd_status() {
   if [ $# -eq 0 ]; then
-    manifest_rows | while read -r name _rest; do cmd_status "$name"; done
+    # Skip tools marked '-' here rather than letting load_tool die on them:
+    # a die inside the loop would end the whole sweep, so every tool listed
+    # after the first not-on-this-platform one would silently go unchecked.
+    manifest_rows | while read -r name _mode tl tm; do
+      if [ "$PLATFORM" = linux ]; then t="$tl"; else t="$tm"; fi
+      if [ "$t" = '-' ]; then
+        printf '\n%s%s%s  %snot on this platform%s\n' "$C_B" "$name" "$C_OFF" "$C_DIM" "$C_OFF"
+        continue
+      fi
+      cmd_status "$name"
+    done
     return
   fi
   load_tool "$1"; load_ignore; resolve_sources
