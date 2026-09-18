@@ -27,6 +27,7 @@ configuration. This is a development-time check and may assume more.
 
 import argparse
 import collections
+import os
 import re
 import subprocess
 import sys
@@ -112,8 +113,35 @@ def scan_message(path, findings):
     return 1
 
 
+def scan_worktree(findings):
+    """Files that differ from HEAD on disk: modified, staged, or untracked.
+
+    History is covered by scan_full; this is the part that has not reached
+    history yet, which is exactly what the pre-visibility-change run needs
+    to see -- an uncommitted file is still on the disk that is about to be
+    pushed, or committed by someone in a hurry.
+    """
+    # `git status` prints paths relative to the repository root regardless of
+    # the current directory, so open them from there — otherwise a run from a
+    # subdirectory would miss every file and still report Clean.
+    root = run("git", "rev-parse", "--show-toplevel", text=True).stdout.strip()
+    status = run("git", "status", "--porcelain", "--untracked-files=all",
+                 text=True).stdout.splitlines()
+    paths = []
+    for line in status:
+        # Two status columns, a space, then the path; a rename reads "old -> new".
+        path = line[3:].split(" -> ")[-1]
+        if line[:2] in ("D ", " D") or not path:
+            continue
+        paths.append(path)
+    for path in paths:
+        with open(os.path.join(root, path), "rb") as handle:
+            scan(handle.read(), path, findings)
+    return len(paths)
+
+
 def scan_full(findings):
-    """Every blob reachable from HEAD, plus every commit message."""
+    """Every blob reachable from HEAD, plus every commit message, plus the working tree."""
     listing = run("git", "rev-list", "--objects", "HEAD", text=True).stdout.splitlines()
     path_of = {}
     for line in listing:
@@ -129,7 +157,7 @@ def scan_full(findings):
     for sha in blobs:
         scan(run("git", "cat-file", "blob", sha).stdout, path_of.get(sha, sha), findings)
     scan(run("git", "log", "--format=%B").stdout, "<commit messages>", findings)
-    return len(blobs)
+    return len(blobs), scan_worktree(findings)
 
 
 def report_identities():
@@ -158,8 +186,9 @@ def main():
         count = scan_message(args.message, findings)
         scope = "commit message"
     else:
-        count = scan_full(findings)
-        scope = f"{count} blob(s) reachable from HEAD, every historical version"
+        blobs, uncommitted = scan_full(findings)
+        scope = (f"{blobs} blob(s) reachable from HEAD, every historical version, "
+                 f"plus {uncommitted} uncommitted file(s) in the working tree")
 
     if args.full:
         print(f"Scope: {scope}\n")
