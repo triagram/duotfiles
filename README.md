@@ -23,6 +23,7 @@ Why it works this way: [DESIGN.md](DESIGN.md).
 | agents | link | `~/.config/agents` | `~/.config/agents` |
 | claude | link | `~/.claude` | `~/.claude` |
 | zsh | link | `~` | `~` |
+| brew | link | — (no casks on Linux) | `~/.homebrew` |
 
 To add a tool: append a line to [`manifest`](manifest), then
 `mkdir -p tools/<name>/{common,linux,macos}`.

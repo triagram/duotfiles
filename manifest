@@ -23,3 +23,5 @@ agents     link   ~/.config/agents                  ~/.config/agents
 claude     link   ~/.claude                         ~/.claude
 # zsh 部署到 ~：zsh 只认家目录下的启动文件，没有它肯读的 XDG 路径
 zsh        link   ~                                 ~
+# brew: Linux 上没有 cask，bundle 会在第一个 cask 行失败，所以不部署
+brew       link   -                                 ~/.homebrew
