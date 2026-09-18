@@ -144,9 +144,15 @@ macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc
 - **cowsay 3.8.4（Perl）按字节算气泡宽度**，`—`（em dash）3 字节 1 列，右边框会歪 2 列。
   `PERL_UNICODE=SDA cowsay …` 让 Perl 按字符数，对齐，不用把破折号换成 `--`。
 
-## fzf 改用 fd 列文件（2026-09-18，先只进 Linux 块）
+## fzf 不改用 fd（2026-09-18 决定：不值得）
 
-装了 `fd-find` 和 `ripgrep`。**ripgrep 不需要任何配置**，直接用。fd 三件事：
+装了 `fd-find` 和 `ripgrep`，**两个都不需要 shell 配置**，直接用。
+曾把 fzf 的四个列文件入口全换成 fd（`git log --grep 'point fzf at fd'` 那次提交），当天撤回 —— 要显式写五行加守卫，
+换来的只是 fzf 列文件快一点，不值得。**别再提这个建议。** 本机保留了
+`~/.local/bin/fd -> /usr/bin/fdfind` 这个符号链接，那是安装的收尾（Ubuntu 的二进制叫 `fdfind`），
+不进 duotfiles。
+
+下面是那次测出来的事实，留着以防哪天真要做：
 
 - **Ubuntu 的二进制叫 `fdfind`**（和 `fdclone` 撞名），macOS 上 brew 装出来叫 `fd`。
   本机补了 `~/.local/bin/fd -> /usr/bin/fdfind`。**用符号链接，不用 alias**：
@@ -160,6 +166,5 @@ macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc
 - **必须带 `--follow`**。dof 管的配置全是软链，fd 默认把它们归为 link 类型而不是 file，
   `--type f` 就看不见。实测 `~/.config/kitty`：不加 18 个，加 23 个，fzf 自带的 `find -L` 也是 23。
 
-放晚 `case` 块的 `Linux)` 分支，带 `command -v fd` 守卫。**没直接进公共部分**是「先进平台块，
-另一台也验证过再挪」那条规则；Mac 装了 fd 之后如果同一段有效，原样挪进公共部分即可，
-守卫和注释都不用改。这几个变量是按键时才读，不像 `FZF_BASE` 要赶在 oh-my-zsh 加载前。
+如果哪天做：放晚 `case` 块，带 `command -v fd` 守卫，先进 Linux 块、Mac 验证过再挪公共部分。
+这几个变量是按键时才读，不像 `FZF_BASE` 要赶在 oh-my-zsh 加载前。完整的块在那次提交的 diff 里（notes/claude.md：别在笔记里写死 SHA）。

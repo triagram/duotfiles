@@ -175,32 +175,12 @@ fi
 #
 # The early block above exists because FZF_BASE is read while oh-my-zsh loads.
 # This one is for the opposite case: anything that has to see the finished
-# environment.
+# environment. Empty right now — every platform-specific line this machine had
+# turned out to be tool-managed, and those live in ~/.zshrc.local instead.
 # ═══════════════════════════════════════════════════════════════════════════
 case "$(uname -s)" in
   Darwin) : ;;
-  Linux)
-    # fzf: list files with fd instead of find. Four entry points, each reading
-    # its own setting — the variables drive bare fzf / Ctrl-T / Alt-C, the two
-    # functions drive **<TAB> completion. (Ctrl-R searches shell history, not
-    # files, so it is unaffected.) oh-my-zsh's fzf plugin only fills in the
-    # first variable, and only recognises the name `fd` — Ubuntu ships the
-    # binary as fdfind, bridged by a symlink at ~/.local/bin/fd.
-    #
-    # --follow matters: dof-managed configs are symlinks, and without it fd
-    # classifies them as links, not files, so Ctrl-T would never show them
-    # (measured: 18 hits without, 23 with; fzf's own find -L gives 23).
-    #
-    # Linux-only until the Mac has fd too and the same lines are seen to work
-    # there — then promote to the shared part unchanged (notes/zsh.md).
-    if command -v fd >/dev/null 2>&1; then
-      export FZF_DEFAULT_COMMAND='fd --type f --follow --hidden --exclude .git'
-      export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-      export FZF_ALT_C_COMMAND='fd --type d --follow --hidden --exclude .git'
-      _fzf_compgen_path() { fd --follow --hidden --exclude .git . "$1" }
-      _fzf_compgen_dir()  { fd --type d --follow --hidden --exclude .git . "$1" }
-    fi
-    ;;
+  Linux)  : ;;
 esac
 
 # --- greeting -----------------------------------------------------------
