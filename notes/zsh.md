@@ -143,3 +143,23 @@ macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc
   捕获 stdout —— 不加这个守卫，每个工具结果开头都是一头牛。
 - **cowsay 3.8.4（Perl）按字节算气泡宽度**，`—`（em dash）3 字节 1 列，右边框会歪 2 列。
   `PERL_UNICODE=SDA cowsay …` 让 Perl 按字符数，对齐，不用把破折号换成 `--`。
+
+## fzf 改用 fd 列文件（2026-09-18，先只进 Linux 块）
+
+装了 `fd-find` 和 `ripgrep`。**ripgrep 不需要任何配置**，直接用。fd 三件事：
+
+- **Ubuntu 的二进制叫 `fdfind`**（和 `fdclone` 撞名），macOS 上 brew 装出来叫 `fd`。
+  本机补了 `~/.local/bin/fd -> /usr/bin/fdfind`。**用符号链接，不用 alias**：
+  fzf 把命令串交给 `sh -c` 跑，`sh` 看不见 zsh 的 alias，alias 只能让手敲舒服。
+  这个链接是安装的一部分，不进 duotfiles。
+- **fzf 有四个列文件的入口，各读各的**：裸 `fzf` 读 `FZF_DEFAULT_COMMAND`，
+  Ctrl-T 读 `FZF_CTRL_T_COMMAND`，Alt-C 读 `FZF_ALT_C_COMMAND`，`**<TAB>` 补全调
+  `_fzf_compgen_path` / `_fzf_compgen_dir` 两个函数。oh-my-zsh 的 fzf 插件只自动填第一个
+  （`plugins/fzf/fzf.plugin.zsh:266`），其余三个未设时回退到写死的 `find`，要显式写。
+  Ctrl-R 搜的是命令历史（`fc -rl 1`），和 fd 无关。
+- **必须带 `--follow`**。dof 管的配置全是软链，fd 默认把它们归为 link 类型而不是 file，
+  `--type f` 就看不见。实测 `~/.config/kitty`：不加 18 个，加 23 个，fzf 自带的 `find -L` 也是 23。
+
+放晚 `case` 块的 `Linux)` 分支，带 `command -v fd` 守卫。**没直接进公共部分**是「先进平台块，
+另一台也验证过再挪」那条规则；Mac 装了 fd 之后如果同一段有效，原样挪进公共部分即可，
+守卫和注释都不用改。这几个变量是按键时才读，不像 `FZF_BASE` 要赶在 oh-my-zsh 加载前。
