@@ -4,20 +4,26 @@ This repository mixes original work with third-party configuration files that
 are redistributed under their own licenses. `LICENSE` (MIT) covers the original
 work only. This file says which is which.
 
-If you are looking for the short version: everything outside `tools/rime/` is
-original and MIT. Inside `tools/rime/`, assume a file is from iDvel/rime-ice
-under GPL-3.0 unless it is listed as original below.
+If you are looking for the short version: everything is original and MIT
+except two places. Inside `tools/rime/`, assume a file is from iDvel/rime-ice
+under GPL-3.0 unless it is listed as original below. Inside
+`tools/ghostty/macos/shaders/`, the one shader is third-party MIT.
 
 
 ## Original work — MIT (see LICENSE)
 
-    bin/dof
+    bin/dof, bin/audit-privacy
+    .githooks/**
     manifest
     AGENTS.md, DESIGN.md, README.md, README.zh-CN.md
     notes/**
     tools/agents/**
+    tools/agy/**
+    tools/claude/**
     tools/fcitx5-guard/**
+    tools/ghostty/**                    except shaders/, see below
     tools/kitty/**
+    tools/zsh/**
 
 Inside `tools/rime/`, these are also original:
 
@@ -70,6 +76,24 @@ copyright line, so it is reproduced here.
 
 Bundled with rime-ice. The original author is not named in the files and was
 not traced. Treat as GPL-3.0 with the rest of rime-ice.
+
+
+## sahaj-b/ghostty-cursor-shaders — MIT
+
+    https://github.com/sahaj-b/ghostty-cursor-shaders
+    Copyright (c) 2026 Sahaj Bhatt
+
+Under `tools/ghostty/macos/shaders/`:
+
+    cursor_tail.glsl                    MODIFIED: THRESHOLD_MIN_DISTANCE
+                                        raised from 1.5 to 2.0 to match
+                                        kitty's cursor_trail_start_threshold
+                                        (see notes/ghostty.md)
+    LICENSE                             upstream's MIT text, kept alongside
+
+The upstream repository ships eight shaders; only the one actually changed is
+kept here. The other seven are unmodified upstream files and are not vendored
+(same rule as the kitty themes — see tools/ghostty/.dofkeep).
 
 
 ## Pulled at deploy time, NOT in this repository
