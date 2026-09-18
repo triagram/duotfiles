@@ -75,6 +75,15 @@ analogy usually lands better than a precise definition.
 When I park a thread, re-raise it as I left it when we come back. Do not
 quietly advance it, and do not quietly drop it.
 
+Refer to things by name, never by position:
+
+- Never point at something with "this one", "the latter", "A/B" — repeat its
+  name.
+- When referring to a conclusion from an earlier message or session, restate
+  it; a label carries nothing across a `/clear`.
+- One finding, four lines: symptom (a command I can run + what it shows) →
+  cause → which file, roughly how many lines → the one word I reply to move it.
+
 ## Style habits
 
 Names carry the *what*; comments carry the *why*. If you need a comment to
