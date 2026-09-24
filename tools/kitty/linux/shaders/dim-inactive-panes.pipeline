@@ -1,0 +1,17 @@
+# 非當前分屏壓暗。由 kitty.conf 第 12 節的 custom_shaders 載入，需要 kitty >= 0.49。
+#
+# 為何不直接用內建的 dim-inactive-windows：它把 tab 欄和當前分屏四周的留白
+# 也一起壓暗，當前分屏像多了一圈暗框，看不習慣。本檔與內建版只差最後兩個 var。
+#
+# 取名刻意避開內建名稱：shaders/ 下的同名檔會悄悄蓋掉內建版，事後很難看出來。
+startgroup
+    # 靜態效果：只在內容或當前分屏變化時重繪，不定時刷新
+    animation_step 0
+    var float HIGHLIGHT_INTENSITY = 0
+    var float BORDER_WIDTH = 0
+    # 不壓暗 tab 欄
+    var bool DIM_CENTRAL_AREA_ONLY = true
+    # 當前分屏的留白算進「不變暗」的範圍
+    var bool INCLUDE_WINDOW_PADDING = true
+    shaders focus-highlight
+endgroup

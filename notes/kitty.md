@@ -75,7 +75,7 @@ macOS 侧还没进仓库，`tools/kitty/{common,macos}/` 仍是空的。
 
 kitty 0.49.0 起支持 `custom_shaders`（GPU 滤镜）。本机当天从 0.42.2 升到 0.49.1。
 
-**选了什么**：只开 `dim-inactive-windows`（非当前分屏压暗）。光标拖尾保留内建样式，
+**选了什么**：只开「非当前分屏压暗」（最终用的是自定义版，见本节末尾）。光标拖尾保留内建样式，
 不换 `cursor-trail-blaze` / `cursor-trail-lightning`；动态背景、鼠标效果、复古屏幕暂不开。
 用户的原话是「先应用 dim，有问题再调」。
 
@@ -95,23 +95,16 @@ kitty 0.49.0 起支持 `custom_shaders`（GPU 滤镜）。本机当天从 0.42.2
   （实测见 `notes/ghostty.md`）；kitty 默认 50 ms 一帧，空闲超过 `cursor_stop_blinking_after`
   （15 秒）或失焦就停。**kitty 侧还没实测功耗。**
 
-**实测副作用**（测试窗口截图取样）：dim 连 tab 栏（`17,17,27 → 5,5,11`）和当前分屏四周的
-留白（`30,30,46 → 13,13,22`）也一起压暗，当前分屏像多了一圈暗框。要排除这两处，
-写 `~/.config/kitty/shaders/<名字>.pipeline`，再把 `custom_shaders` 改成那个名字（**未实测**，
-参数取自官方文档的 dim-gray 例子）：
+**用的是自定义的 `shaders/dim-inactive-panes.pipeline`，不是内建的 `dim-inactive-windows`**
+（同日改的）。内建版实测（测试窗口截图取样）连 tab 栏（`17,17,27 → 5,5,11`）和当前分屏
+四周的留白（`30,30,46 → 13,13,22`）也一起压暗，当前分屏像多了一圈暗框，用户看不习惯。
+自定义版只比内建版多两个 `var`（取自官方文档的 dim-gray 例子）：
+`DIM_CENTRAL_AREA_ONLY = true` 放过 tab 栏，`INCLUDE_WINDOW_PADDING = true` 让当前分屏的
+留白不变暗。实测 tab 栏、当前分屏留白都回到原色，非当前分屏仍是 `13,13,22`。
 
-```
-startgroup
-    animation_step 0
-    var float HIGHLIGHT_INTENSITY = 0
-    var float BORDER_WIDTH = 0
-    var bool DIM_CENTRAL_AREA_ONLY = true
-    var bool INCLUDE_WINDOW_PADDING = true
-    shaders focus-highlight
-endgroup
-```
-
-`shaders/` 目录不在 `.dofignore` 里，建了会被 dof 看到，届时决定收不收。
+- 取名刻意避开内建名：`shaders/` 下的同名文件会悄悄盖掉内建版，事后很难看出来。
+- 这个文件随 `kitty.conf` 一起进仓库。不收的话，别的机器上 `kitty.conf` 会引用一个
+  不存在的 pipeline。
 
 **关掉只能删掉那一行。** `custom_shaders` 写成空值（包括 `-o custom_shaders=`）会被当作
 无效行忽略（日志 `Ignoring invalid config line`），滤镜照样从 kitty.conf 加载。
