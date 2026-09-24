@@ -70,3 +70,54 @@ macOS 侧还没进仓库，`tools/kitty/{common,macos}/` 仍是空的。
 
 届时用 kitty 自带的 `include ${KITTY_OS}.conf` 表达平台差异（`KITTY_OS` 是 kitty 内置变量），
 不引入模板引擎 —— 见 `AGENTS.md`。**在能真正比对之前，不要往 `common/` 搬东西。**
+
+## custom shader（2026-09-24 判断）
+
+kitty 0.49.0 起支持 `custom_shaders`（GPU 滤镜）。本机当天从 0.42.2 升到 0.49.1。
+
+**选了什么**：只开 `dim-inactive-windows`（非当前分屏压暗）。光标拖尾保留内建样式，
+不换 `cursor-trail-blaze` / `cursor-trail-lightning`；动态背景、鼠标效果、复古屏幕暂不开。
+用户的原话是「先应用 dim，有问题再调」。
+
+**已经查清、不要重推的几点**：
+
+- **dim 不省电。** 本机是液晶屏，背光恒定，画面暗不省电。它不增加重绘次数，
+  但每次重绘多一道全屏处理。`background_opacity 0.95` 本来就让 kitty 走分层绘制，
+  所以额外开销只剩那一道。
+- **`dim-inactive-windows` 和 `focus-highlight` 是同一个 `focus-highlight.slang`**，
+  只是 pipeline 不同：前者常驻、静态（`animation_step 0`）；后者只在切分屏 / 切 tab 后
+  跑 0.75 秒，平时零开销。
+- **`crt` / `crt-blue` / `tft` / `water` 会一直每 50 ms 重绘**，不看焦点也不看空闲 ——
+  它们没有带停止条件的 pipeline。要用就自写 `animation_step 0` 的 pipeline
+  （crt、tft 的画面本来就不随时间变）。
+- 换成拖尾滤镜后 `cursor_trail_color` 不生效，颜色和时长由滤镜自己的 `var` 参数决定。
+- 与 Ghostty 的功耗差别在机制：Ghostty 聚焦时固定 8 ms 一帧、不检测空闲
+  （实测见 `notes/ghostty.md`）；kitty 默认 50 ms 一帧，空闲超过 `cursor_stop_blinking_after`
+  （15 秒）或失焦就停。**kitty 侧还没实测功耗。**
+
+**实测副作用**（测试窗口截图取样）：dim 连 tab 栏（`17,17,27 → 5,5,11`）和当前分屏四周的
+留白（`30,30,46 → 13,13,22`）也一起压暗，当前分屏像多了一圈暗框。要排除这两处，
+写 `~/.config/kitty/shaders/<名字>.pipeline`，再把 `custom_shaders` 改成那个名字（**未实测**，
+参数取自官方文档的 dim-gray 例子）：
+
+```
+startgroup
+    animation_step 0
+    var float HIGHLIGHT_INTENSITY = 0
+    var float BORDER_WIDTH = 0
+    var bool DIM_CENTRAL_AREA_ONLY = true
+    var bool INCLUDE_WINDOW_PADDING = true
+    shaders focus-highlight
+endgroup
+```
+
+`shaders/` 目录不在 `.dofignore` 里，建了会被 dof 看到，届时决定收不收。
+
+**关掉只能删掉那一行。** `custom_shaders` 写成空值（包括 `-o custom_shaders=`）会被当作
+无效行忽略（日志 `Ignoring invalid config line`），滤镜照样从 kitty.conf 加载。
+
+**验证方法**（下次调参沿用）：
+`kitty --debug-rendering --class ShaderTest --session <两分屏、两 tab 的 session 文件>`，
+日志里看 `Custom shaders: N program(s)` 和 `has_active_shaders: 0 -> 1`；
+对照组用去掉那一行的配置副本 `--config` 启动。截图用系统 Python（`/usr/bin/python3`，
+pyenv 那个没有 `gi`）的 GdkX11 按窗口 XID 截，再取像素比较。
