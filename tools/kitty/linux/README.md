@@ -5,8 +5,9 @@
 **配色回到默认、图标空白、没有背景图、字体回退**的 kitty。
 下面列出需要手工补齐的部分，以及几个改配置时容易踩的坑。
 
-进仓库的只有 5 个手写文件：`kitty.conf`、`theme-overrides.conf`、
-`toggle-bg.sh`、`switch-icon.py` 和本文件。其余都是可重建的上游内容或
+进仓库的只有 6 个手写文件：`kitty.conf`、`theme-overrides.conf`、
+`toggle-bg.sh`、`switch-icon.py`、`shaders/dim-inactive-panes.pipeline`
+和本文件。其余都是可重建的上游内容或
 图片素材，排除规则和理由写在 `~/duotfiles/tools/kitty/.dofignore` 里。
 
 ---
@@ -266,6 +267,7 @@ B 窗口再点   → 这次才关掉
 | `theme-overrides.conf` | ✅ | 背景图 + 标签栏颜色。**必须**由主题文件 include，见坑 1 |
 | `toggle-bg.sh` | ✅ | 背景图开关 / 轮换，由 mouse_map 调用 |
 | `switch-icon.py` | ✅ | 在 `icons/` 里选图标，装进 hicolor 主题 |
+| `shaders/dim-inactive-panes.pipeline` | ✅ | 非当前分屏压暗，由 `kitty.conf` 第 12 节载入。需要 kitty >= 0.49 |
 | `README.md` | ✅ | 本文件 |
 | `current-theme.conf` | ❌ | theme kitten 生成；同时是没有 `.auto.conf` 匹配时的兜底。见上文第 5 条 |
 | `dark-theme.auto.conf` | ❌ | 系统深色时生效 |
