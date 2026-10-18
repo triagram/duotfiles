@@ -243,8 +243,14 @@ B 窗口点一下 → 读到 on=0，翻成 1，给 B 设图
 B 窗口再点   → 这次才关掉
 ```
 
-已修：状态文件按 kitty 实例分开存
-（`kitty-bg.<PID>.state`，键取自 `KITTY_LISTEN_ON`）。
+已修：状态文件按 kitty 实例分开存（`kitty-bg.<PID>.state`）。
+
+> **第一版修法其实没生效**（2026-10-18 发现）。当时的键取自 `KITTY_LISTEN_ON`
+> 末段，以为它形如 `unix:@kitty-<PID>`；但在 `launch --type=background` 起的进程里
+> 它是 `fd:49` 这种描述符编号，各实例的编号又多半相同 ——
+> 实测 7 个 kitty 共用着 `kitty-bg.fd:34/35/37.state` 三份状态，症状照旧。
+> 现在的键是脚本的 `$PPID`：后台进程的父进程就是 kitty 本身（0.42.2 与 0.49.1 都实测过）。
+
 **残留侷限**：同一个 kitty 实例底下开多个 OS 窗口时，它们仍共用一份状态。
 
 ### 坑 5：`remember_window_size` 会覆盖初始尺寸
