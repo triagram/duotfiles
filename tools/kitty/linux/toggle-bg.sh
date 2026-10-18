@@ -14,9 +14,11 @@ DIR="$HOME/.config/kitty/backgrounds"
 # toggle 讀到「已關閉」而去開啟，可 B 本來就開著 —— 看起來就是「按了沒反應，
 # 要多按幾次才行」。視窗開得越多越明顯。
 #
-# KITTY_LISTEN_ON 形如 unix:@kitty-305519，取末段（PID）當鍵。
+# 用 $PPID 當鍵：launch --type=background 起的行程，父行程就是 kitty 本身。
+# 不能從 KITTY_LISTEN_ON 取 PID —— 在背景行程裡它是 fd:49 這種描述符編號，
+# 不是 unix:@kitty-<PID>；各實例的編號又多半相同，結果還是共用狀態。
 # 已知侷限：同一個 kitty 實例底下開多個 OS 視窗時，它們仍共用一份狀態。
-_key="${KITTY_LISTEN_ON##*-}"
+_key="$PPID"
 STATE="${XDG_RUNTIME_DIR:-/tmp}/kitty-bg.${_key:-shared}.state"
 
 mapfile -t IMGS < <(find "$DIR" -maxdepth 1 -name '*.png' | sort)
