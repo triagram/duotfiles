@@ -8,11 +8,11 @@
 > dof 不碰，也不进 git。这块请在本机自行维护。
 >
 > 同步的**设计推理**（两层机制的区分、为什么不走网盘、Syncthing `.stversions/` 的陷阱）
-> 保留在 `tools/rime/common/devlog.md §7.5` —— 那是判断记录，值得留；
+> 保留在 `tools/rime/common/devlog.md §7.5`：那是判断记录，值得留；
 > 但**机制本身**（脚本、主机地址、词库文件）不进本仓库。
 >
 > **`rime-sync.sh` 在对端那台机器上跑，不在这台 Linux 上跑**（2026-10-18 核实）。
-> 本机那份的默认 `REMOTE_HOST` 指向的就是这台 Linux 自己，`REMOTE_SYNC` 是 Linux 路径 ——
+> 本机那份的默认 `REMOTE_HOST` 指向的就是这台 Linux 自己，`REMOTE_SYNC` 是 Linux 路径：
 > 它是写给对端用的，这台 Linux 只当被 ssh 进来的一方，自己只需要在输入法菜单里点「同步」。
 > 完整顺序：Linux 点同步 → 对端 `pull` → 对端点同步 → 对端 `push` → Linux 再点同步。
 
@@ -25,7 +25,7 @@
 | 文件 | 出处 | 大小 | 核对结果 |
 |---|---|---|---|
 | `cn_dicts/`（7 个） | `github.com/iDvel/rime-ice` | 45 MB | 版本差 |
-| `radical_pinyin.dict.yaml` | `github.com/iDvel/rime-ice` | 2.1 MB | — |
+| `radical_pinyin.dict.yaml` | `github.com/iDvel/rime-ice` | 2.1 MB | - |
 | `essay.txt` | `github.com/rime/rime-essay` | 5.6 MB | 版本差 |
 | `luna_pinyin.dict.yaml` | `github.com/rime/rime-luna-pinyin` | 891 KB | 版本差 |
 | `stroke.dict.yaml` | `github.com/rime/rime-stroke` | 2.1 MB | 版本差 |
@@ -58,11 +58,11 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 （`devlog.md` 的「原則二」）。
 
 > 例外：`custom_phrase.txt` 是**你改过的上游文件**（注释掉了 `噷/呣/呒`，加了
-> `啊对对对`、`不不不` 和邮箱短语）。它在仓库里，`dof pull` 会覆盖上游那份 —— 这正是要的效果。
+> `啊对对对`、`不不不` 和邮箱短语）。它在仓库里，`dof pull` 会覆盖上游那份：这正是要的效果。
 
 ## ② 仓库里的 common/ 与 linux/ 怎么分
 
-**`common/`（6 个，52 KB）—— 两个平台逐字节相同、且与平台无关的：**
+**`common/`（6 个，52 KB）：两个平台逐字节相同、且与平台无关的：**
 
 | 文件 | 是什么 |
 |---|---|
@@ -85,7 +85,7 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 > 理由是搜狗细胞词库来源不可考、重新分发的授权状态未知）。**没有备份，取不回来。**
 > 真要用只能用 `github.com/lewangdev/scel2txt` 从搜狗重新转换。
 
-**`linux/`（63 个，1.9 MB）—— 其余一切：**
+**`linux/`（63 个，1.9 MB）：其余一切：**
 
 你自己写的 10 个（5 个 `*.custom.yaml`、`custom_phrase.txt`、`custom_phrase_double.txt`、
 `japanese_custom_phrase.txt`、`devlog.md`、**`lua/katakana_filter.lua`**），
@@ -96,7 +96,7 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 
 > `lua/katakana_filter.lua` 是你自己写的（强制转片假名，等同 IME 的 F7，15 行 Lua 零数据文件，
 > 见 `devlog.md §6.8`），由 `japanese.custom.yaml:40` 的 `lua_filter@*katakana_filter`
-> 接入、绑定 `F7`。第一版白名单差点把它丢掉 —— 这就是改用黑名单的直接原因。
+> 接入、绑定 `F7`。第一版白名单差点把它丢掉：这就是改用黑名单的直接原因。
 
 ## 为什么用 copy 而不是 link
 

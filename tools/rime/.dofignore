@@ -1,7 +1,7 @@
 # Paths inside the Rime user directory that dof never touches.
 # Full reasoning and the upstream fetch list: notes/rime.md
 #
-# Only whole-line comments are recognised, same as .gitignore —
+# Only whole-line comments are recognised, same as .gitignore -
 # a "#" after a pattern is part of the pattern, not a comment.
 
 # ── Build artifacts, regenerated on every deploy ────────────────────────────

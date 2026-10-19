@@ -13,7 +13,7 @@
 | 排除项 | 判断 |
 |---|---|
 | `backgrounds/`（6.8 MB） | 40 倍膨胀，图片不可移植也不共享。后果刻意保留：新机器上 `theme-overrides.conf` 指向不存在的图，kitty 静默不画背景、不报错 |
-| `icons/` + `kitty.app.png` | 同为图片素材。且 `switch-icon.py` 会 `shutil.copy` 覆写 `kitty.app.png` —— link 模式下等于每次换图标都往仓库塞一个 128 KB 二进制 |
+| `icons/` + `kitty.app.png` | 同为图片素材。且 `switch-icon.py` 会 `shutil.copy` 覆写 `kitty.app.png`：link 模式下等于每次换图标都往仓库塞一个 128 KB 二进制 |
 | 四个主题文件 | 见下，单独一节 |
 | `kitty.conf.bak` | 纳入版本控制之前的手工备份。内建的 `*.dof-bak-*` 匹配不到 `.bak` |
 
@@ -40,7 +40,7 @@ include theme-overrides.conf
 配色存四遍，只为一行真正属于自己的东西。主题名记在 README.md，重建是一条命令一个文件。
 
 **附带好处**：`kitten themes` 重跑时写的是真文件，会把软链替换掉，`dof status` 会报
-`UNLINKED` —— 这是反复发生的，不收就没有这个问题。
+`UNLINKED`：这是反复发生的，不收就没有这个问题。
 
 > 主题名里的 Frappe **不带重音符**：`Catppuccin-Frappe`。
 
@@ -59,7 +59,7 @@ include theme-overrides.conf
 
 macOS 侧还没进仓库，`tools/kitty/{common,macos}/` 仍是空的。
 
-> **所以现在在 Mac 上跑 `dof pull kitty` 是个空操作** —— `resolve_sources` 只走
+> **所以现在在 Mac 上跑 `dof pull kitty` 是个空操作**：`resolve_sources` 只走
 > `common/` 和 `<platform>/`，两边都只有 `.gitkeep`（还会被 `BUILTIN_IGNORE` 滤掉），
 > 结果是「0 file(s) updated」，不报错也不部署任何东西。Mac 上要先
 > `dof adopt kitty` 把本机配置收进来，才有东西可比对、可部署。
@@ -69,7 +69,7 @@ macOS 侧还没进仓库，`tools/kitty/{common,macos}/` 仍是空的。
 | （等 macOS 侧 `dof adopt kitty` 之后再填） | | | | |
 
 届时用 kitty 自带的 `include ${KITTY_OS}.conf` 表达平台差异（`KITTY_OS` 是 kitty 内置变量），
-不引入模板引擎 —— 见 `AGENTS.md`。**在能真正比对之前，不要往 `common/` 搬东西。**
+不引入模板引擎：见 `AGENTS.md`。**在能真正比对之前，不要往 `common/` 搬东西。**
 
 ## custom shader（2026-09-24 判断）
 
@@ -87,7 +87,7 @@ kitty 0.49.0 起支持 `custom_shaders`（GPU 滤镜）。本机当天从 0.42.2
 - **`dim-inactive-windows` 和 `focus-highlight` 是同一个 `focus-highlight.slang`**，
   只是 pipeline 不同：前者常驻、静态（`animation_step 0`）；后者只在切分屏 / 切 tab 后
   跑 0.75 秒，平时零开销。
-- **`crt` / `crt-blue` / `tft` / `water` 会一直每 50 ms 重绘**，不看焦点也不看空闲 ——
+- **`crt` / `crt-blue` / `tft` / `water` 会一直每 50 ms 重绘**，不看焦点也不看空闲：
   它们没有带停止条件的 pipeline。要用就自写 `animation_step 0` 的 pipeline
   （crt、tft 的画面本来就不随时间变）。
 - 换成拖尾滤镜后 `cursor_trail_color` 不生效，颜色和时长由滤镜自己的 `var` 参数决定。

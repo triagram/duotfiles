@@ -3,7 +3,7 @@ patch:
   schema_list:
     - schema: double_pinyin_flypy    # 小鶴雙拼 (霧凇)
     - schema: luna_pinyin            # 明月拼音
-    - schema: japanese               # 日 —— 漢字變換（Mozc + JMdict 詞典）
+    - schema: japanese               # 日：漢字變換（Mozc + JMdict 詞典）
     # nihongo（仮）已於 2026-08-08 移除：japanese 的假名層經訓令式派生、
     # 單假名置頂、促音寫法補全後，已完全覆蓋它的能力，且多了漢字變換。
     # melt_eng 已移除：它作為次翻譯器 (table_translator@melt_eng)

@@ -40,7 +40,7 @@ for pid in $pids; do kill -USR2 "$pid"; done
 # when it is switched on without mains power. Warning only; the point of the
 # manual toggle is that it does what it is told.
 if [ "$state" = on ] && ! pmset -g batt | grep -q "'AC Power'"; then
-  echo "cursor trail on — on battery, ~10x idle CPU"
+  echo "cursor trail on - on battery, ~10x idle CPU"
 else
   echo "cursor trail $state"
 fi

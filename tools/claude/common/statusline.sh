@@ -85,7 +85,7 @@ EOF
 cols=${CLAUDE_STATUSLINE_COLS:-} _src="env"
 # Claude Code exports COLUMNS with the width actually available to the status
 # bar, which is the number we want. Measured: it is set here but not in other
-# tool subprocesses, so it is deliberate. /dev/tty is only a backstop — the
+# tool subprocesses, so it is deliberate. /dev/tty is only a backstop - the
 # device exists but `tput cols` against it returns nothing under Claude Code,
 # and it would report the whole terminal rather than the usable bar width.
 if [ -z "$cols" ] && [ -n "${COLUMNS:-}" ]; then cols=$COLUMNS; _src="COLUMNS"; fi
@@ -111,7 +111,7 @@ fi
 
 # --- helpers -----------------------------------------------------------
 # All the number formatting in a single awk, because this script runs on a
-# timer and process spawns dominate its cost — five awk calls were most of it.
+# timer and process spawns dominate its cost - five awk calls were most of it.
 _fmt=$(awk -v i="$in_tok" -v w="$win" -v o="$out_tok" -v c="$cost" -v p="$pct" '
 	function human(n) {
 		if (n >= 1000000) return sprintf("%.1fM", n/1000000);
@@ -136,7 +136,7 @@ EOF
 [ -n "$pct_i" ] || pct_i=0
 
 # --- path variants -----------------------------------------------------
-# %~ — abbreviate $HOME to a tilde the way zsh does.
+# %~ - abbreviate $HOME to a tilde the way zsh does.
 case $cwd in
 	"$HOME") path_full="~" ;;
 	"$HOME"/*) path_full="~${cwd#"$HOME"}" ;;
@@ -300,8 +300,8 @@ row2_build() {
 	fi
 }
 
-# Shrink row 1 until it fits $1 columns. The username goes first — it costs 12
-# columns and never tells you anything you didn't know — then the path is
+# Shrink row 1 until it fits $1 columns. The username goes first - it costs 12
+# columns and never tells you anything you didn't know - then the path is
 # abbreviated, and only as a last resort is the directory name itself cut.
 fit_row1() {
 	local budget=$1 combo over keep
@@ -330,7 +330,7 @@ fit_row2() { # shrink row 2 until it fits $1 columns
 style=${CLAUDE_STATUSLINE_STYLE:-auto}
 
 if [ "$style" != "two-line" ]; then
-	# Try one line. The username may be dropped to make it fit — it is the only
+	# Try one line. The username may be dropped to make it fit - it is the only
 	# part that carries no information, so losing it still counts as showing
 	# everything. Anything beyond that and two lines is the better trade.
 	row2_build 0

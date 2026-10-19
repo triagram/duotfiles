@@ -16,7 +16,7 @@ Linux 不部署（manifest 是 `-`）：Linux 版 Homebrew 没有 cask，`brew b
 
 ## 维护方式：手写为主，dump 只用来看漂移
 
-文件没有抬头注释，是刻意的 —— 这样 `dump --force` 直接覆盖也不丢东西，两种工作流都行：
+文件没有抬头注释，是刻意的：这样 `dump --force` 直接覆盖也不丢东西，两种工作流都行：
 
 - **加软件**：`brew install x` 之后手动加一行，或者 `brew bundle dump --global --force` 再看 `git diff`
 - **新机器**：`brew bundle install --global`
@@ -24,10 +24,10 @@ Linux 不部署（manifest 是 `-`）：Linux 版 Homebrew 没有 cask，`brew b
 - **清理**：`brew bundle cleanup --global` 不带 `--force` 就是 dry-run，只列「Would remove」；
   加 `--force` 才真卸载清单外的东西（已实测，2026-09-15 时无一包在名单里）
 
-dump 只列顶层（`brew leaves` + 全部 cask），依赖不进来 —— 17 个 formula 里只有 5 个在清单里，正常。
+dump 只列顶层（`brew leaves` + 全部 cask），依赖不进来：17 个 formula 里只有 5 个在清单里，正常。
 
 ## 内容审阅（2026-09-15）
 
 人眼过了一遍：无路径、无邮箱、无机构名。`clickshare`（Barco 会议室投屏客户端）
-**从清单里去掉了** —— 它只在当前机构的会议室有用，不属于「新机器要装」的东西。
+**从清单里去掉了**：它只在当前机构的会议室有用，不属于「新机器要装」的东西。
 本机装着的不受影响；**唯一后果是 `brew bundle cleanup --force` 会把它当多余的卸掉**。

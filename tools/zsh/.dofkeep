@@ -1,11 +1,11 @@
 # Allow-list: `dof adopt` imports only these paths from the home directory.
 #
 # The target is ~ itself because zsh insists on finding its startup files
-# there — there is no XDG path it will read without ZDOTDIR being exported
+# there - there is no XDG path it will read without ZDOTDIR being exported
 # from somewhere even earlier. So the allow-list is doing real work here:
 # without it, `dof adopt zsh` would walk all of $HOME.
 #
-# Always scope the adopt anyway — `dof adopt zsh .zshrc`, never a bare
+# Always scope the adopt anyway - `dof adopt zsh .zshrc`, never a bare
 # `dof adopt zsh`. The allow-list filters the *result* of the find; it does
 # not stop find from traversing every file under the home directory first.
 #

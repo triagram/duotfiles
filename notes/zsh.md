@@ -15,7 +15,7 @@
 不进 git ~/.zshrc.local ───────── 工具自己管的块、$HOME 之外的绝对路径
 ```
 
-**为什么要第三层 —— 别把 conda 块「顺手收进仓库」。**
+**为什么要第三层：别把 conda 块「顺手收进仓库」。**
 `conda init zsh` / `mamba shell init` **改的就是 `~/.zshrc`**，实测过：
 
 ```
@@ -28,7 +28,7 @@ no change     /home/mengyuan/.zshrc      ← 它的目标
 （`notes/agy.md` 对 `settings.json` 记过同一个坑）。再加上两台机器的 `conda init`
 会往同一份共享文件里写各自的绝对路径，互相覆盖。
 
-`~/.zshrc.local` 不需要进 `.dofignore` —— `.dofkeep` 白名单只放行字面的 `.zshrc`，
+`~/.zshrc.local` 不需要进 `.dofignore`：`.dofkeep` 白名单只放行字面的 `.zshrc`，
 `bin/dof` 的 `path_matches` 对不带斜杠的模式做顶层精确匹配，`.zshrc.local` 匹配不上。
 
 ## 新增配置的落点判断（2026-09-12 改进）
@@ -57,7 +57,7 @@ b 是在这条规矩下的**有意取舍**：差异只有 `FZF_BASE` 一行，
 ### 平台块必须在 `source $ZSH/oh-my-zsh.sh` 之前
 
 `FZF_BASE` 是 oh-my-zsh 的 fzf 插件在**加载过程中**读的，放文件末尾就太晚了。
-所以那个 `case` 块夹在 `plugins=(...)` 上面，不在文件底部 —— 看起来位置奇怪，是有原因的。
+所以那个 `case` 块夹在 `plugins=(...)` 上面，不在文件底部：看起来位置奇怪，是有原因的。
 
 ### 新增配置该放哪一半
 
@@ -87,7 +87,7 @@ dof adopt zsh             # ✗ 会遍历整个家目录
 ## 怎么验证改动（两个都踩过）
 
 **模拟另一个平台**：复制一份 `dof`、把 `Darwin) PLATFORM=macos` 改成 `linux`，
-对着假 `$HOME` 跑。**必须带 `DOF_REPO=`** —— 否则它从自身位置推仓库路径，
+对着假 `$HOME` 跑。**必须带 `DOF_REPO=`**：否则它从自身位置推仓库路径，
 直接报 `repo not found`，而你会把「什么都没发生」误读成「验证通过」。
 
 **测 `case` 块要清干净继承的环境变量**：
@@ -103,7 +103,7 @@ dof adopt zsh             # ✗ 会遍历整个家目录
 进 `~/.zshrc.local` 的：conda、mamba、cowsay 横幅。
 
 丢掉了两行：`alias ks='ls'`（不要了），以及 pipx 装时加的
-`export PATH="$PATH:/home/mengyuan/.local/bin"` —— 公共部分已有
+`export PATH="$PATH:/home/mengyuan/.local/bin"`：公共部分已有
 `$HOME/.local/bin` 的**前置**版本，比它更对且不写死家目录。
 
 晚 `case` 块目前是空的：这台的平台专属行全是工具管的，都归 `~/.zshrc.local` 了。
@@ -125,13 +125,13 @@ git pull → 读那台的 ~/.zshrc → 把可共享的行手填进 common/ 的�
   加上 `.zshrc` 那行，实测 PATH 里 **`.local/bin` 重复 7 次**（接入前是 8 次）。
   纯冗余、不报错，但该收拾。没顺手做：`.zprofile` 不在这次范围内，
   顺手 adopt 正是状态文件混进 git 的路径。
-- Mac 上还没装 pyenv。装完不用改配置 —— 守卫会自己放行。
+- Mac 上还没装 pyenv。装完不用改配置：守卫会自己放行。
 
 ## cowsay 横幅：从 `.zshrc.local` 提升进公共部分（2026-09-13）
 
 Linux 接入时把它放进了 `~/.zshrc.local`，那层的定位是「工具自己会改写的块」，
 cowsay 不属于这类，是顺手放的。macOS 也要同一段文字之后，
-「另一台也要同一行就提升进公共部分」那条规则触发 —— 现在在 `common/.zshrc`，
+「另一台也要同一行就提升进公共部分」那条规则触发：现在在 `common/.zshrc`，
 晚 `case` 块之后、`source ~/.zshrc.local` 之前。
 
 **Linux 那台 pull 之后要删掉自己 `~/.zshrc.local` 里的那段**，否则两头牛。
@@ -140,14 +140,14 @@ macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc
 ### 两个坑（macOS 上踩的，公共部分已带上）
 
 - **要加 `[ -t 1 ]`**。Claude Code 的 Bash 工具每次调用起一个新 shell、读启动文件、
-  捕获 stdout —— 不加这个守卫，每个工具结果开头都是一头牛。
-- **cowsay 3.8.4（Perl）按字节算气泡宽度**，`—`（em dash）3 字节 1 列，右边框会歪 2 列。
+  捕获 stdout：不加这个守卫，每个工具结果开头都是一头牛。
+- **cowsay 3.8.4（Perl）按字节算气泡宽度**，`-`（em dash）3 字节 1 列，右边框会歪 2 列。
   `PERL_UNICODE=SDA cowsay …` 让 Perl 按字符数，对齐，不用把破折号换成 `--`。
 
 ## 晚 `Darwin)` 块里的 ssh-add 那行（2026-09-15）
 
 重启后 agent 是空的，密钥有密码短语，每次都要手动 `ssh-add`。标准答案是 `~/.ssh/config`
-加 `UseKeychain yes` —— **但这台不能用**：Brewfile 里有 `brew "openssh"`，PATH 上的 `ssh` 和
+加 `UseKeychain yes`，**但这台不能用**：Brewfile 里有 `brew "openssh"`，PATH 上的 `ssh` 和
 `ssh-add` 都是 Homebrew 的，没有苹果的钥匙串补丁，`UseKeychain` 会让**每次** ssh 报
 `Bad configuration option`，`git push` 直接断。
 
@@ -158,13 +158,13 @@ macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc
 agent 是 launchd 的全局 socket，Homebrew 的 `ssh` 和苹果的 `ssh-add` 用同一个，所以混着用没问题。
 实测：`ssh-add -D` 清空 → 开新 shell → 密钥回来；第二个 shell 不重复加。
 
-`security find-generic-password` **查不到**这条钥匙串项，别用它判断存没存 ——
+`security find-generic-password` **查不到**这条钥匙串项，别用它判断存没存：
 直接跑 `--apple-load-keychain` 看有没有 `Identity added`。
 
 ## fzf 不改用 fd（2026-09-18 决定：不值得）
 
 装了 `fd-find` 和 `ripgrep`，**两个都不需要 shell 配置**，直接用。
-曾把 fzf 的四个列文件入口全换成 fd（`git log --grep 'point fzf at fd'` 那次提交），当天撤回 —— 要显式写五行加守卫，
+曾把 fzf 的四个列文件入口全换成 fd（`git log --grep 'point fzf at fd'` 那次提交），当天撤回：要显式写五行加守卫，
 换来的只是 fzf 列文件快一点，不值得。**别再提这个建议。** 本机保留了
 `~/.local/bin/fd -> /usr/bin/fdfind` 这个符号链接，那是安装的收尾（Ubuntu 的二进制叫 `fdfind`），
 不进 duotfiles。

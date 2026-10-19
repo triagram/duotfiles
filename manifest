@@ -1,4 +1,4 @@
-# manifest — one line per tool: where it is deployed and how.
+# manifest - one line per tool: where it is deployed and how.
 #
 # Fields (whitespace-separated, 4 columns):
 #   1. name          matches the tools/<name>/ directory

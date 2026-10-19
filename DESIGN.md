@@ -1,4 +1,4 @@
-# DESIGN — 设计原则、框架与关键细节
+# DESIGN - 设计原则、框架与关键细节
 
 > 这份文档回答 **「为什么是这样」**。
 > 「这是什么、怎么用」在 [README.zh-CN.md](README.zh-CN.md)（英文版 [README.md](README.md)）；
@@ -68,7 +68,7 @@ link 还顺带满足了核心诉求：改完配置 `git status` 立刻变红，*
 上游方案（rime-ice、插件仓库等）**部署时现拉**，不进仓库、不做 submodule。
 
 理由是核心诉求：你要能一眼看清自己改了什么。几百个上游文件混进来之后，
-`git log` 和 `git diff` 就废了 —— 而这两个恰恰是你做融合决策的主要工具。
+`git log` 和 `git diff` 就废了：而这两个恰恰是你做融合决策的主要工具。
 
 代价是版本不锁定。需要的话在 `notes/` 里记一个 commit hash 补偿。
 
@@ -119,7 +119,7 @@ tmux       link   ~/.config/tmux                    ~/.config/tmux
 rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 ```
 
-目标写 `-` 表示该平台不部署。**路径不能含空格** —— 本仓库涉及的路径都没有
+目标写 `-` 表示该平台不部署。**路径不能含空格**：本仓库涉及的路径都没有
 （Ghostty 在 macOS 上也读 `~/.config/ghostty`，所以我们避开了
 `~/Library/Application Support/` 这种带空格的路径）。
 用四列纯文本而不是 TOML/YAML，是为了让 bash 一行 `read` 就能解析，不引入任何依赖。
@@ -156,7 +156,7 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 ```
 
 跨机器：`git push` / `git pull` 搬运仓库，**两端各自 `dof pull` 部署**。
-没有自动同步，没有守护进程 —— 每一次生效都是你按下的。
+没有自动同步，没有守护进程：每一次生效都是你按下的。
 
 ---
 
@@ -166,8 +166,8 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 
 用 `copy` 只有两个理由：
 
-1. **应用会往配置目录里生成产物** —— Rime 每次部署都写 `build/`
-2. **应用用「写临时文件 + rename」保存配置** —— rename 是目录层面的替换，
+1. **应用会往配置目录里生成产物**：Rime 每次部署都写 `build/`
+2. **应用用「写临时文件 + rename」保存配置**：rename 是目录层面的替换，
    会把符号链接本身顶掉，导致静默失联
 
 第 2 条无法预判，只能观察。所以 `dof status` 内建了检测：目标位置本该是链接、
@@ -182,7 +182,7 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 
 | 状态 | 含义 | 处理 |
 |---|---|---|
-| `ok` | 链接正确 / 内容一致 | — |
+| `ok` | 链接正确 / 内容一致 | - |
 | `missing` | 仓库有，本机没部署 | `dof pull` |
 | `drift` | copy 模式下两边内容不同 | `dof diff` 看，然后 `dof push` 或 `dof pull` |
 | `UNLINKED` | 本该是链接，却是普通文件 | 见上一节 |
@@ -201,16 +201,16 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 
 ### 凭据的三道防线
 
-1. **`.dofkeep`** —— `dof adopt` 根本不会把 `.credentials.json` 复制进仓库
-2. **`.gitignore`** —— 即使手工复制进来了，git 也不会跟踪
-3. **人工 review** —— `dof adopt` 打印每一个收编的文件，并要求你 `git status` 后再 commit
+1. **`.dofkeep`**：`dof adopt` 根本不会把 `.credentials.json` 复制进仓库
+2. **`.gitignore`**：即使手工复制进来了，git 也不会跟踪
+3. **人工 review**：`dof adopt` 打印每一个收编的文件，并要求你 `git status` 后再 commit
 
 三道都是「宁可误伤」的方向。被误伤的文件用 `git add -f` 单独放行。
 
 ### 覆盖前一律备份
 
 `dof pull` 遇到已存在且不同的目标文件，先 `mv` 成 `xxx.dof-bak-<时间戳>` 再写。
-备份文件已在 `.gitignore` 里。清理是手工的 —— 自动删除的东西没法后悔。
+备份文件已在 `.gitignore` 里。清理是手工的：自动删除的东西没法后悔。
 
 ### Windows 的扩展点
 
@@ -235,18 +235,18 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 
 ## 五、演进路线
 
-**阶段一 · 现在** —— 两台机器上分别 `dof adopt`，把现有配置原样收进 `linux/` 和 `macos/`。
+**阶段一 · 现在**：两台机器上分别 `dof adopt`，把现有配置原样收进 `linux/` 和 `macos/`。
 不建 `common/`，不写融合规则。目标是先让所有东西进仓库、有历史。
 
-**阶段二 · 两套都在了** —— 让 AI 逐个软件 diff 两个平台层。
+**阶段二 · 两套都在了**：让 AI 逐个软件 diff 两个平台层。
 预期结论：`claude`、`agy` 大概率零差异；`tmux` 可能只差剪贴板那一两行；
 真正有差异的只有终端模拟器。**很多软件根本不需要「融合」这个动作。**
 
-**阶段三 · 按需收敛** —— 只对「差异确实小、且你确实烦了改两遍」的软件动手：
+**阶段三 · 按需收敛**：只对「差异确实小、且你确实烦了改两遍」的软件动手：
 把共同部分移进 `common/`，剩下的用软件自带的 include 机制串起来，
 并在 `notes/<软件>.md` 里记下「为什么剩下这几行必须分平台」。
 
 **以后可能加的**（都等到真的烦了再说）：
 `dof upstream`（自动拉 rime-ice 这类上游）、
 `/merge-config` 这个 Claude Code 自定义命令（把「比对两个平台层」固化成一句话）。
-两者都不该现在做 —— 需求还没被验证过。
+两者都不该现在做：需求还没被验证过。
