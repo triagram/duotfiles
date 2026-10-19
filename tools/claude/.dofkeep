@@ -1,7 +1,7 @@
 # Allow-list: `dof adopt` imports only these paths from ~/.claude.
 #
 # One line, and that is the point. ~/.claude mixes a little configuration into
-# a lot of machine-local state — projects/ holds a full transcript of every
+# a lot of machine-local state - projects/ holds a full transcript of every
 # session. The directory was dropped from the manifest entirely once for that
 # reason; it is back only because statusline.sh is a program worth versioning.
 #
@@ -15,7 +15,7 @@ statusline.sh
 # ── Deliberately NOT listed ─────────────────────────────────────────────────
 #
 # settings.json   Not stable enough to version. It differs per machine, and
-#                 within a machine it changes per task and per session — model,
+#                 within a machine it changes per task and per session - model,
 #                 effort level, permissions, attribution. Versioning it would
 #                 mean committing noise and resolving conflicts over values
 #                 that were never meant to agree across machines.
@@ -26,7 +26,7 @@ statusline.sh
 # keybindings.json, commands/, skills/, agents/, hooks/, output-styles/,
 # scripts/        An earlier version of this list allowed all of these. None
 #                 exist here yet. Listing files that do not exist is how the
-#                 agy allow-list grew a phantom GEMINI.md entry — add a line
+#                 agy allow-list grew a phantom GEMINI.md entry - add a line
 #                 when there is something to put behind it.
 # everything else Credentials, transcripts, caches, daemon state. .dofignore
 #                 is the second gate for those.

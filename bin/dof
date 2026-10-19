@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# dof — deploy and collect config files, one tool at a time.
+# dof - deploy and collect config files, one tool at a time.
 # Design rationale: DESIGN.md   Usage: README.md
 
 set -eu
 
 # Locate the repo. By default, derive it from the script's own location, but
-# resolve symlinks on $0 first — otherwise invoking it through a symlink such as
+# resolve symlinks on $0 first - otherwise invoking it through a symlink such as
 # ~/.local/bin/dof would compute the repo as ~/.local.
 # Not using `readlink -f`: older macOS does not have that option.
 if [ -n "${DOF_REPO:-}" ]; then
@@ -107,7 +107,7 @@ $_line"
 # Does relative path $1 match pattern $2?
 #
 # Shell's `case` globbing lets "*" cross "/", which makes a bare "*.sh" match
-# "shell-snapshots/whatever.sh" — far too greedy for an allow-list. So paths are
+# "shell-snapshots/whatever.sh" - far too greedy for an allow-list. So paths are
 # matched segment-aware instead:
 #
 #   settings.json   top level only        matches settings.json, not a/settings.json
@@ -289,7 +289,7 @@ cmd_status() {
   [ "$n" -eq 0 ] && printf '  %sno files for this tool in the repo yet (try: dof adopt %s)%s\n' "$C_DIM" "$TOOL" "$C_OFF"
   if [ "$unlinked" -gt 0 ]; then
     printf '\n  %sNote%s the destination should be a symlink but is a regular file. Two causes:\n' "$C_WARN" "$C_OFF"
-    printf '       (a) never deployed — this is your machine-local file\n'
+    printf '       (a) never deployed - this is your machine-local file\n'
     printf '           → dof adopt to import it, or dof pull to overwrite (backs up first)\n'
     printf '       (b) it was a symlink, but the app replaced it via write-temp-then-rename\n'
     printf '           → this tool is unsuited to link; switch it to copy in the manifest\n'
@@ -360,7 +360,7 @@ cmd_push() {
     done
   fi
   rm -f "$SRCLIST"
-  printf '  %s%s file(s) collected — remember to git commit%s\n' "$C_DIM" "$n" "$C_OFF"
+  printf '  %s%s file(s) collected - remember to git commit%s\n' "$C_DIM" "$n" "$C_OFF"
 }
 
 cmd_diff() {
@@ -385,7 +385,7 @@ cmd_adopt() {
   mkdir -p "$dest"
   printf '%s%s%s  machine → repo/tools/%s/%s/\n' "$C_B" "$TOOL" "$C_OFF" "$TOOL" "$PLATFORM"
   if [ $# -gt 0 ]; then scope="$*"; else scope='.'; fi
-  # Skipped paths are reported individually only at the top level — those are the
+  # Skipped paths are reported individually only at the top level - those are the
   # ones worth eyeballing (.credentials.json, history.jsonl). Anything deeper is
   # counted, so a directory of 600 session files does not bury the real output.
   _skipped="$(mktemp "${TMPDIR:-/tmp}/dof.XXXXXX")"
@@ -437,7 +437,7 @@ cmd_adopt() {
 
 usage() {
   cat <<'EOF'
-dof — deploy and collect config files, one tool at a time.
+dof - deploy and collect config files, one tool at a time.
 
   dof list                 status of every tool on this machine
   dof status [tool]        per-file check, including symlink health

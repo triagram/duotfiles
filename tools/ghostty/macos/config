@@ -42,7 +42,7 @@ background-opacity = 0.85
 background-blur-radius = 5
 
 # 色彩空间：按 P3 解读色值。注意这不是「输出更宽色域」，而是改变
-# 「同一个 #RRGGBB 按哪个空间解读」—— Catppuccin 是按 sRGB 画的，
+# 「同一个 #RRGGBB 按哪个空间解读」：Catppuccin 是按 sRGB 画的，
 # 用 P3 解读会比作者设计的更饱和。这是刻意选的口味，不是修正。
 window-colorspace = display-p3
 

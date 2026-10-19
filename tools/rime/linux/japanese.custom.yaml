@@ -5,12 +5,12 @@
 #           因此可在本機的 librime 1.10.0 上運行。詳見 devlog.md §6。
 #
 # 本 patch 做三件事：
-#   1. 拆除三組反查機制 —— 它們依賴的詞典在本機並不存在，留著會導致部署失敗：
+#   1. 拆除三組反查機制：它們依賴的詞典在本機並不存在，留著會導致部署失敗：
 #        putonghua_to_kanji_lookup → terra_pinyin.extended（缺）+ prism td_pinyin_flypy（缺）
 #        hannom_lookup            → hannomPS（缺，越南喃字）
 #        hanja_lookup             → hangyl（缺，韓國漢字）
 #      這三者都是給非日語母語者的便利反查，日常日文輸入用不到。
-#   2. 移除 simplifier 濾鏡與 simplification 開關 —— 那是中文簡繁轉換，
+#   2. 移除 simplifier 濾鏡與 simplification 開關：那是中文簡繁轉換，
 #      套在日文上會把日本漢字轉成simplified中文字形，語種錯誤。
 #   3. 介面標籤改為日文，標點改為日文標點。
 
@@ -47,7 +47,7 @@ patch:
       states: [ かな, Ａ ]
     # 強制轉片假名。詞典本身已含 29.7 萬條片假名，平時不需要開；
     # 此開關用於詞典裡沒有的詞（人名、擬聲詞、強調用法）。
-    # 列在方案選單（F4）裡是刻意的 —— 幾個月後想不起 F7 時，
+    # 列在方案選單（F4）裡是刻意的：幾個月後想不起 F7 時，
     # 打開選單就能看見「ひら/カタ」。
     - name: katakana
       reset: 0
@@ -63,7 +63,7 @@ patch:
 
   # 上游的 key_binder 綁定了 korean / vietnamese / double_jyutping_extra 等
   # 本機不存在的方案，且未 import_preset，會少掉翻頁等基本鍵位。
-  # 上游設 spelling_hints: 5，會把讀音附在候選後面 —— 但只對音節數 ≤5 的詞生效，
+  # 上游設 spelling_hints: 5，會把讀音附在候選後面：但只對音節數 ≤5 的詞生效，
   # 所以表現為「有時出現、有時不出現」的臃腫感。設 0 完全關閉。
   "translator/spelling_hints": 0
 
@@ -141,7 +141,7 @@ patch:
   key_binder:
     import_preset: default
 
-  # F7 切換片假名 —— Mozc / Google 日本語入力 / macOS 內建 / MS-IME 全都是這個鍵，
+  # F7 切換片假名：Mozc / Google 日本語入力 / macOS 內建 / MS-IME 全都是這個鍵，
   # 屬跨平台通用慣例，非本配置私設。
   "key_binder/bindings/@next":
     { when: always, accept: F7, toggle: katakana }

@@ -1,13 +1,13 @@
 # Allow-list: `dof adopt` imports only these paths from ~/.gemini.
 #
 # The target is all of ~/.gemini because agy scatters its files across that
-# directory, but almost nothing there belongs in git — hence the allow-list.
+# directory, but almost nothing there belongs in git - hence the allow-list.
 #
 # ── Deliberately NOT listed ─────────────────────────────────────────────────
 #
 # config/AGENTS.md   The global working agreement. It does live at
 #                    ~/.gemini/config/AGENTS.md, but only as a symlink into
-#                    ~/.config/agents/ — the hub the `agents` tool deploys.
+#                    ~/.config/agents/ - the hub the `agents` tool deploys.
 #                    Adopting it would copy the content in here and create a
 #                    second source of truth for a file that already has one.
 #                    See notes/ai-context.md.

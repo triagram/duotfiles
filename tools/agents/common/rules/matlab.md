@@ -6,7 +6,7 @@ paths:
 
 # MATLAB
 
-## Toolchain — detect, never assume
+## Toolchain - detect, never assume
 
 Check what is actually available on this machine before claiming anything:
 

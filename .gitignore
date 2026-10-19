@@ -11,7 +11,7 @@
 .env.*
 
 # ── Claude Code machine-local state (not configuration) ─────────────────────
-# projects/ holds full transcripts of every session — never publish these.
+# projects/ holds full transcripts of every session - never publish these.
 tools/claude/**/projects/
 tools/claude/**/todos/
 tools/claude/**/shell-snapshots/
@@ -26,7 +26,7 @@ tools/agy/**/oauth_creds.json
 
 # ── Rime ────────────────────────────────────────────────────────────────────
 # build/            build artifacts, regenerated on every deploy
-# *.userdb*         user dictionary — synced by Rime itself, never by git
+# *.userdb*         user dictionary - synced by Rime itself, never by git
 # sync/             Rime's sync directory
 # installation.yaml differs per machine (installation_id / sync_dir)
 # upstream/         upstream schemas, cloned at deploy time

@@ -5,12 +5,12 @@
 #           因此可在本機的 librime 1.10.0 上運行。詳見 devlog.md §6.3。
 #
 # 本 patch 做三件事：
-#   1. 拆除三組反查機制 —— 它們依賴的詞典在本機並不存在，留著會導致部署失敗：
+#   1. 拆除三組反查機制：它們依賴的詞典在本機並不存在，留著會導致部署失敗：
 #        putonghua_to_kanji_lookup → terra_pinyin.extended（缺）+ prism td_pinyin_flypy（缺）
 #        hannom_lookup            → hannomPS（缺，越南喃字）
 #        hanja_lookup             → hangyl（缺，韓國漢字）
 #      這三者都是給非日語母語者的便利反查，日常日文輸入用不到。
-#   2. 移除 simplifier 濾鏡與 simplification 開關 —— 那是中文簡繁轉換，
+#   2. 移除 simplifier 濾鏡與 simplification 開關：那是中文簡繁轉換，
 #      套在日文上會把日本漢字轉成simplified中文字形，語種錯誤。
 #   3. 介面標籤改為日文，標點改為日文標點。
 

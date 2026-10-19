@@ -6,7 +6,7 @@ paths:
 
 # Python
 
-## Toolchain — detect, never assume
+## Toolchain - detect, never assume
 
 Check what the project actually uses before running anything:
 
@@ -21,7 +21,7 @@ Never run a bare `python` or `pytest`; it silently picks the wrong interpreter.
 
 - Functions, variables, modules: `snake_case`
 - Classes: `PascalCase`; constants: `UPPER_SNAKE_CASE`
-- A leading underscore means module-private — do not reach across for it
+- A leading underscore means module-private - do not reach across for it
 - Never shadow a builtin (`list`, `type`, `sum`, `id`, `input`)
 
 ## Errors must stay visible

@@ -1,4 +1,4 @@
-# .zshrc — deployed by dof from duotfiles/tools/zsh/common/.zshrc
+# .zshrc - deployed by dof from duotfiles/tools/zsh/common/.zshrc
 #
 # ONE file for both machines. Everything here runs on Linux and macOS alike,
 # except the single `case "$(uname -s)"` block below, which is the only
@@ -77,7 +77,7 @@ ZSH_THEME="half-life"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 # ═══════════════════════════════════════════════════════════════════════════
-# PLATFORM-SPECIFIC — the only part of this file that differs per machine.
+# PLATFORM-SPECIFIC - the only part of this file that differs per machine.
 #
 # Stays above `source $ZSH/oh-my-zsh.sh` on purpose: the fzf plugin reads
 # FZF_BASE while oh-my-zsh loads, so setting it afterwards is too late.
@@ -98,7 +98,7 @@ case "$(uname -s)" in
     ;;
 
   Linux)
-    : # nothing yet — the Linux machine fills this in when it adopts
+    : # nothing yet - the Linux machine fills this in when it adopts
     ;;
 
 esac
@@ -171,11 +171,11 @@ if ${=${aliases[ls]:-ls}} --group-directories-first / > /dev/null 2>&1; then
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════
-# PLATFORM-SPECIFIC (late) — for platform lines that must run AFTER oh-my-zsh.
+# PLATFORM-SPECIFIC (late) - for platform lines that must run AFTER oh-my-zsh.
 #
 # The early block above exists because FZF_BASE is read while oh-my-zsh loads.
 # This one is for the opposite case: anything that has to see the finished
-# environment. Empty right now — every platform-specific line this machine had
+# environment. Empty right now - every platform-specific line this machine had
 # turned out to be tool-managed, and those live in ~/.zshrc.local instead.
 # ═══════════════════════════════════════════════════════════════════════════
 case "$(uname -s)" in
@@ -189,16 +189,16 @@ esac
 
 # --- greeting -----------------------------------------------------------
 # [ -t 1 ]: no cow inside Claude Code's Bash tool, which captures stdout.
-# PERL_UNICODE=SDA: cowsay counts bytes, so the em dash misaligns the bubble without it.
+# PERL_UNICODE=SDA: cowsay counts bytes, so a non-ASCII character in the quote misaligns the bubble without it.
 if command -v cowsay >/dev/null 2>&1 && [ -t 1 ]; then
   PERL_UNICODE=SDA cowsay -n <<'COW'
 we must know, we will know
-           — David Hilbert
+           - David Hilbert
 COW
 fi
 
 # --- machine-local, deliberately not in duotfiles ----------------------
-# Blocks that a tool writes and owns (`conda init`, `mamba shell init` — both
+# Blocks that a tool writes and owns (`conda init`, `mamba shell init` - both
 # target ~/.zshrc directly), and anything naming an absolute path outside
 # $HOME. Keeping them out of the repo is what stops two machines from
 # overwriting each other's paths in this shared file. See notes/zsh.md.

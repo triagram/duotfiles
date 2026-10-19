@@ -1,6 +1,6 @@
 # Paths inside the kitty config directory that dof never touches.
 #
-# Only whole-line comments are recognised, same as .gitignore —
+# Only whole-line comments are recognised, same as .gitignore -
 # a "#" after a pattern is part of the pattern, not a comment.
 
 # ── Background images ───────────────────────────────────────────────────────
@@ -8,7 +8,7 @@
 # grow the repo roughly 40x for content that is neither portable nor shared.
 #
 # The consequence is deliberate and documented. Since 2026-08-30 the background
-# is off by default — theme-overrides.conf no longer sets background_image, so
+# is off by default - theme-overrides.conf no longer sets background_image, so
 # nothing points at a missing file. Ctrl+middle simply finds no PNG and the
 # toggle script exits 0. Dropping an image into backgrounds/ is enough to
 # restore it; no config edit is needed, the script globs the directory.
@@ -21,7 +21,7 @@ backgrounds/
 #
 # kitty.app.png is excluded for a second reason. switch-icon.py copies the
 # chosen icon onto it, so under link mode that write would land straight in
-# the repo — a 128 KB binary churning on every icon switch.
+# the repo - a 128 KB binary churning on every icon switch.
 # Rebuilding both is switch-icon.py's whole job; README.md has the steps.
 icons/
 kitty.app.png
@@ -35,7 +35,7 @@ kitty.app.png
 #
 # current-theme.conf is byte-identical to dark-theme.auto.conf, so adopting
 # the set would commit the same third-party palette twice over for one line
-# that is actually ours. The theme names are recorded in README.md instead —
+# that is actually ours. The theme names are recorded in README.md instead -
 # regenerating from them is one command per file.
 #
 # It also removes a recurring annoyance: the themes kitten rewrites these as

@@ -1,4 +1,4 @@
-# ai-context — 全局与项目级的 AI 指令文件
+# ai-context - 全局与项目级的 AI 指令文件
 
 ## 名字对照
 
@@ -23,7 +23,7 @@
 | **用户级 rules** | **`~/.claude/rules/*.md`** |
 | 项目级 | `./CLAUDE.md` 或 `./.claude/CLAUDE.md` |
 
-**没有任何 XDG 路径。** `~/.config/agents/AGENTS.md` 不会被读 —— 位置不在列表里，
+**没有任何 XDG 路径。** `~/.config/agents/AGENTS.md` 不会被读：位置不在列表里，
 文件名也不对，两条都不满足。放成 `~/.claude/AGENTS.md` 同样不读。
 
 > 这个坑实际踩过：`tools/agents` 部署到 `~/.config/agents/`，
@@ -31,7 +31,7 @@
 > **`dof` 说部署成功 ≠ 目标程序会去读那个位置。**
 
 > **⚠ 不要因此把 `agents` 从 manifest 删掉。** `~/.config/agents/` 不是给厂商读的，
-> 它是**中立枢纽**（见下一节）—— 没有工具直接读它，但所有厂商的软链都指向它。
+> 它是**中立枢纽**（见下一节）：没有工具直接读它，但所有厂商的软链都指向它。
 
 ## 落地方式：2 跳（2026-08-31 决定）
 
@@ -61,17 +61,17 @@ ln -s ~/.config/agents/AGENTS.md ~/.gemini/config/AGENTS.md
 
 ### 为什么不是 1 跳（直接链到仓库）
 
-1 跳看起来更直观 —— 和仓库里其他工具一样，「配置只有一份在仓库里，别处链过来」。
+1 跳看起来更直观：和仓库里其他工具一样，「配置只有一份在仓库里，别处链过来」。
 2026-08-31 认真考虑过，最后否掉，三条理由：
 
 **① 引导命令里不含仓库路径，仓库怎么挪都不影响厂商那几条链。**
 这不是推演，是当天实测的：把仓库从 `~/.duotfiles` 改名成 `~/duotfiles` 之后，
-13 条指向仓库的软链断了 11 条，**而 4 条厂商软链一条都没断** —— 它们指向
+13 条指向仓库的软链断了 11 条，**而 4 条厂商软链一条都没断**：它们指向
 `~/.config/agents/`，压根不含仓库路径。dof 管的那 11 条一句 `dof pull` 就全好了。
 1 跳的话，这 4 条会跟着一起断，而且每台机器都要手工重建。
 
 **② 保住 manifest 里 `agents` 那条的意义。** 1 跳的话 dof 部署到 `~/.config/agents`
-就没人经过了，你会想把它从 manifest 删掉 —— 于是 `tools/agents/` 变成唯一一个
+就没人经过了，你会想把它从 manifest 删掉：于是 `tools/agents/` 变成唯一一个
 不在 manifest 里的 `tools/` 目录，比现在更不齐整，不是更齐整。
 
 **③ `~/.config/agents/` 是社区正在标准化的位置。**
@@ -85,7 +85,7 @@ Codex `~/.codex/AGENTS.md`、droid `~/.factory/AGENTS.md`、Amp `~/.config/AGENT
 
 软链是同一个 inode，`/memory` 里编辑会**穿透写进仓库文件**，改动自然进 git；
 `@` 导入则写进那个本机指针文件，内容变成永远不同步的孤儿。代价是将来想加
-「只给 Claude 看、不给 Gemini 看」的指令时得改用导入形式 —— 真有这个需求再换。
+「只给 Claude 看、不给 Gemini 看」的指令时得改用导入形式：真有这个需求再换。
 
 > **两者都在 Cowork 会话里失效**（软链的 `~/.claude/CLAUDE.md` 被跳过；
 > 指向工作目录之外的导入也被跳过）。这一条不构成两种做法的区别。
@@ -106,7 +106,7 @@ paths:
 让它只在你真的读到那类文件时才进来。
 
 > **但这套语法只有 Claude Code 认。** Antigravity（agy）用的键是
-> `trigger: always_on | model_decision`，完全不同的词汇 —— 这是不把 rules 链给
+> `trigger: always_on | model_decision`，完全不同的词汇：这是不把 rules 链给
 > Gemini 的直接原因，见下一节。
 
 ## Gemini（Antigravity）侧：AGENTS.md 已接，rules 刻意不接
@@ -130,7 +130,7 @@ paths:
 
 1. **frontmatter 的键对不上。** 我们的文件用 `paths:`，Antigravity 用 `trigger:`。
    按它文档「只有 `always_on` 无条件载入」的措辞，一个没有它认识的 trigger 的规则
-   最可能被当成常驻规则**每次会话都载入** —— 正是加 `paths:` 想避免的事。
+   最可能被当成常驻规则**每次会话都载入**：正是加 `paths:` 想避免的事。
    Claude 那边省下的上下文，在 Gemini 这边又赔回去。
 2. **全局 `rules/` 目录能不能被发现，文档没写死。** 它列的 rules 发现路径是
    `GEMINI.md`、`AGENTS.md`、`.agents/rules/*.md`，最后那个明确归在**工作区层级**
@@ -142,10 +142,10 @@ paths:
 ## 验证方式
 
 **Claude**：改完开**新会话**（指令文件在启动时加载），然后 `/context` 看
-**Memory files** 一栏 —— `~/.claude/CLAUDE.md` 出现了才算生效。
+**Memory files** 一栏：`~/.claude/CLAUDE.md` 出现了才算生效。
 `dof status` 是查不出这个问题的。
 
-**Gemini**：同上思路 —— 问一句只有 `AGENTS.md` 里才有的约定。
+**Gemini**：同上思路，问一句只有 `AGENTS.md` 里才有的约定。
 
 ## 项目级模板：不要做成脚本
 
@@ -159,7 +159,7 @@ tools/agents/common/commands/init-agents.md   →  ~/.claude/commands/init-agent
 tools/agents/common/rubric/agents-md.md       →  「一份好的项目 AGENTS.md 该有什么」
 ```
 
-然后在任何新项目里输入 `/init-agents` 即可。部署方式与 `CLAUDE.md` / `rules/` 相同 ——
+然后在任何新项目里输入 `/init-agents` 即可。部署方式与 `CLAUDE.md` / `rules/` 相同：
 **再加一条本机软链，同样走枢纽、不写仓库路径**：
 
 ```bash
@@ -167,7 +167,7 @@ ln -s ~/.config/agents/commands ~/.claude/commands
 ```
 
 > 旧版本这里写的是 `tools/claude/common/commands/`，并说「`~/.claude/commands/`
-> 本来就在同步清单里」。**这两句都不成立** —— `tools/claude` 已在 `22e6584`
+> 本来就在同步清单里」。**这两句都不成立**：`tools/claude` 已在 `22e6584`
 > 整个删除，`~/.claude` 不再由 dof 管理。命令要生效必须靠上面那条手动软链。
 
 （Claude Code 自带的 `/init` 也能生成 CLAUDE.md，你这个相当于带自己标准的版本。）

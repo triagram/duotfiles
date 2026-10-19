@@ -35,7 +35,7 @@ ln -sf ~/.local/kitty.app/bin/kitty ~/.local/kitty.app/bin/kitten ~/.local/bin/
 ### 3. 桌面入口 `~/.local/share/applications/kitty.desktop`
 
 二进制包把所有东西装在 `~/.local/kitty.app`，而**这个路径不在
-`XDG_DATA_DIRS` 里**，所以系统读不到包内自带的 desktop 文件和图标 ——
+`XDG_DATA_DIRS` 里**，所以系统读不到包内自带的 desktop 文件和图标：
 必须自己在 `~/.local/share/applications/` 放一份。关键内容：
 
 ```ini
@@ -73,7 +73,7 @@ GNOME Shell 把窗口匹配到 desktop 文件之后，**只用 desktop 文件里
 ### 5. 主题文件：**不在仓库里**，用主题名重建
 
 四个主题文件都**不纳入同步**。它们是上游 Catppuccin（MIT）的原样输出，
-本地改动只有追加在末尾的两行（见坑 1、坑 2）—— 收进仓库等于把同一份
+本地改动只有追加在末尾的两行（见坑 1、坑 2）：收进仓库等于把同一份
 第三方配色存四遍（`current-theme.conf` 与 `dark-theme.auto.conf`
 逐字节相同），只为一行真正属于自己的东西。
 
@@ -112,7 +112,7 @@ done
 `background_image` 已注释掉，新窗口一律不带背景，要背景按一次
 `Ctrl+中键`（`toggle-bg.sh` 在运行期用 `kitty @ set-background-image` 设进去）。
 
-所以图不在时不会有任何异常 —— 配置里根本没有指向它的路径，
+所以图不在时不会有任何异常：配置里根本没有指向它的路径，
 只是 `Ctrl+中键` 找不到 PNG，脚本直接 `exit 0`，按了没反应。
 
 要恢复：把 PNG 放进 `backgrounds/` 就行，**不需要改配置**，
@@ -161,7 +161,7 @@ Claude Code 默认**只在 Ghostty / kitty / iTerm2 里发桌面通知**（因�
 
 启用自动深浅色主题之后，`background_image` / `background_image_layout` /
 `background_tint` 和 `active_tab_*` / `inactive_tab_*` / `tab_bar_background`
-这些设置，**写在 `kitty.conf` 里不生效** —— 会被主题文件覆盖。
+这些设置，**写在 `kitty.conf` 里不生效**：会被主题文件覆盖。
 
 kitty 文档写明：主题文件里的颜色**连命令行 `--override` 都压得住**。
 
@@ -194,7 +194,7 @@ grep -L "include theme-overrides.conf" ~/.config/kitty/*-theme*.conf
 ### 坑 3：GNOME 的浅色模式上报的是 `no-preference`
 
 GNOME 在「深色样式」未启用时，通过 portal 上报的是 **`no-preference`
-而不是 `light`**。所以 `no-preference-theme.auto.conf` 是必需的 ——
+而不是 `light`**。所以 `no-preference-theme.auto.conf` 是必需的：
 只有 `light-theme.auto.conf` 的话，白天会掉回 `current-theme.conf`。
 
 本机的 `auto-dark-mode` 脚本白天设的正是 `default`（即 no-preference），
@@ -224,7 +224,7 @@ mouse_map 第三个字段写的是 `ungrabbed`。kitty 文档：
 > program running in the terminal has requested mouse events.**
 
 而 `~/.config/tmux/tmux.conf.local` 里是 `set -g mouse on`。所以**只要你在 tmux
-里（或任何开了鼠标上报的 TUI），`Ctrl+中键` 根本不会触发** —— 不是偶发，是必然。
+里（或任何开了鼠标上报的 TUI），`Ctrl+中键` 根本不会触发**：不是偶发，是必然。
 
 改成 `ungrabbed,grabbed` 就能在 tmux 里用，代价是 kitty 截下这个事件、不再传给
 里面的程序。**2026-08-30 评估过，选择保持 `ungrabbed` 不改。**
@@ -247,7 +247,7 @@ B 窗口再点   → 这次才关掉
 
 > **第一版修法其实没生效**（2026-10-18 发现）。当时的键取自 `KITTY_LISTEN_ON`
 > 末段，以为它形如 `unix:@kitty-<PID>`；但在 `launch --type=background` 起的进程里
-> 它是 `fd:49` 这种描述符编号，各实例的编号又多半相同 ——
+> 它是 `fd:49` 这种描述符编号，各实例的编号又多半相同：
 > 实测 7 个 kitty 共用着 `kitty-bg.fd:34/35/37.state` 三份状态，症状照旧。
 > 现在的键是脚本的 `$PPID`：后台进程的父进程就是 kitty 本身（0.42.2 与 0.49.1 都实测过）。
 
@@ -278,7 +278,7 @@ B 窗口再点   → 这次才关掉
 | `current-theme.conf` | ❌ | theme kitten 生成；同时是没有 `.auto.conf` 匹配时的兜底。见上文第 5 条 |
 | `dark-theme.auto.conf` | ❌ | 系统深色时生效 |
 | `light-theme.auto.conf` | ❌ | 系统明确为 `prefer-light` 时生效（本机实际用不到，见坑 3） |
-| `no-preference-theme.auto.conf` | ❌ | 系统未表态时生效 —— **GNOME 浅色模式走的是这个** |
+| `no-preference-theme.auto.conf` | ❌ | 系统未表态时生效：**GNOME 浅色模式走的是这个** |
 | `kitty.app.png` | ❌ | 当前窗口图标（X11 `_NET_WM_ICON`），与 Dock 图标是两条独立通道。由 `switch-icon.py` 覆写 |
 | `icons/` | ❌ | 图标库，供 `switch-icon.py` 选用 |
 | `backgrounds/` | ❌ | 背景图。`.png` 是实际使用的，`.jpg` 是重裁用的源图 |

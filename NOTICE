@@ -1,4 +1,4 @@
-# NOTICE — third-party content
+# NOTICE - third-party content
 
 This repository mixes original work with third-party configuration files that
 are redistributed under their own licenses. `LICENSE` (MIT) covers the original
@@ -10,7 +10,7 @@ under GPL-3.0 unless it is listed as original below. Inside
 `tools/ghostty/macos/shaders/`, the one shader is third-party MIT.
 
 
-## Original work — MIT (see LICENSE)
+## Original work - MIT (see LICENSE)
 
     bin/dof, bin/audit-privacy
     .githooks/**
@@ -37,7 +37,7 @@ Inside `tools/rime/`, these are also original:
     linux/japanese_custom_phrase.txt    single-kana pinning table
 
 
-## iDvel/rime-ice — GPL-3.0-only
+## iDvel/rime-ice - GPL-3.0-only
 
     https://github.com/iDvel/rime-ice
 
@@ -64,7 +64,7 @@ is vendored at `LICENSES/GPL-3.0.txt` (retrieved 2026-09-08 from
 <https://www.gnu.org/licenses/gpl-3.0.txt>). Keep it with any further
 redistribution of this repository.
 
-### lua/cold_word_drop/ — separate copyright, bundled by rime-ice
+### lua/cold_word_drop/ - separate copyright, bundled by rime-ice
 
     Copyright (C) 2023 yaoyuan.dou <douyaoyuan@126.com>
 
@@ -72,13 +72,13 @@ Eight files under `tools/rime/linux/lua/cold_word_drop/`. They arrive as part
 of rime-ice and are covered by its GPL-3.0 terms, but carry their own
 copyright line, so it is reproduced here.
 
-### lua/lunar.lua, lua/lunar.db — provenance not verified
+### lua/lunar.lua, lua/lunar.db - provenance not verified
 
 Bundled with rime-ice. The original author is not named in the files and was
 not traced. Treat as GPL-3.0 with the rest of rime-ice.
 
 
-## sahaj-b/ghostty-cursor-shaders — MIT
+## sahaj-b/ghostty-cursor-shaders - MIT
 
     https://github.com/sahaj-b/ghostty-cursor-shaders
     Copyright (c) 2026 Sahaj Bhatt
@@ -93,12 +93,12 @@ Under `tools/ghostty/macos/shaders/`:
 
 The upstream repository ships eight shaders; only the one actually changed is
 kept here. The other seven are unmodified upstream files and are not vendored
-(same rule as the kitty themes — see tools/ghostty/.dofkeep).
+(same rule as the kitty themes - see tools/ghostty/.dofkeep).
 
 
 ## Pulled at deploy time, NOT in this repository
 
-These are dependencies, not redistributed content — a fresh machine clones them
+These are dependencies, not redistributed content - a fresh machine clones them
 directly from upstream (see `notes/rime.md`):
 
     iDvel/rime-ice          cn_dicts/, radical_pinyin.dict.yaml     GPL-3.0
@@ -110,7 +110,7 @@ directly from upstream (see `notes/rime.md`):
 
 ## Removed on 2026-09-03
 
-`tools/rime/common/cn_dicts_cell/` — 22 Sogou-derived cell dictionaries,
+`tools/rime/common/cn_dicts_cell/` - 22 Sogou-derived cell dictionaries,
 23 MB, converted from Sogou by an unknown party. Provenance could not be
 established (they are not in rime-ice's repository or its release archives),
 so their redistribution terms are unknown. Deleted from the working tree on

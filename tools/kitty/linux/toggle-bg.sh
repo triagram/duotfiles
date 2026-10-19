@@ -3,7 +3,7 @@
 #   toggle          開↔關（用上次選的圖，預設第一張）
 #   next            換下一張（若目前是關閉狀態則直接開啟）
 # 預設是「關」：新視窗不帶背景圖，要背景得自己按一次。
-# 依賴 kitty.conf 裡的 listen_on —— 沒有它，背景行程呼叫 kitty @ 會找不到 /dev/tty。
+# 依賴 kitty.conf 裡的 listen_on：沒有它，背景行程呼叫 kitty @ 會找不到 /dev/tty。
 set -u
 DIR="$HOME/.config/kitty/backgrounds"
 
@@ -11,11 +11,11 @@ DIR="$HOME/.config/kitty/backgrounds"
 #
 # kitty 的 set-background-image 預設「只改當前活動的 OS 視窗」（官方說明原文）。
 # 若所有視窗共用一份狀態，它們會互相攪亂：在 A 視窗關掉背景後，B 視窗的下一次
-# toggle 讀到「已關閉」而去開啟，可 B 本來就開著 —— 看起來就是「按了沒反應，
+# toggle 讀到「已關閉」而去開啟，可 B 本來就開著：看起來就是「按了沒反應，
 # 要多按幾次才行」。視窗開得越多越明顯。
 #
 # 用 $PPID 當鍵：launch --type=background 起的行程，父行程就是 kitty 本身。
-# 不能從 KITTY_LISTEN_ON 取 PID —— 在背景行程裡它是 fd:49 這種描述符編號，
+# 不能從 KITTY_LISTEN_ON 取 PID：在背景行程裡它是 fd:49 這種描述符編號，
 # 不是 unix:@kitty-<PID>；各實例的編號又多半相同，結果還是共用狀態。
 # 已知侷限：同一個 kitty 實例底下開多個 OS 視窗時，它們仍共用一份狀態。
 _key="$PPID"
@@ -24,7 +24,7 @@ STATE="${XDG_RUNTIME_DIR:-/tmp}/kitty-bg.${_key:-shared}.state"
 mapfile -t IMGS < <(find "$DIR" -maxdepth 1 -name '*.png' | sort)
 [ ${#IMGS[@]} -eq 0 ] && exit 0
 
-# 沒有狀態檔時視為「關閉」—— theme-overrides.conf 不再設定 background_image，
+# 沒有狀態檔時視為「關閉」：theme-overrides.conf 不再設定 background_image，
 # 新視窗一律不帶背景圖，所以第一次 toggle 應該是「開啟」。
 idx=0; on=0
 [ -f "$STATE" ] && read -r idx on < "$STATE" 2>/dev/null
