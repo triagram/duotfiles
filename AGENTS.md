@@ -80,7 +80,7 @@ merge(kitty): converge the colour scheme into common/, keep font size per platfo
 被否掉的替代方案、实测数字、踩过的坑，都值得写进去。
 
 **不要写 `Claude-Session:` 这类尾注。** 公开之后对读者没有意义，还带着会话 ID。
-`Co-Authored-By:` 保留，那是有效署名。
+也不加 `Co-Authored-By:` 这类 AI 署名（2026-10-19 起）：GitHub 会因此把 AI 账号列进贡献者。
 
 ## 提交身份（每台新机器要设一次）
 
