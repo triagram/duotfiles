@@ -110,7 +110,8 @@ done
 
 **背景图默认是关的**（2026-08-30 起）：`theme-overrides.conf` 里的
 `background_image` 已注释掉，新窗口一律不带背景，要背景按一次
-`Ctrl+中键`（`toggle-bg.sh` 在运行期用 `kitty @ set-background-image` 设进去）。
+`Ctrl+Shift+I` 或 `Ctrl+中键`（`toggle-bg.sh` 在运行期用 `kitty @ set-background-image` 设进去）。
+换下一张是 `Ctrl+Shift+Alt+I` 或 `Ctrl+Shift+中键`。
 
 所以图不在时不会有任何异常：配置里根本没有指向它的路径，
 只是 `Ctrl+中键` 找不到 PNG，脚本直接 `exit 0`，按了没反应。
@@ -203,10 +204,10 @@ GNOME 在「深色样式」未启用时，通过 portal 上报的是 **`no-prefe
 
 ### 坑 4：背景图 toggle 依赖两处设置
 
-`Ctrl+中键` 开关背景、`Ctrl+Shift+中键` 换图，需要：
+`Ctrl+Shift+I` / `Ctrl+中键` 开关背景、`Ctrl+Shift+Alt+I` / `Ctrl+Shift+中键` 换图，需要：
 
 1. `kitty.conf` 里的 `listen_on unix:@kitty`
-2. mouse_map 里的 **`--allow-remote-control`**
+2. map / mouse_map 里的 **`--allow-remote-control`**
 
 第 2 条尤其容易漏：`launch --type=background` 默认**不会**给子进程设置
 `KITTY_LISTEN_ON`，只有显式加了 `--allow-remote-control` 才会
@@ -215,7 +216,7 @@ GNOME 在「深色样式」未启用时，通过 portal 上报的是 **`no-prefe
 
 改完 `listen_on` 只对**新开的窗口**生效，老窗口里手势不会有反应。
 
-### 坑 4b：手势在 tmux 里用不了，这是刻意的
+### 坑 4b：手势在 tmux、Claude Code 里用不了，这是刻意的
 
 mouse_map 第三个字段写的是 `ungrabbed`。kitty 文档：
 
@@ -229,6 +230,12 @@ mouse_map 第三个字段写的是 `ungrabbed`。kitty 文档：
 改成 `ungrabbed,grabbed` 就能在 tmux 里用，代价是 kitty 截下这个事件、不再传给
 里面的程序。**2026-08-30 评估过，选择保持 `ungrabbed` 不改。**
 下次再遇到「手势没反应」，先看自己是不是在 tmux 里，别当成 bug 查。
+
+Claude Code 也一样：它一启动就打开鼠标上报（`?1000` `?1002` `?1003` `?1006`），
+所以在它里面按 `Ctrl+中键`，kitty 不执行手势，点击原样交给 Claude Code，
+被它当成**粘贴**（只进输入框，不会发送）。2026-10-21 的处理是**不动手势**，
+另加键盘快捷键 `Ctrl+Shift+I` / `Ctrl+Shift+Alt+I`：键盘快捷键由 kitty 先拦下，
+在 tmux、Claude Code 里照样有效。在这些程序里请用键盘。
 
 ### 坑 4c：曾经的「要多按几次才行」
 
@@ -271,7 +278,7 @@ B 窗口再点   → 这次才关掉
 |---|---|---|
 | `kitty.conf` | ✅ | 主配置。末尾 include 主题链 |
 | `theme-overrides.conf` | ✅ | 背景图 + 标签栏颜色。**必须**由主题文件 include，见坑 1 |
-| `toggle-bg.sh` | ✅ | 背景图开关 / 轮换，由 mouse_map 调用 |
+| `toggle-bg.sh` | ✅ | 背景图开关 / 轮换，由 `kitty.conf` 第 11 节的 map / mouse_map 调用 |
 | `switch-icon.py` | ✅ | 在 `icons/` 里选图标，装进 hicolor 主题 |
 | `shaders/dim-inactive-panes.pipeline` | ✅ | 非当前分屏压暗，由 `kitty.conf` 第 12 节载入。需要 kitty >= 0.49 |
 | `README.md` | ✅ | 本文件 |

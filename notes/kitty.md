@@ -114,3 +114,36 @@ kitty 0.49.0 起支持 `custom_shaders`（GPU 滤镜）。本机当天从 0.42.2
 日志里看 `Custom shaders: N program(s)` 和 `has_active_shaders: 0 -> 1`；
 对照组用去掉那一行的配置副本 `--config` 启动。截图用系统 Python（`/usr/bin/python3`，
 pyenv 那个没有 `gi`）的 GdkX11 按窗口 XID 截，再取像素比较。
+
+## 背景图开关的键盘快捷键（2026-10-21 判断）
+
+**起因**：在 Claude Code 里按 `Ctrl+中键` 会粘贴，而不是开关背景。Claude Code 一启动就
+打开鼠标上报，`ungrabbed` 的手势不触发，点击交给了 Claude Code（机制同 README「坑 4b」的 tmux）。
+
+**选了什么**：加 `map ctrl+shift+i`（开关）和 `map ctrl+shift+alt+i`（换下一张），
+鼠标手势保持 `ungrabbed` 不动。用户原话「就 Ctrl + shift +i 好了」。
+代价：在 Claude Code 里手滑按到 `Ctrl+中键`，仍会粘贴一次（不会发送）。
+
+**没选的**：「加键盘+吞中键」，即加 `mouse_map ctrl+middle press grabbed discard_event`
+并把手势改成 `ungrabbed,grabbed`。这会推翻 2026-08-30 保持 `ungrabbed` 的决定，
+用户这次没选它。
+
+**为什么是 `i`**（2026-10-20 查过，不要重推）：
+
+- 必须带 Shift：单按 Ctrl+字母是 shell 和程序的，而且 kitty 把 `ctrl+i` 和 Tab 都发成 `\t`。
+  `ctrl+shift+i` 发的是 `\x1b[105;6u`。
+- kitty 0.49.1 默认的 `ctrl+shift+字母` 只空着 d、i、m、y；上游 master 的
+  `definition.py` 里 `i` 一次都没出现，升级不会撞。
+- 不选 `m`：Rime `japanese.schema.yaml` 原文绑了 `Control+Shift+m`（还有 n/k/v/j/l），
+  只是 `japanese.custom.yaml` 把 `key_binder` 换成了默认预设，`build/` 里才没有；
+  覆盖一改就会撞。不选 `y`：kitty 文档拿 `kitty_mod+y` 当示例。
+  最好记的 `b`（background）被内建的 `move_window_backward` 占了。
+- 不用单个 F 键：那是终端里程序的键（htop 的 F9 是杀进程）。
+
+**冲突检查结果**（`Ctrl+Shift+I` 和 `Ctrl+Shift+Alt+I` 都查了，都没有）：GNOME 全部
+gsettings 快捷键和自定义快捷键；fcitx5 实际生效的热键；Rime `build/`；Claude Code 2.1.304
+程序文件（只有 `ctrl+shift+c`、`ctrl+shift+b`）；仓库里其他软件的配置。
+
+> fcitx5 的 `EnumerateForwardKeys=Control+Shift_L`（切输入法）看着像冲突，其实不是：
+> 它在 Shift 松开时才触发，而且中间只要按了别的键就作废（fcitx5 `instance.cpp`
+> 里 `keyReleased_` 每个按键事件都清零）。平时 `Ctrl+Shift+C/V` 不切输入法也是这个原因。
