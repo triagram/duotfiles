@@ -447,6 +447,10 @@ Rime 的同步**沒有品牌名**，就是 librime 內建功能（fcitx5 動作�
 腳本兩端通用（依 `uname` 自動判定 `~/Library/Rime` 或 `~/.config/fcitx5/rime`），
 並用 rsync 過濾只傳 `*.userdb.txt`：實測從 48 MB 的目錄中只挑出 4 個檔案共 357 KB。
 
+> **更正（2026-10-21）**：上面寫的單一腳本 `rime-sync.sh pull|push` 不是現況。
+> macOS 實際用 `sync/` 下的兩個腳本 `rime-pull.sh`、`rime-push.sh`（靠自身位置推導 Rime 目錄，不靠 `uname`）；
+> `rime-sync.sh` 只在 Linux 那台的 Rime 目錄裡，且同步一律從 macOS 這側發起。見 `notes/rime.md`。
+
 **兩個防呆設計**：
 
 - `pull` 加 `--exclude=<自己的UUID>/`：**永不把自己的目錄拉回來**。

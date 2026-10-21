@@ -11,10 +11,14 @@
 > 保留在 `tools/rime/common/devlog.md §7.5`：那是判断记录，值得留；
 > 但**机制本身**（脚本、主机地址、词库文件）不进本仓库。
 >
-> **`rime-sync.sh` 在对端那台机器上跑，不在这台 Linux 上跑**（2026-10-18 核实）。
-> 本机那份的默认 `REMOTE_HOST` 指向的就是这台 Linux 自己，`REMOTE_SYNC` 是 Linux 路径：
-> 它是写给对端用的，这台 Linux 只当被 ssh 进来的一方，自己只需要在输入法菜单里点「同步」。
-> 完整顺序：Linux 点同步 → 对端 `pull` → 对端点同步 → 对端 `push` → Linux 再点同步。
+> **同步脚本只在 macOS 那台跑，Linux 那台只在输入法菜单里点「同步」**（2026-10-18 核实）。
+> 两台的脚本名字不一样（2026-10-21 两边 `ls` 核实）：
+>
+> - macOS：`sync/` 下的 `rime-pull.sh` 和 `rime-push.sh`，实际在用的是这两个。
+> - Linux：Rime 目录下的 `rime-sync.sh`。它的默认 `REMOTE_HOST` 指向 Linux 自己，
+>   `REMOTE_SYNC` 是 Linux 路径：是写给对端用的，在 Linux 上跑等于让机器跟自己 rsync。
+>
+> 完整顺序：Linux 点同步 → macOS `./rime-pull.sh` → macOS 点同步 → macOS `./rime-push.sh` → Linux 再点同步。
 
 ## ① 部署时从上游拉（不进仓库，约 92 MB）
 
