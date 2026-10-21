@@ -147,3 +147,25 @@ gsettings 快捷键和自定义快捷键；fcitx5 实际生效的热键；Rime `
 > fcitx5 的 `EnumerateForwardKeys=Control+Shift_L`（切输入法）看着像冲突，其实不是：
 > 它在 Shift 松开时才触发，而且中间只要按了别的键就作废（fcitx5 `instance.cpp`
 > 里 `keyReleased_` 每个按键事件都清零）。平时 `Ctrl+Shift+C/V` 不切输入法也是这个原因。
+
+## 重启后恢复窗口：不做（2026-10-21 判断）
+
+**选了什么**：「算了」。不做定时自动保存（systemd timer），也不做按键保存 / 恢复
+（F7 s / F7 r）。用户原话「这种需求不是那么多,每次完全手动也行」。
+
+**已经查清、不要重推的几点**（2026-10-20）：
+
+- kitty 0.43.0 起自带 `save_as_session` 动作，可以用
+  `kitty @ --to unix:@kitty-<PID> action save_as_session --save-only --use-foreground-process <文件>`
+  调用（0.49.1 实测）。它连分屏布局一起存。
+- 它只存收到命令的那**一个** kitty 进程。Ctrl+Alt+T 跑的是 `kitty`，每按一次就多一个进程。
+- `--use-foreground-process` 把 shell 里手敲的命令原样存下、恢复时重跑
+  （实测 `sleep 600` 存成 `cmd_at_shell_startup`）。所以手敲的 `claude` 回来是新对话；
+  `rm` 之类也会被重跑，官方文档有警告。
+- kitty 0.50.0（未发布）会有 `restore_session_after_logout`：注销 / 重启时自动存、下次启动恢复，
+  但不重启 shell 以外的程序。Linux 上依赖 Inhibit portal v3，本机是 v3。
+  **它发布后，如果还想要「像 Chrome 那样」，先看它。**
+- 网上的现成工具（dflock/kitty-save-session、kitty-utils、几篇 systemd timer 的做法）
+  都不处理「接着原来的 Claude 对话」。要做的话：`~/.claude/sessions/<PID>.json` 里有
+  `sessionId`，可以写成 `claude --resume <sessionId>`（内部文件，无文档）。
+- 存下来的 session 文件里有项目目录名，**只能放在 `~/.local/share/kitty/sessions/`，不进仓库**。
