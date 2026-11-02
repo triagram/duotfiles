@@ -169,3 +169,48 @@ gsettings 快捷键和自定义快捷键；fcitx5 实际生效的热键；Rime `
   都不处理「接着原来的 Claude 对话」。要做的话：`~/.claude/sessions/<PID>.json` 里有
   `sessionId`，可以写成 `claude --resume <sessionId>`（内部文件，无文档）。
 - 存下来的 session 文件里有项目目录名，**只能放在 `~/.local/share/kitty/sessions/`，不进仓库**。
+
+## 新窗口里一闪而过别处的画面（2026-11-02 查明，还没决定修不修）
+
+**现象**：Ctrl+Alt+T 开新终端，新窗口里先闪一下「左屏左上角」的内容（当时那里是最大化的
+Chrome），约 0.2 秒后才变成正常终端。不管窗口最后落在哪个屏幕，闪的都是左上角那块。
+
+**原因**（实测 + 源码核对，已查清，不要重推）：
+
+1. mutter 先在 (0,32) 把窗口映射出来（kitty 请求的是 (0,0)，被顶栏推到 y=32），映射之后才把它
+   放到鼠标所在的屏幕。xev 实测：map 之后约 1 ms 就移走了。
+2. X server 的 Composite 扩展在映射那一刻给窗口分配后备缓冲，**并且总是先拷一份屏幕缓冲区在
+   那个位置的内容进去**（xorg-server 21.1.12 `composite/compalloc.c` 的 `compNewPixmap`；
+   同深度、不同深度两个分支都拷，不看窗口背景）。之后只移动、不改尺寸，缓冲不重建，
+   这份拷贝跟着窗口走到右屏。
+3. kitty 的 GLFW 建窗口时不设背景色（`XCreateWindow` 只传
+   `CWBorderPixel | CWColormap | CWEventMask`），所以没有东西盖掉这份拷贝；它也不支持
+   `_NET_WM_SYNC_REQUEST`，mutter 不等首帧就显示（mutter 46.2 在 X11 下 `window_has_buffer`
+   恒为真）。kitty 映射前那次清屏 swap 到不了映射时才建的缓冲。
+
+实测（直接读窗口像素，不靠录屏）：先在屏幕缓冲区 (0,32) 处画四色块，新 kitty 窗口落在右屏
+(2020,100)，前 185 到 205 ms（5 次里有 1 次 397 ms）像素与色块 100% 一致、alpha 全是 255
+（不透明），之后才是 kitty 背景色。按 kitty 的方式建一个空白测试窗口，加上 `CWBackPixel`
+之后一开始就是纯色，不加就是色块。
+
+> 这组时长是在**锁屏、显示器关闭**时测的，亮屏时可能不同，还没复测。
+
+**试过 / 查过、不要重推的**：
+
+- `background_opacity 1` 没用：变成同深度，走 CopyArea 分支，照样拷。（源码）
+- 关 GNOME 动画没用：mutter 有没有动画都立刻显示窗口，动画只决定它淡入多久。（源码）
+- `kitty -1`（单实例）更糟：拷贝停留约 0.98 秒。（锁屏时测）
+- 录屏看不到它：之前录的是左屏左上角，窗口其实落在右屏；GNOME 录屏 D-Bus 接口录全屏时
+  连续两次 NoReply 崩掉。正确的观察方法是对新窗口直接 `XGetImage`。
+- `XGetImage` / x11grab 读 root 全黑：那次是锁屏 + 显示器关了，不是驱动问题。
+- kitty 的 issue、changelog（含未发布的 0.50）里没有同样的报告。GLFW 上游 2014 年删过一次
+  黑色 `CWBackPixel`（GLFW #267，原因是 resize 闪烁）。
+
+**能修的地方都不在 kitty.conf 里**：
+
+- kitty 上游：`createNativeWindow` 加 `CWBackPixel`（ARGB visual 要带 alpha：背景色加
+  `0xff000000`，或者 0 表示全透明，GTK 和 Chromium 用的是 0）；或者实现扩展版
+  `_NET_WM_SYNC_REQUEST`，mutter 46.2 会冻结窗口直到首帧画好。
+- 用户侧可能的缓解（未测）：GNOME 快捷键命令改成 `kitty --position X,Y`，窗口在最终位置映射，
+  拷到的是它身后的画面，看起来像窗口还没出现。代价是每个新窗口都在同一个位置；
+  mutter 46 是否照这个位置映射没验证。
