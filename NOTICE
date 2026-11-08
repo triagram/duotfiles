@@ -32,9 +32,9 @@ Inside `tools/rime/`, these are also original:
     linux/*.custom.yaml                 mechanism: upstream ships the schema,
     macos/*.custom.yaml                 you patch it, never editing upstream)
     macos/squirrel.custom.yaml          macOS Squirrel appearance
-    linux/lua/katakana_filter.lua       force-katakana filter, written here
-    macos/lua/katakana_filter.lua       (see devlog.md §6.8)
-    linux/japanese_custom_phrase.txt    single-kana pinning table
+    common/lua/katakana_filter.lua      force-katakana filter, written here
+                                        (see devlog.md §6.8)
+    common/japanese_custom_phrase.txt   single-kana pinning table
 
 
 ## iDvel/rime-ice - GPL-3.0-only
@@ -51,7 +51,7 @@ Redistributed unmodified unless noted. Under `tools/rime/linux/`:
     symbols.yaml, symbols_v.yaml, symbols_caps_v.yaml
     en_dicts/**                         10 files
     opencc/**                           3 files
-    lua/**                              every file EXCEPT katakana_filter.lua
+    lua/**                              23 files
 
 And under `tools/rime/common/`:
 

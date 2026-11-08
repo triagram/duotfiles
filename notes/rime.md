@@ -66,7 +66,7 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 
 ## ② 仓库里的 common/ 与 linux/ 怎么分
 
-**`common/`（6 个，52 KB）：两个平台逐字节相同、且与平台无关的：**
+**`common/`（8 个，68 KB）：两个平台逐字节相同、且与平台无关的：**
 
 | 文件 | 是什么 |
 |---|---|
@@ -75,6 +75,13 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 | `double_pinyin_flypy.custom.yaml` | 改显示名为「鶴」 |
 | `luna_pinyin.custom.yaml` | 改显示名为「朙」 |
 | `melt_eng.custom.yaml` | 改显示名为「EN」，并让寄生的英文方案用双拼 algebra |
+| `japanese.custom.yaml` | 日语方案补丁，2026-11-08 从 `linux/` 挪来（见文末「平台差异」） |
+| `japanese_custom_phrase.txt` | 日语单假名置顶表，同上 |
+| `lua/katakana_filter.lua` | F7 强制片假名，同上 |
+
+> `lua/katakana_filter.lua` 是你自己写的（强制转片假名，等同 IME 的 F7，15 行 Lua 零数据文件，
+> 见 `devlog.md §6.8`），由 `japanese.custom.yaml:40` 的 `lua_filter@*katakana_filter`
+> 接入、绑定 `F7`。第一版白名单差点把它丢掉：这就是改用黑名单的直接原因。
 
 进 `common/` 的判据是**两边逐字节相同 + 内容与平台无关**，不是「文件小」。
 `dof adopt` 会跳过与 `common/` 同名且逐字节相同的目标文件，所以平台层不会出现重复。
@@ -89,18 +96,13 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 > 理由是搜狗细胞词库来源不可考、重新分发的授权状态未知）。**没有备份，取不回来。**
 > 真要用只能用 `github.com/lewangdev/scel2txt` 从搜狗重新转换。
 
-**`linux/`（63 个，1.9 MB）：其余一切：**
+**`linux/`（55 个，1.8 MB）：其余一切：**
 
-你自己写的 10 个（5 个 `*.custom.yaml`、`custom_phrase.txt`、`custom_phrase_double.txt`、
-`japanese_custom_phrase.txt`、`devlog.md`、**`lua/katakana_filter.lua`**），
-加上上游的小文件（`lua/` 31、`opencc/` 3、`en_dicts/` 10、各 schema、`symbols*.yaml`）。
+你自己写或改过的 2 个（`default.custom.yaml`、`custom_phrase_double.txt`），
+加上上游的小文件（`lua/` 23、`opencc/` 3、`en_dicts/` 10、各 schema、`symbols*.yaml`）。
 
-上游小文件也留在仓库里，是刻意的：它们总共才 1.9 MB，而**万一你哪天改了其中一个
+上游小文件也留在仓库里，是刻意的：它们总共才 1.8 MB，而**万一你哪天改了其中一个
 （比如 `opencc/emoji.txt`），严格白名单会静默丢掉你的修改**。宁可多收，不可漏收。
-
-> `lua/katakana_filter.lua` 是你自己写的（强制转片假名，等同 IME 的 F7，15 行 Lua 零数据文件，
-> 见 `devlog.md §6.8`），由 `japanese.custom.yaml:40` 的 `lua_filter@*katakana_filter`
-> 接入、绑定 `F7`。第一版白名单差点把它丢掉：这就是改用黑名单的直接原因。
 
 ## 为什么用 copy 而不是 link
 
@@ -128,4 +130,16 @@ Linux  (ibus-rime)    ~/.config/ibus/rime/         ← 用 ibus 的话改 manife
 
 | 配置项 | linux | macos | 能否合并 | 判断日期 |
 |---|---|---|---|---|
-| （等 macOS 侧配置进仓库后再填） | | | | |
+| `japanese.custom.yaml`、`japanese_custom_phrase.txt`、`lua/katakana_filter.lua` | 8/9 入库，带训令式拼法、单假名置顶、F7 | 8/24 入库，是 8/4 从 Linux 复制的早期快照，三项都没有 | ✓ 已合并进 `common/`，用 Linux 版 | 2026-11-08 |
+
+**日语那三个文件不是平台差异，是副本没跟上。** 日语方案 8/4 在 Linux 上搭好后复制到 macOS
+（两台上游文件修改时间同一秒；macOS 那份补丁开头写的是 Linux 的 librime 1.10.0），
+之后 devlog §6.4 到 §6.8 的修正只做在 Linux 上。8/24 macOS 侧入库时这份旧快照进了 `macos/`，
+当天的合并只挪了逐字节相同的文件，这张表也没填，于是没人对比过。
+症状：macOS 上 `si` 出すぃ，`sya`/`tya`/`zya` 一组拗音打不出，只有黑本式能用。
+`git pull` 修不了：它把两个抽屉都同步到两台，但 `dof` 每台只部署 `common/` 加本机那个抽屉。
+
+> 以后 `linux/` 和 `macos/` 里出现同名文件，先比对它是真平台差异，还是同一份东西的两个快照。
+
+合并时改过的地方：补丁开头「可在本機的 librime 1.10.0 上運行」改成不提版本号（macOS 是 1.16.0）。
+Mac 键盘顶排默认是媒体键，F7 可能要配合 Fn。
