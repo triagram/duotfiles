@@ -4,6 +4,10 @@
 # except the single `case "$(uname -s)"` block below, which is the only
 # per-machine part. Search for "PLATFORM-SPECIFIC" to find it.
 
+# Keep one entry per directory: several startup files add the same ones
+# (Homebrew, ~/.local/bin). Name both: -U on `path` alone misses `export PATH=`.
+typeset -U path PATH
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 

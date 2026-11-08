@@ -125,6 +125,8 @@ git pull → 读那台的 ~/.zshrc → 把可共享的行手填进 common/ 的�
   加上 `.zshrc` 那行，实测 PATH 里 **`.local/bin` 重复 7 次**（接入前是 8 次）。
   纯冗余、不报错，但该收拾。没顺手做：`.zprofile` 不在这次范围内，
   顺手 adopt 正是状态文件混进 git 的路径。
+  > 2026-11-08 已处理：重复由 `.zshrc` 开头的 `typeset -U path PATH` 去掉，见「PATH 去重」一节。
+  > 那几行来源都没动。Linux 那台 pull 之后生效，未在那台实测。
 - Mac 上还没装 pyenv。装完不用改配置：守卫会自己放行。
 
 ## cowsay 横幅：从 `.zshrc.local` 提升进公共部分（2026-09-13）
@@ -185,3 +187,27 @@ agent 是 launchd 的全局 socket，Homebrew 的 `ssh` 和苹果的 `ssh-add` �
 
 如果哪天做：放晚 `case` 块，带 `command -v fd` 守卫，先进 Linux 块、Mac 验证过再挪公共部分。
 这几个变量是按键时才读，不像 `FZF_BASE` 要赶在 oh-my-zsh 加载前。完整的块在那次提交的 diff 里（notes/claude.md：别在笔记里写死 SHA）。
+
+## PATH 去重：`typeset -U path PATH`（2026-11-08）
+
+起因：macOS 上 `which -a uv` 打印两次同一个 `/opt/homebrew/bin/uv`。uv 只有一个，是 PATH 里目录重复了：
+
+- `/opt/homebrew/bin`：Homebrew 的命令行安装脚本在有 sudo、前缀是 `/opt/homebrew` 时会写
+  `/etc/paths.d/homebrew`，`/etc/zprofile` 的 `path_helper` 每次登录把它追加到末尾；
+  脚本最后的「Next steps」又让人把 `brew shellenv` 写进 `~/.zprofile`，放到最前。
+  脚本决定是否提示只看 rc 文件，不管自己写过 paths.d，所以照官方步骤装必然是两份。
+- `~/.local/bin`：Antigravity CLI 的安装脚本往 `~/.zprofile` 和 `~/.zshrc` 各写一行。
+  Linux 上还有「未决」里记的那几处。
+
+做法：`.zshrc` 公共部分开头一行 `typeset -U path PATH`。每个目录保留第一次出现的位置，
+所以优先级不变；之后每次赋值也当场去重。放公共部分：纯 zsh 设置，两台都有这个症状。
+
+**两个名字都要写**（两台 zsh 5.9 实测）：`typeset -U path` 只管 `path=(...)` 这种数组赋值，
+而这份文件用的全是 `export PATH=...`，只写 `path` 时那些行照样加出重复。
+常见写法只写 `path`，在这份文件里不够。
+
+没选从源头删：`/etc/paths.d/homebrew` 要 sudo，bash 的登录 shell 也靠它；
+`.zprofile` 那行是安装器写的，更新时可能被加回来；Linux 另有几处来源。一行去重比逐个追源头稳。
+
+验证：macOS 新开登录 shell，PATH 从 16 项变 14 项，和原来各目录首次出现的顺序逐行相同；
+`which -a uv` 只剩一行，`ssh-add` 仍是 Homebrew 那份。Linux 那台 pull 之后新开 shell 看 `echo $PATH`。
