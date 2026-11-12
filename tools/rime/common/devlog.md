@@ -370,6 +370,11 @@ Mozc / MS-IME 的預設是**兩種都收**，上游只收一種。
 「ひら/カタ」；同時綁 F7：那是 Mozc / Google 日本語入力 / macOS 內建 / MS-IME
 的共同慣例，不是本配置私設。這解決了「幾個月後忘記快捷鍵」的問題。
 
+> **更正（2026-11-12）**：F4 是寫這段時霧凇預設的選單鍵。2026-08-24 起兩台的
+> `default.custom.yaml` 都換掉了 `switcher/hotkeys`：Linux 只剩 `Control+grave`，macOS 是
+> `Control+grave` 或 `F5`，F4 在兩台都打不開選單。補丁與 lua 的註解因此不再寫鍵名，鍵以各平台的
+> `default.custom.yaml` 為準。
+
 ### 6.9 終局：刪除 nihongo
 
 `japanese` 經上述四項修正後，假名層已完全覆蓋自建方案的能力，且多出漢字變換。
