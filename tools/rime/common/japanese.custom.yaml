@@ -113,6 +113,15 @@ patch:
     - derive/ju/zyu/
     - derive/jo/zyo/
 
+    # cy/jy youon (typing habit): cya = ちゃ, jya = じゃ. No upstream code uses
+    # cy or jy, so unlike si these clash with nothing and need no pinning.
+    - derive/cha/cya/
+    - derive/chu/cyu/
+    - derive/cho/cyo/
+    - derive/ja/jya/
+    - derive/ju/jyu/
+    - derive/jo/jyo/
+
     # 小假名的 l 前綴（多數輸入法 x 與 l 兩者皆收）。
     # 只影響含 '_' 的條目（假名詞典 24 條 + 詞條約 2000 條），成本可忽略。
     - derive/_/l/
