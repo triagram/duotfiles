@@ -11,7 +11,7 @@
 |---|---|---|
 | `statusline.sh` | ✅ | 350 行自己写的程序，行为稳定，两台该长一样 |
 | `settings.json` | ❌ | **不够稳定**。分机器不同，而且同一台机器上**按任务、按会话**都在变：model、effortLevel、permissions、attribution。收进来等于提交噪声，还要为本来就不该一致的值解冲突 |
-| `CLAUDE.md` | ❌ | 它是指向 `~/.config/agents/AGENTS.md` 的软链（`notes/ai-context.md` 的 2 跳枢纽）。收进来会复制一份内容，给一个已有唯一真相源的文件造出第二个源：和 `tools/agy/.dofkeep` 里 `config/AGENTS.md` 那条同一个理由 |
+| `CLAUDE.md` | ❌ | 它是指向 `~/.config/agents/AGENTS.md` 的软链（`notes/ai-context.md` 的 2 跳枢纽）。收进来会复制一份内容，给一个已有唯一真相源的文件造出第二个源：和 `notes/agy.md` 里 `config/AGENTS.md` 那条同一个理由 |
 | `commands/` `skills/` `agents/` `hooks/` `output-styles/` `scripts/` | ❌ | 本机还没有这些。**列不存在的文件**正是 agy 白名单长出幽灵 `GEMINI.md` 条目的原因：等真有东西了再加行 |
 | 其余 | ❌ | 凭据、会话记录、缓存、daemon 状态。`.dofignore` 是第二道闸门 |
 

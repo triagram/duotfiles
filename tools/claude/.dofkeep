@@ -22,7 +22,7 @@ statusline.sh
 # CLAUDE.md       A symlink to ~/.config/agents/AGENTS.md, the vendor-neutral
 #                 hub the `agents` tool deploys. Adopting it would copy the
 #                 content in and give a file that already has one source of
-#                 truth a second one. Same reasoning as tools/agy/.dofkeep.
+#                 truth a second one. Same reasoning as in notes/agy.md.
 # keybindings.json, commands/, skills/, agents/, hooks/, output-styles/,
 # scripts/        An earlier version of this list allowed all of these. None
 #                 exist here yet. Listing files that do not exist is how the

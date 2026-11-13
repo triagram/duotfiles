@@ -17,7 +17,6 @@ Why it works this way: [DESIGN.md](DESIGN.md).
 | tmux | link | `~/.config/tmux` | `~/.config/tmux` |
 | kitty | link | `~/.config/kitty` | `~/.config/kitty` |
 | ghostty | link | `~/.config/ghostty` | `~/.config/ghostty` |
-| agy | copy | `~/.gemini` | `~/.gemini` |
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
 | fcitx5-guard | link | `~/.local` | - (Linux only) |
 | agents | link | `~/.config/agents` | `~/.config/agents` |
@@ -129,7 +128,7 @@ git add -A && git commit -m "tmux(macos): prefix key -> C-a"
 git push
 ```
 
-**`copy` tools (rime / agy)** - needs one explicit collection step:
+**`copy` tools (rime)** - needs one explicit collection step:
 
 ```bash
 dof diff rime                        # see what differs first
@@ -201,11 +200,14 @@ git**; it syncs through Rime's own mechanism. Upstream schemas (rime-ice) are cl
 at deploy time rather than vendored. Each new machine needs `installation.yaml`
 configured once. Full details: [notes/rime.md](notes/rime.md).
 
-**claude / agy** - `~/.claude` and `~/.gemini` mix configuration with local state,
-so a `.dofkeep` allow-list controls what may be imported. `~/.claude/projects/` holds
-full transcripts of every session and must never enter the repo. agy is `copy` mode
-because the application writes local state into `settings.json` at runtime; collect
-your own edits with `dof push agy`. How the instruction files are organised: [notes/ai-context.md](notes/ai-context.md).
+**claude** - `~/.claude` mixes configuration with local state, so a `.dofkeep`
+allow-list controls what may be imported. `~/.claude/projects/` holds full transcripts
+of every session and must never enter the repo. How the instruction files are organised:
+[notes/ai-context.md](notes/ai-context.md).
+
+**agy is not managed by dof.** Its one config file holds only per-machine, per-task
+values (which model, which directories are trusted), so there is nothing long-lived
+to sync. See [notes/agy.md](notes/agy.md).
 
 **kitty / ghostty / tmux** - all three have native include mechanisms
 (`include ${KITTY_OS}.conf`, `config-file = ?platform-macos.conf`, `source-file -q`).

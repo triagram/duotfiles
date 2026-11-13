@@ -1,5 +1,7 @@
 # agy
 
+> **2026-11-13 起 agy 不再由 dof 管理**，见文末「不再由 dof 管理」。下面是之前的记录，其中的理由仍然有效。
+
 Antigravity CLI（Gemini 侧）。manifest 目标是**整个 `~/.gemini`**，
 因为它的文件散落在这个目录各处：但那里几乎没有东西该进 git，
 所以靠 `.dofkeep` 白名单收口。实测 `dof adopt agy`：**收 1 个，跳过 47 个**。
@@ -69,3 +71,24 @@ Antigravity CLI（Gemini 侧）。manifest 目标是**整个 `~/.gemini`**，
 | `antigravity-cli/settings.json` | 未收 | 已收（仅配置字段） | ❌ 天然分平台；`trustedWorkspaces` 整个字段不进仓库 | 2026-09-03 |
 | `config/AGENTS.md` | 软链到枢纽 | 软链到枢纽 | ✓ 已经是同一份，不需要进仓库 | 2026-08-31 |
 | `rules/` | ❌ 刻意不接 | ❌ 刻意不接 | frontmatter 键与 Claude Code 不兼容，见 `notes/ai-context.md` | 2026-08-31 |
+
+## 不再由 dof 管理（2026-11-13）
+
+仓库里那份 `antigravity-cli/settings.json` 只剩两个字段，按 `DESIGN.md` 原则 9 逐个看：
+
+- `model`：随版本、随任务换（这次机器上已经是 3.8，仓库里还是 3.6）。
+  和 Claude Code 的 `settings.json` 是同一类，见 `notes/claude.md`。
+- `colorScheme`：长期不变，但只有一行，新机器上手动设一次就行。
+
+`trustedWorkspaces` 早在 2026-09-03 就不收了（见上文）。只剩颜色这一行也收不了：
+dof 按整个文件搬运，仓库里只放这一行的话，`dof pull agy` 会把机器上的 model 和信任目录一起盖掉，
+`dof status` 也会永远报差异。agy 自带的 `builtin/skills/agy-customizations/SKILL.md`
+讲的分层只覆盖 skills、rules、插件和 MCP，没提 `settings.json` 能拆开或叠加，
+所以也没有「只同步颜色那一行」的办法。整个条目移除：`tools/agy/`、manifest 那一行、
+`.gitignore` 里 agy 的两条规则。
+
+机器上的 `~/.gemini` 没动。全局指令软链 `~/.gemini/config/AGENTS.md` 是手动建的
+（`notes/ai-context.md`），不归这个条目管，照常有效。
+
+- **新机器上**：在 agy 里把配色设成 `tokyo night`。
+- **要恢复这个条目**：`git log --diff-filter=D -- tools/agy` 找到删除它的那次提交，从它的上一个提交取回。

@@ -18,7 +18,6 @@ under GPL-3.0 unless it is listed as original below. Inside
     AGENTS.md, DESIGN.md, README.md, README.zh-CN.md
     notes/**
     tools/agents/**
-    tools/agy/**
     tools/claude/**
     tools/fcitx5-guard/**
     tools/ghostty/**                    except shaders/, see below

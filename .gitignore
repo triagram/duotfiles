@@ -20,10 +20,6 @@ tools/claude/**/history*
 tools/claude/**/*.jsonl
 tools/claude/**/.claude.json*
 
-# ── agy / Gemini CLI machine-local state ────────────────────────────────────
-tools/agy/**/tmp/
-tools/agy/**/oauth_creds.json
-
 # ── Rime ────────────────────────────────────────────────────────────────────
 # build/            build artifacts, regenerated on every deploy
 # *.userdb*         user dictionary - synced by Rime itself, never by git
