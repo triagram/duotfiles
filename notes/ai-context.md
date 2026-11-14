@@ -16,6 +16,41 @@
 
 > **Claude Code reads `CLAUDE.md`, not `AGENTS.md`.**
 
+> **订正（2026-11-14）：项目级这条已经过时。** 2.1.277（2026-09-18 上 npm）起，Claude Code
+> 用一个默认开启的内置插件 `cc-plugin-agents-md` 读项目的 `AGENTS.md`（2.1.285 之前插件 ID
+> 叫 `agents-md@builtin`）。上面那句 2026-08-25 查证时是对的，当时功能还没发布。
+> 来源：`code.claude.com/docs/en/memory.md`、仓库 `anthropics/claude-code` 的 `CHANGELOG.md`。
+>
+> - **默认规则**：工作目录和它的所有上级目录里都没有 `CLAUDE.md`、`.claude/CLAUDE.md`、
+>   `CLAUDE.local.md` 时，才读这些目录里的 `AGENTS.md` 和 `.claude/AGENTS.md`；只要有一个，
+>   `AGENTS.md` 就整个不读。`~/.claude/CLAUDE.md` 不算项目自己的（文档如此，本机也实测了）。
+>   **`CLAUDE.local.md` 算**：放一份私人笔记就会把 `AGENTS.md` 关掉。
+> - **开关**：`/config` 的「Project instructions」，或用户设置里的
+>   `pluginConfigs["cc-plugin-agents-md@builtin"].options.instructionFiles`，取值 `claude-md`、
+>   `claude-md-or-agents-md`（默认）、`claude-md-and-agents-md`、`managed-only`。
+>   **写在项目的 `.claude/settings.json` 里无效**：官方故意不让克隆来的仓库改它。
+> - **本仓库「`CLAUDE.md` 软链到 `AGENTS.md`」照常有效，不会读两遍**：有 `CLAUDE.md` 时插件不动，
+>   内容经软链读一次。文档原话：「nothing, or delete the symlink. Either way Claude reads the
+>   content once」。
+> - 不读的：`AGENTS.local.md`、`AGENTS.override.md`、`.agents/` 目录。
+>
+> 2026-11-14 在 Linux 的 2.1.325 上实测（`claude -p --model haiku`，每个目录一个暗号）：
+>
+> | 目录里有 | 读到的 |
+> |---|---|
+> | 只有 `CLAUDE.md`（对照组） | `CLAUDE.md` |
+> | 只有 `AGENTS.md`，在 `/tmp` 下 | `AGENTS.md` |
+> | 只有 `AGENTS.md`，在家目录下（`~/.claude/CLAUDE.md` 存在） | `AGENTS.md` |
+> | 两个都有 | 只有 `CLAUDE.md` |
+> | `CLAUDE.md` 软链到 `AGENTS.md` | 读到（经 `CLAUDE.md`） |
+>
+> 怎么确认读没读：`claude --debug` 之后看 `~/.claude/debug/` 里的日志，有
+> `no CLAUDE.md found; AGENTS.md loaded: <路径>` 一行（2.1.325 只写进调试日志，对话里看不到）。
+>
+> **macOS 没测。** 有一个还开着的用户报告（anthropics/claude-code#103458，2.1.302，macOS）说
+> `~/.claude/CLAUDE.md` 会让家目录下所有项目都读不到 `AGENTS.md`；本机 2.1.325 不复现。
+> 要依赖「只放 `AGENTS.md`」之前，先在 macOS 上照上表测一次。
+
 | 层级 | 唯一路径 |
 |---|---|
 | Managed policy | `/Library/Application Support/ClaudeCode/CLAUDE.md`（Linux: `/etc/claude-code/`） |
@@ -25,6 +60,13 @@
 
 **没有任何 XDG 路径。** `~/.config/agents/AGENTS.md` 不会被读：位置不在列表里，
 文件名也不对，两条都不满足。放成 `~/.claude/AGENTS.md` 同样不读。
+
+> **订正（2026-11-14）：用户级仍然没有 `AGENTS.md`，但「不读」说得不准。** 文档列的用户级指令
+> 文件只有 `~/.claude/CLAUDE.md`。插件则是从文件系统根往下逐级找 `AGENTS.md` 和
+> `.claude/AGENTS.md`，所以在家目录下开会话、项目又没有 `CLAUDE.md` 时，`~/.claude/AGENTS.md`
+> 会被当成**项目级**文件顺带读进来（依据是文档写的查找规则和几份用户报告，本机没测：测就得在真的
+> `~/.claude` 里建文件）。这靠不住：项目有 `CLAUDE.md` 就不读，家目录以外的项目也不读。
+> **所以全局指令照旧走 `~/.claude/CLAUDE.md` 软链，2 跳枢纽不用改。**
 
 > 这个坑实际踩过：`tools/agents` 部署到 `~/.config/agents/`，
 > `dof status agents` 三个 ✓ 全绿，但 Claude Code 一个字都没读到。
