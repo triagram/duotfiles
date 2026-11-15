@@ -24,6 +24,11 @@ Linux 不部署（manifest 是 `-`）：Linux 版 Homebrew 没有 cask，`brew b
 - **清理**：`brew bundle cleanup --global` 不带 `--force` 就是 dry-run，只列「Would remove」；
   加 `--force` 才真卸载清单外的东西（已实测，2026-09-15 时无一包在名单里）
 
+  > **2026-11-15 补：这条已经不安全了**（读的是 Homebrew 源码，没在 Mac 上实测）。Homebrew 5.1.15
+  > （2026-06-03）起，不带 `--force` 时先列出要卸载的东西，**接着在终端里问 y/n，按 y 就真的卸载**。
+  > 只想看清单，把输出接到管道：`brew bundle cleanup --global | cat`（输出不是终端就不问）。
+  > 文末 `clickshare` 那条后果，按 y 时同样会发生。
+
 dump 只列顶层（`brew leaves` + 全部 cask），依赖不进来：17 个 formula 里只有 5 个在清单里，正常。
 
 ## 内容审阅（2026-09-15）
