@@ -28,6 +28,8 @@ Linux 不部署（manifest 是 `-`）：Linux 版 Homebrew 没有 cask，`brew b
   > （2026-06-03）起，不带 `--force` 时先列出要卸载的东西，**接着在终端里问 y/n，按 y 就真的卸载**。
   > 只想看清单，把输出接到管道：`brew bundle cleanup --global | cat`（输出不是终端就不问）。
   > 文末 `clickshare` 那条后果，按 y 时同样会发生。
+  > 和上面 2026-09-15 的实测不矛盾：那次清单外没有东西可卸，大概也就没有可问的（推测）。
+  > Mac 上先看 `brew --version`，不低于 5.1.15 就按这条来。
 
 dump 只列顶层（`brew leaves` + 全部 cask），依赖不进来：17 个 formula 里只有 5 个在清单里，正常。
 
