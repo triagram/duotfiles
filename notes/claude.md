@@ -15,7 +15,12 @@
 | `commands/` `skills/` `agents/` `hooks/` `output-styles/` `scripts/` | ❌ | 本机还没有这些。**列不存在的文件**正是 agy 白名单长出幽灵 `GEMINI.md` 条目的原因：等真有东西了再加行 |
 | 其余 | ❌ | 凭据、会话记录、缓存、daemon 状态。`.dofignore` 是第二道闸门 |
 
-> 早先（`22e6584`）曾把整个 `~/.claude` 从 manifest 移除，理由是配置与状态混在一起。
+> 2026-11-15 补：`skills/` 现在有了（2026-09-21 建），里面只有 `synced/`：Claude Code 自己同步下来的
+> 技能，不是手写的，内容里带个人信息（有一个技能的说明写着主人的名字）。`.dofkeep` 里写 `skills/` 会匹配
+> 整棵子树，`dof adopt claude` 就会把它收进这个 public 仓库，而 `.dofignore` 里没有挡它的行。
+> **真要放行 `skills/`，先在 `tools/claude/.dofignore` 加 `skills/synced/`。**
+
+> 早先（2026-08-19 那次「claude: stop syncing ~/.claude」提交）曾把整个 `~/.claude` 从 manifest 移除，理由是配置与状态混在一起。
 > 现在加回来，**只为 `statusline.sh` 一个文件**：那个理由仍然成立，所以白名单只有一行。
 
 ## 白名单是承重的，实测过
