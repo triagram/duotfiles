@@ -72,6 +72,10 @@ Antigravity CLI（Gemini 侧）。manifest 目标是**整个 `~/.gemini`**，
 | `config/AGENTS.md` | 软链到枢纽 | 软链到枢纽 | ✓ 已经是同一份，不需要进仓库 | 2026-08-31 |
 | `rules/` | ❌ 刻意不接 | ❌ 刻意不接 | frontmatter 键与 Claude Code 不兼容，见 `notes/ai-context.md` | 2026-08-31 |
 
+> 2026-11-15：`rules/` 这一行的理由变弱了。agy 1.5.9 有了按文件匹配的 `trigger: glob`，全局
+> `~/.gemini/config/rules/` 也写进了文档，见 `notes/ai-context.md`「Gemini（Antigravity）侧」末尾的订正。
+> 决定没动。
+
 ## 不再由 dof 管理（2026-11-13）
 
 仓库里那份 `antigravity-cli/settings.json` 只剩两个字段，按 `DESIGN.md` 原则 9 逐个看：
@@ -86,6 +90,11 @@ dof 按整个文件搬运，仓库里只放这一行的话，`dof pull agy` 会�
 讲的分层只覆盖 skills、rules、插件和 MCP，没提 `settings.json` 能拆开或叠加，
 所以也没有「只同步颜色那一行」的办法。整个条目移除：`tools/agy/`、manifest 那一行、
 `.gitignore` 里 agy 的两条规则。
+
+> 2026-11-15 补：「没有办法」说早了。agy 1.5.9 有一个公开文档没列的 `--settings` 参数，程序里的帮助文字是
+> 「Settings for this session only, never saved: a JSON object of settings.json keys, inline or as a file
+> path」，理论上可以每次启动只叠加 `colorScheme` 一个键。是逐键叠加还是整份替换没测。决定照旧：只有一行，
+> 新机器上手动设一次更省事。另外，自带的 SKILL.md 其实也讲了 hooks。
 
 机器上的 `~/.gemini` 没动。全局指令软链 `~/.gemini/config/AGENTS.md` 是手动建的
 （`notes/ai-context.md`），不归这个条目管，照常有效。

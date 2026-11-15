@@ -90,7 +90,7 @@
   └─────────────▶ ~/.gemini/config/AGENTS.md
 ```
 
-新机器上的引导步骤（`~/.claude` 已在 `22e6584` 决定不同步，所以这几条进不了 manifest）：
+新机器上的引导步骤（`~/.claude` 已在 2026-08-19 那次「claude: stop syncing ~/.claude」提交里决定不同步，所以这几条进不了 manifest）：
 
 ```bash
 dof pull agents                                      # 先铺好枢纽
@@ -100,6 +100,10 @@ ln -s ~/.config/agents/AGENTS.md ~/.gemini/config/AGENTS.md
 ```
 
 **注意这几条命令里没有仓库路径。** 这是 2 跳最主要的好处，下面详述。
+
+> **订正（2026-11-15）：上面括号里的理由过时了，结论没变。** 2026-09-13 起 `~/.claude` 又回到了
+> manifest，但 `tools/claude/.dofkeep` 只放行 `statusline.sh`，`CLAUDE.md` 和 `rules` 刻意不收
+> （理由在 `.dofkeep` 的注释和 `notes/claude.md`）。所以这几条软链仍然每台机器手工建。
 
 ### 为什么不是 1 跳（直接链到仓库）
 
@@ -129,8 +133,36 @@ Codex `~/.codex/AGENTS.md`、droid `~/.factory/AGENTS.md`、Amp `~/.config/AGENT
 `@` 导入则写进那个本机指针文件，内容变成永远不同步的孤儿。代价是将来想加
 「只给 Claude 看、不给 Gemini 看」的指令时得改用导入形式：真有这个需求再换。
 
+> 2026-11-15 补：Claude 自己的 Edit / Write 工具不一定肯穿过软链写。anthropics/claude-code#66559
+> （还开着）里协作者在 2.1.234 上复现了：`CLAUDE.md -> AGENTS.md` 时 Edit 和 Write 都失败。
+> 所以在会话里让 Claude 改全局指令，直接让它改仓库里的 `tools/agents/common/AGENTS.md`。
+> `~/.claude/CLAUDE.md` 这条全局软链没单独测。
+
 > **两者都在 Cowork 会话里失效**（软链的 `~/.claude/CLAUDE.md` 被跳过；
 > 指向工作目录之外的导入也被跳过）。这一条不构成两种做法的区别。
+
+## 两条 `CLAUDE.md` 软链先不删（2026-11-15 决定）
+
+仓库根的 `CLAUDE.md → AGENTS.md`，和机器上的 `~/.claude/CLAUDE.md → ~/.config/agents/AGENTS.md`，都留着。
+
+**理由：留着没有代价，删掉才有风险。** 默认设置下内容只读一次（见上面 2026-11-14 的订正）。删的话：
+
+- **全局那条**删了就什么都不读：文档列的用户级指令文件只有 `~/.claude/CLAUDE.md`。请求用户级
+  `AGENTS.md` 的 anthropics/claude-code#95795 还开着，官方没回复（2026-11-15 查）。
+- **仓库那条**要赌两台机器的版本：项目级支持才两个月，插件 ID 在 2.1.285 改过名，设置键也从
+  `projectInstructions` 换成了 `instructionFiles`；macOS 上还有没关的 #103458，那台的版本没核对。
+
+**当时问过「半年后 `CLAUDE.md` 会不会成历史」：查不到这样的计划，所以按条件回头看，不按日期。**
+2.1.325 的 `/init` 仍然生成 `CLAUDE.md`（程序里的提示词和文档都这么写）；文档和更新日志里没有任何
+废弃 `CLAUDE.md` 的说法；官方默认是 `CLAUDE.md` 优先、`AGENTS.md` 兜底。下面的条件是 Claude 提的，
+不是官方承诺：
+
+| 软链 | 什么时候可以删 |
+|---|---|
+| `~/.claude/CLAUDE.md` | 文档把 `AGENTS.md` 列进用户级指令文件（比如 #95795 以「已实现」关闭） |
+| 仓库根 `CLAUDE.md` | macOS 上照 2026-11-14 那张 5 行表测过、全对。删时一起改两份 README 里介绍 `AGENTS.md` 的那一行，和 `DESIGN.md` 目录树里的说明 |
+
+仓库根的 `GEMINI.md` 情况不同，见「Gemini（Antigravity）侧」一节里 2026-11-15 的订正。
 
 ## rules 的 frontmatter 是 Claude 专有的
 
@@ -150,6 +182,8 @@ paths:
 > **但这套语法只有 Claude Code 认。** Antigravity（agy）用的键是
 > `trigger: always_on | model_decision`，完全不同的词汇：这是不把 rules 链给
 > Gemini 的直接原因，见下一节。
+>
+> （2026-11-15：agy 现在有四种 `trigger`，其中 `glob` 能按文件匹配，见下一节末尾的订正。）
 
 ## Gemini（Antigravity）侧：AGENTS.md 已接，rules 刻意不接
 
@@ -167,6 +201,20 @@ paths:
 - 文件名是 **`AGENTS.md`**，不是 `GEMINI.md`
   （它自己的文档建议把 legacy 的 `GEMINI.md` 改名成 `AGENTS.md`）
 
+> **订正（2026-11-15，agy 1.5.9）：这两条说得太死。** 全局指令认四个位置：`~/.gemini/AGENTS.md`、
+> `~/.gemini/GEMINI.md`、`~/.gemini/config/AGENTS.md`、`~/.gemini/config/GEMINI.md`（官方文档
+> `antigravity.google/docs/rules/`；agy 程序里内嵌的更新日志 1.2.15 条目也点名了这四个）。
+> 现在用的 `~/.gemini/config/AGENTS.md` 照样有效。自带文档里 `GEMINI.md` 和 `AGENTS.md` 是平级的
+> 两个名字，「建议把 legacy 的 `GEMINI.md` 改名」这句在现在的自带文档里找不到。
+> **要防的是多出来的一份**：哪台机器上留着 Gemini CLI 时代的 `~/.gemini/GEMINI.md`，agy 会把它当成
+> 第二份全局指令一起读。Linux 这台另外三个位置都没有文件，macOS 用这条查：
+> `ls -la ~/.gemini/GEMINI.md ~/.gemini/AGENTS.md ~/.gemini/config/GEMINI.md ~/.gemini/config/AGENTS.md`
+>
+> **仓库根的 `GEMINI.md → AGENTS.md`**：agy 用不上它。项目级从当前目录往上到仓库根，每层两个名字都读，
+> 自带文档写明按真实路径去重，所以这条软链按文档只读一次（没实测）。只有 Gemini CLI 需要它：这台没装
+> （以前用过，`~/.gemini/config/.migrated` 的日期是 2026-06-09），它的 README 说个人免费和 Google AI
+> Pro/Ultra 的使用 2026-06-18 起转到了 Antigravity CLI。删不删等 macOS 上 `command -v gemini` 的结果，待定。
+
 **刻意不接 rules（2026-08-31）。** 曾经建过 `~/.gemini/config/rules` 这条链，当天摘掉了，
 两条理由：
 
@@ -180,6 +228,22 @@ paths:
 
 **要改主意的话先验证**：在一个 `.py` 项目里开 agy，问一句只有 `rules/python.md` 里
 才有的约定（比如「布尔值要读成谓词 is/has/should」），看它知不知道。
+
+> **订正（2026-11-15，agy 1.5.9）：上面两条理由都变了，决定本身没动。**
+>
+> 1. **键对不上**：`trigger` 现在有四种：`always_on`、`model_decision`、`glob`、`manual`。`glob` 配
+>    `globs:`（逗号分隔的通配串），和 Claude 的 `paths:` 是同一类功能，只是键名不同。文档还写明每个
+>    `rules/*.md` 都必须有合法的 `trigger`，没有 frontmatter 或 trigger 写错的会被**静默丢弃**，不是当
+>    常驻规则载入。只有 `paths:`、没有 `trigger` 的文件（就是现在这两份）文档没点名，程序里的提示文字是
+>    「no valid trigger in the frontmatter, so the rule never applies」：大概率不生效，也就不占上下文（没实测）。
+>    Claude Code 那边 `paths` 是唯一读的字段，别的键忽略、不报错，所以一份文件同时写 `paths:` 和
+>    `trigger: glob` + `globs:`，纸面上两边都能用。
+> 2. **全局 `rules/` 目录**：现在写明了，`~/.gemini/config/rules/*.md` 是全局规则（官方文档
+>    `antigravity.google/docs/rules/`；程序内嵌更新日志 1.2.15 条目）。
+>
+> 真要接，先在临时仓库的 `.agents/rules/` 里放两份 `python.md`：一份原样，一份加上 `trigger: glob` 和
+> `globs: "**/*.py, **/pyproject.toml"`。开 agy 读一个 `.py` 文件，再看哪份生效。两份的结果分别回答
+> 「原样会怎样」和「两套 frontmatter 写在一起行不行」。
 
 ## 验证方式
 
@@ -209,8 +273,11 @@ ln -s ~/.config/agents/commands ~/.claude/commands
 ```
 
 > 旧版本这里写的是 `tools/claude/common/commands/`，并说「`~/.claude/commands/`
-> 本来就在同步清单里」。**这两句都不成立**：`tools/claude` 已在 `22e6584`
-> 整个删除，`~/.claude` 不再由 dof 管理。命令要生效必须靠上面那条手动软链。
+> 本来就在同步清单里」。**这两句都不成立**：`tools/claude` 已在 2026-08-19 那次
+> 「claude: stop syncing ~/.claude」提交里整个删除，`~/.claude` 不再由 dof 管理。命令要生效必须靠上面那条手动软链。
+>
+> **订正（2026-11-15）**：`tools/claude` 在 2026-09-13 又加回来了，只为 `statusline.sh` 一个文件，
+> `.dofkeep` 不放行 `commands/`。所以「要靠手动软链」这个结论照旧成立，只是理由换了。
 
 （Claude Code 自带的 `/init` 也能生成 CLAUDE.md，你这个相当于带自己标准的版本。）
 
