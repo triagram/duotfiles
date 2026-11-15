@@ -127,6 +127,8 @@ git pull → 读那台的 ~/.zshrc → 把可共享的行手填进 common/ 的�
   顺手 adopt 正是状态文件混进 git 的路径。
   > 2026-11-08 已处理：重复由 `.zshrc` 开头的 `typeset -U path PATH` 去掉，见「PATH 去重」一节。
   > 那几行来源都没动。Linux 那台 pull 之后生效，未在那台实测。
+  > 2026-11-15 Linux 那台实测：新开登录交互 shell（`zsh -l -i -c 'print -l $path'`），
+  > PATH 16 项，没有重复的目录。
 - Mac 上还没装 pyenv。装完不用改配置：守卫会自己放行。
 
 ## cowsay 横幅：从 `.zshrc.local` 提升进公共部分（2026-09-13）
@@ -137,6 +139,7 @@ cowsay 不属于这类，是顺手放的。macOS 也要同一段文字之后，
 晚 `case` 块之后、`source ~/.zshrc.local` 之前。
 
 **Linux 那台 pull 之后要删掉自己 `~/.zshrc.local` 里的那段**，否则两头牛。
+（2026-11-15 查过：Linux 那台的 `~/.zshrc.local` 里已经没有 cowsay，这步做完了。）
 macOS 这台的 `.zshrc.local` 删完只剩牛就空了，文件已删，`.zshrc` 里 `[ -r ]` 守着不会报错。
 
 ### 两个坑（macOS 上踩的，公共部分已带上）
@@ -211,3 +214,4 @@ agent 是 launchd 的全局 socket，Homebrew 的 `ssh` 和苹果的 `ssh-add` �
 
 验证：macOS 新开登录 shell，PATH 从 16 项变 14 项，和原来各目录首次出现的顺序逐行相同；
 `which -a uv` 只剩一行，`ssh-add` 仍是 Homebrew 那份。Linux 那台 pull 之后新开 shell 看 `echo $PATH`。
+2026-11-15 Linux 那台看过：16 项，没有重复（命令见「未决」那一条）。
