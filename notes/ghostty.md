@@ -49,6 +49,10 @@ G=/Applications/Ghostty.app/Contents/MacOS/ghostty
 > `+validate-config` 的**退出码恒为 0**，输出才是信号。写个非法值试一次就知道：
 > 它会打印错误并列出合法取值集合（例如 `cursor-style` 的 `bar, block, underline, block_hollow`）。
 
+> **订正（2026-11-16，Mac 上 Ghostty 1.3.1 实测）：退出码不是恒为 0。** 文件里写 `cursor-style = nope`，
+> `+validate-config --config-file=<文件>` 打印上面那行错误，`echo $?` 得到 `1`，和 1.3.1、1.4.0 的源码一致。
+> 所以脚本里可以直接看退出码。当初为什么看到 0 没查清，一个可能是退出码取自管道里后一个命令。
+
 ## 功耗：闪烁是噪声，着色器是十倍（2026-09-11 现状）
 
 | 改动 | 结论 | 证据强度 |
@@ -293,3 +297,15 @@ kitty 有内建的 `cursor_trail`，Ghostty 没有对应配置项（1.3.1 的 `c
 | 背景图开关 | `toggle-bg.sh` + `listen_on` 远程控制 | ❌ Ghostty 无远程控制协议，做不到运行时切换 | ❌ 不可移植 | 2026-08-24 |
 | 分屏布局 | `enabled_layouts splits/stack/tall/grid` | ❌ 只有手动分屏，无布局引擎 | ❌ 不可移植 | 2026-08-24 |
 | 标签栏样式 | `tab_bar_style fade` + 模板 | ❌ macOS 原生标签页，无 powerline 样式 | ❌ 不可移植 | 2026-08-24 |
+
+## 升到 1.4.0 时要看的（2026-11-16 记）
+
+Mac 上现在是 1.3.1，Homebrew 的 ghostty cask 已经是 1.4.0（2026-10-27）。升上去之后：
+
+- `copy-on-select = false` 在 1.4.0 弃用了，取值变成 `none` / `primary` / `clipboard` / `both`，
+  macOS 默认变成 `none`：改成 `none` 或删掉这行。**1.3.x 上别改**，那时的取值是 `false` / `true` / `clipboard`。
+- `clipboard-read = allow` 在 1.4.0 还管新的剪贴板协议（OSC 5522），终端里的程序能读图片、HTML 等任意格式，
+  不只是纯文本。到时候重新想一下还要不要 `allow`（默认是 `ask`）。
+- `+list-actions` 从 85 个变成 88 个，「没有一个能执行外部命令」的结论不变。
+
+依据是 v1.4.0 的源码和发布说明，没在 Mac 上跑过 1.4.0。
