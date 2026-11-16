@@ -18,8 +18,6 @@ cask "ghostty"
 cask "google-chrome"
 # Native desktop AI assistant from Google
 cask "google-gemini"
-# Markdown editor
-cask "mark-text"
 # Provides updates to various Microsoft products
 cask "microsoft-auto-update"
 # Spreadsheet software

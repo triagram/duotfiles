@@ -30,6 +30,7 @@ Linux 不部署（manifest 是 `-`）：Linux 版 Homebrew 没有 cask，`brew b
   > 文末 `clickshare` 那条后果，按 y 时同样会发生。
   > 和上面 2026-09-15 的实测不矛盾：那次清单外没有东西可卸，大概也就没有可问的（推测）。
   > Mac 上先看 `brew --version`，不低于 5.1.15 就按这条来。
+  > 2026-11-16：Mac 上是 Homebrew 7.0.13，这条适用。
 
 dump 只列顶层（`brew leaves` + 全部 cask），依赖不进来：17 个 formula 里只有 5 个在清单里，正常。
 
@@ -38,3 +39,10 @@ dump 只列顶层（`brew leaves` + 全部 cask），依赖不进来：17 个 fo
 人眼过了一遍：无路径、无邮箱、无机构名。`clickshare`（Barco 会议室投屏客户端）
 **从清单里去掉了**：它只在当前机构的会议室有用，不属于「新机器要装」的东西。
 本机装着的不受影响；**唯一后果是 `brew bundle cleanup --force` 会把它当多余的卸掉**。
+
+## 去掉 mark-text（2026-11-16）
+
+Homebrew 在 2026-09-01 停用了 `mark-text` 这个 cask：没通过 macOS 的 Gatekeeper 检查
+（`brew info --cask mark-text` 显示 `disabled`）。Mac 上已经用 brew 卸掉，改装了官方发布的版本，
+所以 Brewfile 里删掉这一行。从此它不归 Homebrew 管：`brew bundle cleanup` 碰不到它，
+新机器上要自己去 github.com/marktext/marktext 下载。
