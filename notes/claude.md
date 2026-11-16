@@ -19,6 +19,10 @@
 > 技能，不是手写的，内容里带个人信息（有一个技能的说明写着主人的名字）。`.dofkeep` 里写 `skills/` 会匹配
 > 整棵子树，`dof adopt claude` 就会把它收进这个 public 仓库，而 `.dofignore` 里没有挡它的行。
 > **真要放行 `skills/`，先在 `tools/claude/.dofignore` 加 `skills/synced/`。**
+>
+> 2026-11-16 已加，同时补上了后来出现的其他状态（`paste-cache/`、`debug/`、`chrome/`、`daemon.*` 等）。
+> 用假 `$HOME` 实测：不限定范围的 `dof adopt claude` 仍然只收 `statusline.sh`；临时把 `skills/` 加进
+> `.dofkeep` 再跑，手写的 `skills/mine/` 收进来了，`skills/synced/` 被 `.dofignore` 挡下。
 
 > 早先（2026-08-19 那次「claude: stop syncing ~/.claude」提交）曾把整个 `~/.claude` 从 manifest 移除，理由是配置与状态混在一起。
 > 现在加回来，**只为 `statusline.sh` 一个文件**：那个理由仍然成立，所以白名单只有一行。

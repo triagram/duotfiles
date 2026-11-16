@@ -25,8 +25,11 @@ statusline.sh
 #                 truth a second one. Same reasoning as in notes/agy.md.
 # keybindings.json, commands/, skills/, agents/, hooks/, output-styles/,
 # scripts/        An earlier version of this list allowed all of these. None
-#                 exist here yet. Listing files that do not exist is how the
-#                 agy allow-list grew a phantom GEMINI.md entry - add a line
-#                 when there is something to put behind it.
+#                 holds hand-written config here yet. Listing paths with
+#                 nothing behind them is how the agy allow-list grew a phantom
+#                 GEMINI.md entry - add a line when there is something to put
+#                 behind it. skills/ does exist, but only as skills/synced/,
+#                 Claude Code's own copy of the account's skills, which
+#                 carries personal details; .dofignore keeps that subtree out.
 # everything else Credentials, transcripts, caches, daemon state. .dofignore
 #                 is the second gate for those.

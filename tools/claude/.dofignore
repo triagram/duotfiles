@@ -17,6 +17,7 @@ history.jsonl
 file-history/
 todos/
 backups/
+paste-cache/
 
 # ── Runtime / daemon / cache ────────────────────────────────────────────────
 daemon/
@@ -24,6 +25,23 @@ jobs/
 cache/
 shell-snapshots/
 statsig/
+debug/
+state/
+downloads/
+chrome/
+daemon.log
+daemon.lock
+daemon.status.json
+daemon-auth-status.json
+daemon-auth-cooldown
+stats-cache.json
+.last-cleanup
+.last-update-result.json
+
+# ── Synced from the account ─────────────────────────────────────────────────
+# Claude Code's own copy of the account's skills. It carries personal
+# details, and a skills/ line in .dofkeep would match this whole subtree.
+skills/synced/
 
 # ── Installed by a marketplace, reinstalled per machine ─────────────────────
 plugins/
