@@ -253,7 +253,7 @@ still deserve a human read - see [AGENTS.md](AGENTS.md).
 | Document | Answers |
 |---|---|
 | [DESIGN.md](DESIGN.md) | Why it is built this way: principles, structure, trade-offs |
-| [AGENTS.md](AGENTS.md) | Rules for AI agents working in this repo (`CLAUDE.md` / `GEMINI.md` are symlinks to it) |
+| [AGENTS.md](AGENTS.md) | Rules for AI agents working in this repo (`CLAUDE.md` is a symlink to it) |
 | [notes/](notes/) | One file per tool: why these parts must stay platform-specific |
 
 ---

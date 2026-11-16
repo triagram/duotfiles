@@ -162,7 +162,9 @@ Codex `~/.codex/AGENTS.md`、droid `~/.factory/AGENTS.md`、Amp `~/.config/AGENT
 | `~/.claude/CLAUDE.md` | 文档把 `AGENTS.md` 列进用户级指令文件（比如 #95795 以「已实现」关闭） |
 | 仓库根 `CLAUDE.md` | macOS 上照 2026-11-14 那张 5 行表测过、全对。删时一起改两份 README 里介绍 `AGENTS.md` 的那一行，和 `DESIGN.md` 目录树里的说明 |
 
-仓库根的 `GEMINI.md` 情况不同，见「Gemini（Antigravity）侧」一节里 2026-11-15 的订正。
+> 2026-11-16：macOS 上的 Claude Code 也是 2.1.325，和 Linux 一样；那张 5 行表还没在 macOS 上测。
+
+仓库根原来还有一条 `GEMINI.md` 软链，情况不同，2026-11-16 删了，理由见「Gemini（Antigravity）侧」一节。
 
 ## rules 的 frontmatter 是 Claude 专有的
 
@@ -214,6 +216,10 @@ paths:
 > 自带文档写明按真实路径去重，所以这条软链按文档只读一次（没实测）。只有 Gemini CLI 需要它：这台没装
 > （以前用过，`~/.gemini/config/.migrated` 的日期是 2026-06-09），它的 README 说个人免费和 Google AI
 > Pro/Ultra 的使用 2026-06-18 起转到了 Antigravity CLI。删不删等 macOS 上 `command -v gemini` 的结果，待定。
+>
+> **2026-11-16 决定：删掉了。** 两台都没有 Gemini CLI（macOS 上 `command -v gemini` 也找不到），它的个人用户
+> 已经整体转到 agy，而 agy 直接读 `AGENTS.md`，这条软链没有工具需要。`README.md` 里提到它的那一行一起改了。
+> 同一天在 macOS 上查过 `~/.gemini/`：四个位置里只有 `config/AGENTS.md`（指向枢纽），没有多出来的一份。
 
 **刻意不接 rules（2026-08-31）。** 曾经建过 `~/.gemini/config/rules` 这条链，当天摘掉了，
 两条理由：
