@@ -1,6 +1,8 @@
 #!/bin/bash
 # Force fcitx5 to English (inactive) whenever the session is about to become
-# a password prompt, covering the paths the Super+L wrapper cannot:
+# a password prompt. This covers every way in:
+#   - Super+L, GNOME's stock screensaver key (this comment used to leave it
+#     to a separate wrapper; no such wrapper is bound any more)
 #   - idle timeout lock, lid close, system menu "Lock", loginctl lock-session
 #   - suspend/hibernate initiated by anything at all
 #
