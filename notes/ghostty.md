@@ -9,6 +9,7 @@ macOS 侧的终端（Linux 侧对应 kitty，见 `notes/kitty.md`）。
 
 > `~/.config/ghostty/shaders/.git/` 现在是**残留物**：文件已从仓库软链过去，
 > 在那里 `git pull` 会跟软链打架。想试别的着色器就重新 clone 上游到别处。
+> 上游 2026-10-03 起改名为 `sahaj-b/cursor-shaders`（旧地址会跳转），GLSL 文件也挪进了 `ghostty/` 子目录。
 >
 > `config-file = ?shader.conf` 按**配置文件的给定路径**解析（`~/.config/ghostty/`），
 > 不是按软链目标（仓库）解析：验过 `+show-config`。这一点成立，分片机制才能和 link 模式共存。
@@ -23,12 +24,13 @@ macOS 侧的终端（Linux 侧对应 kitty，见 `notes/kitty.md`）。
 | | 不透明度 | 模糊半径 |
 |---|---|---|
 | kitty (linux) | 0.95 | `background_blur 1`：半径 1，约等于关闭 |
-| Ghostty (macos) | 0.85 | `background-blur-radius 5` |
+| Ghostty (macos) | 0.85 | `background-blur 5` |
 
 macOS 的毛玻璃会把背景采样后混进一层浓重底色，视觉上是**磨砂**而不是**透光**。
 半径的影响远大于那几个百分点的不透明度差。想更透先调 blur。
 
-> `background-blur-radius` 是别名，解析后等于 `background-blur`。
+> `background-blur-radius` 是别名，解析后等于 `background-blur`。（2026-11-18 起配置里直接写 `background-blur`：
+> 旧名是 1.1 改名之前的叫法，现在靠兼容表才认。）
 > 用 `ghostty +show-config` 看解析结果，别看配置文件里写了什么。
 
 ## 窗口默认尺寸：和 kitty 同一个坑
@@ -98,6 +100,10 @@ A′ 那一组才是关键，它排除了漂移和后台任务撞车。
 所以没法用它预检隔离配置；`pgrep -x ghostty` 找不到进程（comm 是全路径），
 用 `ps -Axo pid,comm | grep '/Ghostty.app/'`；`screencapture` 无屏幕录制权限，
 想截图看拖尾这条路走不通。
+
+> **订正（2026-11-18）**：「不接受任何附加参数」说宽了。`+show-config` 有自己的参数（`--default`、
+> `--changes-only`、`--docs`，1.4.0 还加了 `--no-pager`），只是没有 `--config-file`；给它没定义的参数时
+> stdout 为空、退出码 1。隔离的配置可以用 `+validate-config --config-file=<文件>` 预检。依据是 1.3.1、1.4.0 的源码。
 
 ### 不要再试 ioreg 那条路（2026-09-12）
 
@@ -297,6 +303,10 @@ kitty 有内建的 `cursor_trail`，Ghostty 没有对应配置项（1.3.1 的 `c
 | 背景图开关 | `toggle-bg.sh` + `listen_on` 远程控制 | ❌ Ghostty 无远程控制协议，做不到运行时切换 | ❌ 不可移植 | 2026-08-24 |
 | 分屏布局 | `enabled_layouts splits/stack/tall/grid` | ❌ 只有手动分屏，无布局引擎 | ❌ 不可移植 | 2026-08-24 |
 | 标签栏样式 | `tab_bar_style fade` + 模板 | ❌ macOS 原生标签页，无 powerline 样式 | ❌ 不可移植 | 2026-08-24 |
+
+> 2026-11-18 订正「背景图开关」这一行：kitty 那格里的前提是 `--allow-remote-control`，不是 `listen_on`
+> （见 `tools/kitty/linux/README.md` 坑 4）。Ghostty 那格的理由也不对：上面「配置片段 + SIGUSR2」那套就是
+> 运行时切换，1.3.0 起还有 AppleScript 的 `perform action`；拿来切背景图没测过。结论不变：kitty 那个脚本搬不过去。
 
 ## 升到 1.4.0 时要看的（2026-11-16 记）
 

@@ -38,8 +38,8 @@ background-opacity = 0.85
 # 这才是「看起来透不透」的主要杠杆，不是 background-opacity。
 # macOS 的毛玻璃会把背景采样后混进一层浓重底色，半径越大越像磨砂玻璃；
 # 半径小才是真透光。kitty 那边 background_blur 1 几乎等于关闭，所以它
-# 在 opacity 0.95 反而比这里 0.90 看着更透。
-background-blur-radius = 5
+# 在 opacity 0.95 反而比这里 0.85 看着更透。
+background-blur = 5
 
 # 色彩空间：按 P3 解读色值。注意这不是「输出更宽色域」，而是改变
 # 「同一个 #RRGGBB 按哪个空间解读」：Catppuccin 是按 sRGB 画的，
@@ -100,8 +100,8 @@ keybind = cmd+alt+k=goto_split:up
 keybind = cmd+alt+j=goto_split:down
 
 # 3. 标签页管理
-keybind = cmd+shift+left_bracket=previous_tab
-keybind = cmd+shift+right_bracket=next_tab
+keybind = cmd+shift+bracket_left=previous_tab
+keybind = cmd+shift+bracket_right=next_tab
 
 # 4. 关闭当前分屏/标签页 (Cmd + w)
 keybind = cmd+w=close_surface

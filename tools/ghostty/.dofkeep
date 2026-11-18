@@ -18,9 +18,10 @@ shaders/LICENSE
 #                    the toggle script creates it on first use.
 #
 # shaders/.git/      shaders/ is a shallow clone of sahaj-b/ghostty-cursor-shaders
-# shaders/.gitignore (MIT). Its .git internals are not ours to version, and a
-# shaders/README.md  nested .gitignore would alter this repo's ignore rules for
-#                    the subtree. Once cursor_tail.glsl is link-managed from
+# shaders/.gitignore (MIT), since renamed sahaj-b/cursor-shaders; the old URL
+# shaders/README.md  redirects. Its .git internals are not ours to version, and
+#                    a nested .gitignore would alter this repo's ignore rules
+#                    for the subtree. Once cursor_tail.glsl is link-managed from
 #                    here, that clone is vestigial anyway.
 #
 # shaders/*.glsl     The other seven shaders are upstream verbatim, unmodified.
@@ -29,6 +30,7 @@ shaders/LICENSE
 #                    cursor_tail.glsl is different because THRESHOLD_MIN_DISTANCE
 #                    was changed (1.5 → 2.0, see notes/ghostty.md), which makes
 #                    it ours to keep. LICENSE rides along because MIT asks for it.
-#                    To try another shader: git clone the upstream repo.
+#                    To try another shader: git clone the upstream repo; since
+#                    2026-10-03 its GLSL files sit under ghostty/.
 #
 # *.dof-bak-*        dof's own backups, already excluded by the built-in list.
