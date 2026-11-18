@@ -56,8 +56,8 @@ StartupWMClass=kitty
 ### 4. 图标：装进 hicolor 主题
 
 GNOME Shell 把窗口匹配到 desktop 文件之后，**只用 desktop 文件里的
-`Icon=`，完全忽略窗口自身的 `_NET_WM_ICON`**。所以本目录的
-`kitty.app.png`（窗口图标）不足以让 Dock 显示正确图标，必须另外装：
+`Icon=`，完全忽略窗口自身的 `_NET_WM_ICON`**。所以图标必须以 `kitty`
+这个名字装进图标主题的路径，Dock 才认：
 
 ```sh
 ~/.config/kitty/switch-icon.py nyan     # 从 icons/ 里选一个装进 hicolor
@@ -67,8 +67,9 @@ GNOME Shell 把窗口匹配到 desktop 文件之后，**只用 desktop 文件里
 `~/.local/share/icons/hicolor/<size>/apps/kitty.png` 并刷新缓存。
 装完按 `Alt+F2` → 输入 `r` → 回车重启 GNOME Shell（X11 下安全，窗口不会丢）。
 
-> 顺带一提：kitty 启动时会警告 `kitty.app.png` 对 X11 窗口图标而言过大
-> （1024x1024，X11 上限 128x128）。这不影响 Dock 图标，可以忽略。
+> kitty 自己读的是 config 目录里的 `kitty.app.png`，当窗口图标用。X11 上它只收
+> 128x128 以内的图，大了就整张不用，启动时报 `The window icon is too large`；
+> 而 GNOME 不显示窗口图标，所以这台机器上用不着它。
 
 ### 5. 主题文件：**不在仓库里**，用主题名重建
 
@@ -278,7 +279,7 @@ B 窗口再点   → 这次才关掉
 | `dark-theme.auto.conf` | ❌ | 系统深色时生效 |
 | `light-theme.auto.conf` | ❌ | 系统明确为 `prefer-light` 时生效（本机实际用不到，见坑 3） |
 | `no-preference-theme.auto.conf` | ❌ | 系统未表态时生效：**GNOME 浅色模式走的是这个** |
-| `kitty.app.png` | ❌ | 当前窗口图标（X11 `_NET_WM_ICON`），与 Dock 图标是两条独立通道。由 `switch-icon.py` 覆写 |
+| `kitty.app.png` | ❌ | kitty 读来当窗口图标，本机不起作用（见上文第 4 条）。由 `switch-icon.py` 覆写 |
 | `icons/` | ❌ | 图标库，供 `switch-icon.py` 选用 |
 | `backgrounds/` | ❌ | 背景图。`.png` 是实际使用的，`.jpg` 是重裁用的源图 |
 | `kitty.conf.bak` | ❌ | 纳入版本控制之前的手工备份，留着仅作参考 |

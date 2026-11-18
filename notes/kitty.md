@@ -330,7 +330,7 @@ Chrome），约 0.2 秒后才变成正常终端。不管窗口最后落在哪个
 - Wayland 会话里不会有这个问题：xdg-shell 规定窗口要等程序提交了自己的第一帧才算映射，
   没有 X server 先拷屏幕这一步。（协议原文，没在本机 Wayland 会话里实测）
 
-## `kitty.app.png` 在本机不起作用（2026-11-18 查明，README 还没改）
+## `kitty.app.png` 在本机不起作用（2026-11-18 查明，README 已改，删不删待定）
 
 `tools/kitty/linux/README.md` 第 59-60、70-71、281 行和 `switch-icon.py` 第 2、57-60 行都把它说成
 「当前的 X11 窗口图标」。kitty 确实是读它来当 X11 窗口图标的，但在本机两层都不生效：
@@ -354,3 +354,17 @@ Chrome），约 0.2 秒后才变成正常终端。不管窗口最后落在哪个
 
 所以它在本机唯一的效果是日志里每次一行报错。会用到它的地方：读 `_NET_WM_ICON` 的别的桌面或窗口管理器；
 以及 macOS，那边 config 目录里的 `kitty.app.png` / `kitty.app.icns` 管的是 Dock 图标（以后 Mac 侧 adopt 时要考虑）。
+
+**README 怎么改的**（2026-11-18，用户定的口径）：只写两件事，kitty 在 X11 上只收 128x128 以内的图标，
+GNOME 只按 desktop 文件的 `Icon=kitty` 去图标主题的路径里找。用户原话「readme只要最小加入内容就行」。
+改了第 4 条的两处和文件一览表那一行，没写报错里那个错误路径，也没写 GNOME 源码的细节（都在上面）。
+
+**删不删这张图，待用户点头**（2026-11-18 提的）：
+
+- 删了不丢东西：它和 `icons/nyan.png` 逐字节相同。删了之后 kitty 改用自带的 128 像素图标当窗口图标
+  （GNOME 下照样看不见），日志里每次启动那行报错也没了。
+- 光删文件不够：`switch-icon.py` 每次换图标都会把选中的图复制成 `kitty.app.png`（第 22 行和第 57-60 行），
+  要一起去掉这一步。
+- `tools/kitty/.dofignore` 里的 `kitty.app.png` 那行要留：`.dofignore` 是按软件放的，Mac 和 Linux 共用，
+  Mac 上这个文件名管 Dock 图标，以后在 Mac 上 `dof adopt kitty` 时不能把它当二进制收进公开仓库。
+  只是那段注释给的理由（`switch-icon.py` 会覆写它）要改。
