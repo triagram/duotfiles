@@ -36,7 +36,8 @@
 | `japanese.{schema,dict,kana.dict,mozc.dict,jmdict.dict}.yaml` | `github.com/gkovacs/rime-japanese` | 36 MB | **逐字节相同** |
 
 > 2026-11-18 订正：`cn_dicts/` 原来写 7 个。rime-ice 的 `cn_dicts/` 只有 6 个；这台部署目录里的第 7 个
-> `corrections.dict.yaml` 文件头写的是 `gaboolic/rime-frost`，没有任何配置引用它。留不留还没定。
+> `corrections.dict.yaml` 文件头写的是 `gaboolic/rime-frost`，没有任何配置引用它。2026-11-18 用 `gio trash`
+> 移进了系统回收站（devlog 原则三：可逆优先），之后这台的 `cn_dicts/` 和上游一样是 6 个。
 
 日语方案的选型理由见 `tools/rime/common/devlog.md §6.3`（对比过 DreamAfar，选了 star 更多、维护更新的 gkovacs）。
 
