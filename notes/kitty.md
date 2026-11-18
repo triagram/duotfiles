@@ -203,6 +203,54 @@ link 模式下改的就是 `~/.config/kitty/kitty.conf`。已经开着的 kitty 
 再注销重登，看窗口和回滚有没有回来。不要了就删掉那一行。接着原来的 Claude 对话这件事它不管，
 上面 `claude --resume` 那条仍然是唯一的线索。
 
+#### 第二轮核实（2026-11-18，0.50.0 源码 + 本机实测；用户还没定）
+
+**实现**（`glfw/linux_session_monitor.c`、`kitty/logout_session.py`）：Linux 上 kitty 注销时不会被叫去退出，
+只会被杀掉，所以它向 Inhibit portal 订阅会话状态（`CreateMonitor`）。链条是
+gnome-session 发 `QueryEndSession` → portal 发 `StateChanged`（session-state 2）→ 每个 kitty 当场同步存盘
+→ 回 `QueryEndResponse` → 注销继续。kitty 只认回复过它 `CreateMonitor` 的那个 portal、只认自己那个监视会话，
+别的程序伪造不了「要注销了」。注销被取消（状态回到 1）就删掉刚存的快照。
+
+- **portal 只等 1 秒**：xdg-desktop-portal-gtk 1.15.1 `inhibit.c` 里是 `g_timeout_add (1000, ...)`。
+  超时的后果是那个实例回不来，不是恢复出半份：快照先写进临时目录，写完才改名。
+  5 个实例各 10000 行回滚存不存得完，**没测**。
+- **存在哪、存什么**：`~/.cache/kitty/saved-at-logout/<pid>/` 下的 `session.kitty-session`（相当于
+  `save_as_session --os-window-geometry`，不带 `--use-foreground-process`）、`scrollback/<窗口 id>`
+  （带颜色和链接的文字，当前那行提示符去掉）、`process.json`（argv、cwd、kitty 启动时的**全部**环境变量）。
+  目录 0700、文件 0600。
+- **恢复**：注销后第一个不带 `--session`、不带命令启动的 kitty 认领全部快照：argv 相同的那份恢复在它自己身上，
+  其余每份另起一个 kitty，用原来的 argv、cwd 和环境变量（DISPLAY、DBUS、SSH_AUTH_SOCK 这类登录会话变量换成新的）。
+  回滚只放行 SGR、OSC 8、OSC 66 三种转义，旧输出里别的转义重放时不起作用。恢复完就删；恢复失败两次的也删。
+- **关掉**：删掉那一行之后，下一次不带 `--config` / `-o` 的正常启动会删光所有快照（`main.py`
+  `logout_snapshot_to_restore`）。
+- **已开着的窗口**：0.47.0 起 `auto_reload_config` 默认 0.1 秒，0.47.1 起跟得住软链（`tools/watch/api.go`
+  解析到仓库里的真实文件、监视那个目录）；重载会调 `monitor_desktop_session_if_needed()`。
+  所以 0.50.0 的实例改完配置就开始监视，不用重开（源码，没实测）。
+
+**本机实测**：
+
+- Inhibit 由 xdg-desktop-portal-gtk 1.15.1 提供（`gnome.portal` 里没有 Inhibit，`gtk.portal` 里有），
+  它在 gnome-session 里注册成客户端 `org.freedesktop.portal`。
+- 照 kitty 的参数直接调 `CreateMonitor`：响应码 0，随即收到 session-state 1（运行中）。
+  监视存在期间 `busctl --user tree org.freedesktop.portal.Desktop` 列得出 `.../session/<连接名>/<token>`，
+  进程一退就没了。kitty 的 token 是 `glfw_session_monitor`。
+- **当天开着的 5 个 kitty 都是 11-02 启动的，`/proc/<pid>/exe` 显示 `(deleted)`**：跑的是 11-03 升级前的二进制，
+  没有这个选项，开不开它，注销后都回不来（和现在一样）。0.49.1 读到不认识的键只往 stderr 写
+  `Ignoring unknown config key`，不弹窗（`kitty/conf/utils.py`）。所以不必先关它们；试的时候至少要有一个
+  升级之后新开的 kitty。注销前的检查：`glfw_session_monitor` 的行数应该等于 exe 不带 `(deleted)` 的 kitty 进程数。
+- Ctrl+Alt+T 是自定义快捷键，命令就是不带参数的 `kitty`；5 个进程的 argv 也都为空。所以重登后按一次就全回来。
+- 从 GNOME 启动的 kitty，stderr 是接到 systemd 日志的 socket：错误看
+  `journalctl --user -b -g 'Inhibit portal|logout'`（重启过就用 `-b -1`）。kitty 这几条报错都含
+  `Inhibit portal` 或 `logout`，例如 `Failed to save the session at logout`、`saved for a cancelled logout`。
+- **暴露面**：快照明文落在本地盘上，和 shell 历史同一级别。环境变量里没有密钥类的值，
+  真正要在意的是回滚：屏幕上出现过的东西，从注销到下次打开 kitty 之间都躺在盘上。
+
+**没核实**：从终端 `systemctl reboot`、IT 远程重启会不会走 gnome-session 的 QueryEnd。
+文档只承诺「桌面说会话要结束」时存，所以只把 GNOME 菜单里的注销、重启、关机当成有效路径。
+
+**接 Claude 对话的手动办法**：恢复出来的 shell 在原目录，`claude -c` 接这个目录最近一次对话；
+同一目录开过几个对话就用 `claude -r` 挑。
+
 ## 新窗口里一闪而过别处的画面（2026-11-02 查明，还没决定修不修）
 
 **现象**：Ctrl+Alt+T 开新终端，新窗口里先闪一下「左屏左上角」的内容（当时那里是最大化的
@@ -253,3 +301,28 @@ Chrome），约 0.2 秒后才变成正常终端。不管窗口最后落在哪个
   窗口的位置），没测。两种都只在 X11 有效，kitty 文档写明在 Wayland 上从不生效。
 - Wayland 会话里不会有这个问题：xdg-shell 规定窗口要等程序提交了自己的第一帧才算映射，
   没有 X server 先拷屏幕这一步。（协议原文，没在本机 Wayland 会话里实测）
+
+## `kitty.app.png` 在本机不起作用（2026-11-18 查明，README 还没改）
+
+`tools/kitty/linux/README.md` 第 59-60、70-71、281 行和 `switch-icon.py` 第 2、57-60 行都把它说成
+「当前的 X11 窗口图标」。kitty 确实是读它来当 X11 窗口图标的，但在本机两层都不生效：
+
+1. **kitty 把它丢了，窗口上什么图标都没有。** X11 上 kitty 只收 128x128 以内的图（`kitty/glfw.c`
+   `set_default_window_icon`，0.30.0 起），本机这张是 1024x1024，每次启动日志里都有
+   `The window icon is too large (1024x1024)`。而且只要 `kitty.app.png` 在，kitty 就不再退回自带图标
+   （`kitty/main.py` `set_window_icon`）。实测当天开着的 5 个窗口，`xprop -id <窗口> _NET_WM_ICON` 全是 `not found`；
+   这 5 个跑的是升级前的二进制，0.50.0 这边的证据是日志里同一条报错（11-11 起每次启动都有）加源码。
+   在 kitty 窗口里自己看：`xprop -id "$WINDOWID" _NET_WM_ICON`。
+   上限的来由是 #6507：图太大时 X server 以 `BadLength`（`X_ChangeProperty`）拒掉请求，kitty 启动就崩，
+   作者说 X11 能收的上限是 128x128 或 256x256，看服务器配置。
+   报错里叫人放 `~/.config/kitty.app-128.png`，路径写错了：代码读的是 `~/.config/kitty/kitty.app-128.png`。
+2. **就算设上了，GNOME Shell 46 也不显示它。** 46.0 源码 `src/shell-app.c` 的 `shell_app_get_icon`：
+   有 desktop 文件就用它的 `Icon=`，没有就用通用的 `application-x-executable`，从不读窗口自己的图标。
+   Dock、Alt+Tab、概览都走这条；只有 Ctrl+Alt+Tab 对找不到应用的 DOCK 类窗口才用窗口图标。
+   （读的是上游 46.0。Alt+Tab 那段 JS 和本机装的 46.0-0ubuntu6~24.04.17 逐字相同；`shell-app.c` 编译在库里，
+   Ubuntu 的补丁没查。）
+   通知也一样：kitty 只在别无选择时把 `kitty.app.png` 当 `app_icon`，而 GNOME 认得出发送方
+   （kitty 带了 `desktop-entry` 提示）时就不看 `app_icon`。
+
+所以它在本机唯一的效果是日志里每次一行报错。会用到它的地方：读 `_NET_WM_ICON` 的别的桌面或窗口管理器；
+以及 macOS，那边 config 目录里的 `kitty.app.png` / `kitty.app.icns` 管的是 Dock 图标（以后 Mac 侧 adopt 时要考虑）。
