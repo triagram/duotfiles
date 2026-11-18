@@ -4,7 +4,7 @@
 
 | 层级 | 路径 | 中文 | 英文 |
 |---|---|---|---|
-| 全局（用户级） | `~/.claude/CLAUDE.md`、`~/.gemini/config/AGENTS.md` | 全局指令 / 全局记忆 | user memory |
+| 全局（用户级） | `~/.claude/CLAUDE.md`、`~/.gemini/config/AGENTS.md`、`~/.codex/AGENTS.md` | 全局指令 / 全局记忆 | user memory |
 | 项目级 | 项目根的 `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` | 项目指令 / 项目记忆 | project memory |
 
 `AGENTS.md` 是跨厂商的中立约定，多家 AI 编码工具都读它。本仓库自己就是这么做的：
@@ -87,7 +87,8 @@
   │  每台机器手工建一次        ← 下面这几条命令
   ├─────────────▶ ~/.claude/CLAUDE.md
   ├─────────────▶ ~/.claude/rules
-  └─────────────▶ ~/.gemini/config/AGENTS.md
+  ├─────────────▶ ~/.gemini/config/AGENTS.md
+  └─────────────▶ ~/.codex/AGENTS.md
 ```
 
 新机器上的引导步骤（`~/.claude` 已在 2026-08-19 那次「claude: stop syncing ~/.claude」提交里决定不同步，所以这几条进不了 manifest）：
@@ -97,6 +98,7 @@ dof pull agents                                      # 先铺好枢纽
 ln -s ~/.config/agents/AGENTS.md ~/.claude/CLAUDE.md
 ln -s ~/.config/agents/rules     ~/.claude/rules
 ln -s ~/.config/agents/AGENTS.md ~/.gemini/config/AGENTS.md
+ln -s ~/.config/agents/AGENTS.md ~/.codex/AGENTS.md
 ```
 
 **注意这几条命令里没有仓库路径。** 这是 2 跳最主要的好处，下面详述。
@@ -104,6 +106,10 @@ ln -s ~/.config/agents/AGENTS.md ~/.gemini/config/AGENTS.md
 > **订正（2026-11-15）：上面括号里的理由过时了，结论没变。** 2026-09-13 起 `~/.claude` 又回到了
 > manifest，但 `tools/claude/.dofkeep` 只放行 `statusline.sh`，`CLAUDE.md` 和 `rules` 刻意不收
 > （理由在 `.dofkeep` 的注释和 `notes/claude.md`）。所以这几条软链仍然每台机器手工建。
+
+> 2026-11-18：加了 codex 这一条。codex-cli 读 `$CODEX_HOME/AGENTS.md`（默认 `~/.codex/`）当全局指令，
+> 有 `AGENTS.override.md` 时改读那个（这台没有）。之前这台装着 codex 却没接，codex 会话拿不到全局指令。
+> macOS 上装了 codex 的话也建这一条。
 
 ### 为什么不是 1 跳（直接链到仓库）
 
