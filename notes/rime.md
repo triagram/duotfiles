@@ -144,7 +144,7 @@ Linux  (ibus-rime)    ~/.config/ibus/rime/         ← 用 ibus 的话改 manife
 合并时改过的地方：补丁开头「可在本機的 librime 1.10.0 上運行」改成不提版本号（macOS 是 1.16.0）。
 Mac 键盘顶排默认是媒体键，F7 可能要配合 Fn。
 
-> **2026-11-16：两台的 librime 会一直差着。** Linux 这台是学校管理的 Ubuntu 24.04，预计不会升到 25.10 或 26.04，
+> **2026-11-16：两台的 librime 会一直差着。** Linux 这台是机构管理的 Ubuntu 24.04，预计不会升到 25.10 或 26.04，
 > 它的软件源里只有 librime 1.10.0；macOS 的 Squirrel 已经是 1.16.0（`installation.yaml` 里的 `rime_version`）。
 > 所以放进 `common/` 的配置如果用到 1.11 以后才有的选项（比如 `digit_separators` 要 1.13），macOS 上生效，
 > Linux 上**静默忽略、不报错**。放进 `common/` 之前先看它要哪个版本。kagiroi（要 1.11.2）在 Linux 上用不了。
