@@ -14,7 +14,7 @@ Why it works this way: [DESIGN.md](DESIGN.md).
 
 | Tool | Mode | Linux | macOS |
 |---|---|---|---|
-| tmux | link | `~/.config/tmux` | `~/.config/tmux` |
+| tmux *(not adopted yet)* | link | `~/.config/tmux` | `~/.config/tmux` |
 | kitty | link | `~/.config/kitty` | `~/.config/kitty` |
 | ghostty | link | `~/.config/ghostty` | `~/.config/ghostty` |
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |

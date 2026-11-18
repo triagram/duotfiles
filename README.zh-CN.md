@@ -13,7 +13,7 @@
 
 | 软件 | 部署方式 | Linux | macOS |
 |---|---|---|---|
-| tmux | link | `~/.config/tmux` | `~/.config/tmux` |
+| tmux（还没收） | link | `~/.config/tmux` | `~/.config/tmux` |
 | kitty | link | `~/.config/kitty` | `~/.config/kitty` |
 | ghostty | link | `~/.config/ghostty` | `~/.config/ghostty` |
 | rime | copy | `~/.local/share/fcitx5/rime` | `~/Library/Rime` |
