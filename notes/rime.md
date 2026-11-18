@@ -28,12 +28,15 @@
 
 | 文件 | 出处 | 大小 | 核对结果 |
 |---|---|---|---|
-| `cn_dicts/`（7 个） | `github.com/iDvel/rime-ice` | 45 MB | 版本差 |
+| `cn_dicts/`（6 个） | `github.com/iDvel/rime-ice` | 45 MB | 版本差 |
 | `radical_pinyin.dict.yaml` | `github.com/iDvel/rime-ice` | 2.1 MB | - |
 | `essay.txt` | `github.com/rime/rime-essay` | 5.6 MB | 版本差 |
 | `luna_pinyin.dict.yaml` | `github.com/rime/rime-luna-pinyin` | 891 KB | 版本差 |
 | `stroke.dict.yaml` | `github.com/rime/rime-stroke` | 2.1 MB | 版本差 |
 | `japanese.{schema,dict,kana.dict,mozc.dict,jmdict.dict}.yaml` | `github.com/gkovacs/rime-japanese` | 36 MB | **逐字节相同** |
+
+> 2026-11-18 订正：`cn_dicts/` 原来写 7 个。rime-ice 的 `cn_dicts/` 只有 6 个；这台部署目录里的第 7 个
+> `corrections.dict.yaml` 文件头写的是 `gaboolic/rime-frost`，没有任何配置引用它。留不留还没定。
 
 日语方案的选型理由见 `tools/rime/common/devlog.md §6.3`（对比过 DreamAfar，选了 star 更多、维护更新的 gkovacs）。
 
@@ -95,11 +98,18 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 > **它们已不在 git 历史里了**（2026-09-03，仓库转 public 前重写历史时一并移除，
 > 理由是搜狗细胞词库来源不可考、重新分发的授权状态未知）。**没有备份，取不回来。**
 > 真要用只能用 `github.com/lewangdev/scel2txt` 从搜狗重新转换。
+>
+> **订正（2026-11-18）**：「没有备份」不对。这台的部署目录 `~/.local/share/fcitx5/rime/cn_dicts_cell/`
+> 里还有一份（22 个文件，23 MB，2026-07-27 的），只是不在 git 里。留不留还没定。
 
 **`linux/`（55 个，1.8 MB）：其余一切：**
 
 你自己写或改过的 2 个（`default.custom.yaml`、`custom_phrase_double.txt`），
-加上上游的小文件（`lua/` 23、`opencc/` 3、`en_dicts/` 10、各 schema、`symbols*.yaml`）。
+加上上游的小文件（`lua/` 30、`opencc/` 3、`en_dicts/` 10、各 schema、`symbols*.yaml`）。
+
+> 2026-11-18 补：这批 rime-ice 文件对应上游 `b681a34`（2026-07-20），是 2026-11-15 逐个文件比对内容得出的，
+> 之前仓库里没有任何地方记过。`default.yaml` 里的 `config_version: 2026-02-06` 只是那个文件自己的版本号，
+> 认不出快照。另外 `symbols.yaml` 不是 rime-ice 的，和 rime-prelude 的同名文件逐字节相同。
 
 上游小文件也留在仓库里，是刻意的：它们总共才 1.8 MB，而**万一你哪天改了其中一个
 （比如 `opencc/emoji.txt`），严格白名单会静默丢掉你的修改**。宁可多收，不可漏收。

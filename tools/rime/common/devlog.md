@@ -4,7 +4,6 @@
 > 主環境：Ubuntu 24.04.3 LTS / GNOME 46 / X11 / fcitx5 5.1.7 / librime 1.10.0
 > 次環境：macOS / Squirrel 鼠鬚管（`~/Library/Rime` 是 iDvel/rime-ice 的 git clone）
 > 現況：3 個方案：`double_pinyin_flypy`（鶴）、`luna_pinyin`（朙）、`japanese`（日）
-> 最後更新：2026-08-24
 
 > **本檔的來歷**：曾經一分為二：Linux 側叫 `devlog.md`，macOS 的 Rime 目錄裡
 > 躺著一份 2026-08-03 的 `DESIGN.md`。後者不是 macOS 版本，只是同一份文檔的舊快照
@@ -153,6 +152,8 @@ grep -rl "SOMEDICT" --include="*.yaml" . | grep -v -e plum -e sync -e build
 > **這條已作廢**：倉庫轉 public 前重寫了歷史，22 個檔案連同全部歷史版本一併
 > 移除（授權狀態不明的第三方資料不適合公開重新分發）。**取不回來了**，
 > 只能用 `github.com/lewangdev/scel2txt` 從搜狗重轉。
+>
+> **訂正（2026-11-18）**：Linux 這台的部署目錄裡還有一份 `cn_dicts_cell/`（22 個檔案），只是不在 git 裡。
 
 ## 3 · 為什麼不用現成方案
 
@@ -275,6 +276,10 @@ Rime YAML 用 `0xBBGGRR`（**BGR**），fcitx5 theme.conf 用 `#RRGGBB`（**RGB*
 > 這個版本落差也在影響中文輸入：rime-ice 是 2026-02 版，配置中用到的
 > `navigator/no_loop`（需 ≥1.16）、`set_ascii_mode`（≥1.14）、`digit_separators`（≥1.13）
 > 在 1.10.0 上全部靜默失效。
+>
+> **訂正（2026-11-18）**：「rime-ice 是 2026-02 版」不對。`2026-02-06` 只是 `default.yaml` 自己的
+> `config_version`，上游很久沒動過它，認不出是哪一版。逐檔比對，`tools/rime/linux/` 裡的 rime-ice 檔案
+> 對應上游 `b681a34`（2026-07-20）。另外 `set_ascii_mode` 在 `linux/default.yaml` 裡只出現在註解中，沒有真的用到。
 
 **決定不升級 librime**：為單一方案手動編譯會讓整個環境脫離 apt 管理，
 與「可重建、最小化」的核心原則直接衝突。等 apt 源提供新版再說。
