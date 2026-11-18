@@ -273,11 +273,15 @@ gnome-session 发 `QueryEndSession` → portal 发 `StateChanged`（session-stat
 - **不保证**：终端里 `sudo reboot`、`systemctl reboot`，或 IT 远程重启。gnome-session 收到 SIGTERM 也会走一遍
   强制注销、照样发出询问（gnome-session 46.0 `main.c` 和 `gsm-manager.c`），但 kitty 自己同时也收到 SIGTERM，
   收到就退出（`child-monitor.c` `handle_signal`），谁先谁后没保证。没实测。
-- **不存**：断电、长按电源键、死机；注销前自己关掉的窗口（Ctrl+D、关窗口、kill）；升级前启动的 kitty 进程；
-  注销被取消（刚存的快照会删掉，窗口本来就还开着）。
+- **不存**：断电、长按电源键、死机；注销前自己关掉的窗口（Ctrl+D、关窗口、kill）；升级前启动的 kitty 进程，
+  包括在这些旧窗口里新开的 tab、分屏、新窗口（它们属于同一个旧进程）；注销被取消（刚存的快照会删掉，
+  窗口本来就还开着）。某个窗口算新算旧，在里面跑 `readlink /proc/$KITTY_PID/exe`：结尾带 `(deleted)` 就是旧的。
+  不能用 `kitty --version`，它跑的是盘上的新文件，旧窗口里也打印 0.50.0。
 - **用不上**：锁屏、挂起、切换用户。会话没结束，窗口一直都在。
 - **恢复的时机**：登录时不会自己弹出来，要等第一次不带参数启动 kitty（Ctrl+Alt+T 或 Dock）。
-  不想要这一份，就在那之前 `rm -rf ~/.cache/kitty/saved-at-logout`。
+  不想要这一份，就在那之前 `rm -rf ~/.cache/kitty/saved-at-logout`（源码：恢复时只扫这个目录）。
+- **还没见过真 kitty 注册上**：本机只验证了 portal 接受订阅请求。下次 Ctrl+Alt+T 开出第一个新进程时，
+  跑一次注销前那两条计数命令，两个数都应该是 1。
 
 ## 新窗口里一闪而过别处的画面（2026-11-02 查明，还没决定修不修）
 
