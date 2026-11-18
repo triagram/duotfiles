@@ -158,6 +158,9 @@ gsettings 快捷键和自定义快捷键；fcitx5 实际生效的热键；Rime `
 
 ## 重启后恢复窗口：不做（2026-10-21 判断）
 
+> 2026-11-18 改判：开了 0.50.0 自带的 `restore_session_after_logout`（见本节末尾两小节）。
+> 下面 2026-10-21 否掉的定时自动保存、按键保存，仍然不做。
+
 **选了什么**：「算了」。不做定时自动保存（systemd timer），也不做按键保存 / 恢复
 （F7 s / F7 r）。用户原话「这种需求不是那么多,每次完全手动也行」。
 
@@ -178,7 +181,7 @@ gsettings 快捷键和自定义快捷键；fcitx5 实际生效的热键；Rime `
   `sessionId`，可以写成 `claude --resume <sessionId>`（内部文件，无文档）。
 - 存下来的 session 文件里有项目目录名，**只能放在 `~/.local/share/kitty/sessions/`，不进仓库**。
 
-### 0.50.0 的 `restore_session_after_logout`：试不试还没定（2026-11-18 记）
+### 0.50.0 的 `restore_session_after_logout`：开了（2026-11-18 决定，还没实测）
 
 上面「它发布后先看它」那条的条件满足了：0.50.0 在 2026-11-03 发布，本机装的就是 0.50.0；Inhibit portal 是
 第 3 版（`busctl --user get-property org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop
@@ -250,6 +253,31 @@ gnome-session 发 `QueryEndSession` → portal 发 `StateChanged`（session-stat
 
 **接 Claude 对话的手动办法**：恢复出来的 shell 在原目录，`claude -c` 接这个目录最近一次对话；
 同一目录开过几个对话就用 `claude -r` 挑。
+
+#### 决定：开（2026-11-18）
+
+用户原话「配置可以加,既然是官方特性那应该是可以的」。`tools/kitty/linux/kitty.conf` 第 13 节加了
+`restore_session_after_logout yes`。**还没实测**：用户手头有几个正在开发的 Claude Code 会话，
+等它们差不多收尾再注销试。用户接受的代价：注销时本来想关掉的窗口，下次打开 kitty 也会一起回来。
+
+加的时候 5 个旧进程都在 22:22:59 自动重载，各往日志写了一行
+`Ignoring unknown config key: restore_session_after_logout`，都还活着；同一天 16:55 改 kitty.conf 时它们也重载过一次，
+没出事。0.50.0 用 `kitty +runpy` 读这份配置，`restore_session_after_logout` 是 `True`。
+
+#### 什么时候存，什么时候不存（2026-11-18 查的，用户问到）
+
+- **存**：GNOME 的结束流程。右上角菜单的注销、重启、关机；那个对话框 60 秒倒计时走完会自动按下确认
+  （gnome-shell 46.0 `endSessionDialog.js` `_startTimer`）；短按电源键也是同一个对话框
+  （本机 `power-button-action` 是 `interactive`，gnome-settings-daemon 46.0 调 gnome-session 的 `Shutdown`），
+  但锁屏时短按不起作用。存的是那一刻还开着的全部窗口、tab、分屏。
+- **不保证**：终端里 `sudo reboot`、`systemctl reboot`，或 IT 远程重启。gnome-session 收到 SIGTERM 也会走一遍
+  强制注销、照样发出询问（gnome-session 46.0 `main.c` 和 `gsm-manager.c`），但 kitty 自己同时也收到 SIGTERM，
+  收到就退出（`child-monitor.c` `handle_signal`），谁先谁后没保证。没实测。
+- **不存**：断电、长按电源键、死机；注销前自己关掉的窗口（Ctrl+D、关窗口、kill）；升级前启动的 kitty 进程；
+  注销被取消（刚存的快照会删掉，窗口本来就还开着）。
+- **用不上**：锁屏、挂起、切换用户。会话没结束，窗口一直都在。
+- **恢复的时机**：登录时不会自己弹出来，要等第一次不带参数启动 kitty（Ctrl+Alt+T 或 Dock）。
+  不想要这一份，就在那之前 `rm -rf ~/.cache/kitty/saved-at-logout`。
 
 ## 新窗口里一闪而过别处的画面（2026-11-02 查明，还没决定修不修）
 
