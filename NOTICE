@@ -6,7 +6,8 @@ work only. This file says which is which.
 
 If you are looking for the short version: everything is original and MIT
 except two places. Inside `tools/rime/`, assume a file is from iDvel/rime-ice
-under GPL-3.0 unless it is listed as original below. Inside
+under GPL-3.0 unless it is listed below as original or as coming from another
+project (one file is rime-prelude's, under LGPL-3.0). Inside
 `tools/ghostty/macos/shaders/`, the one shader is third-party MIT.
 
 
@@ -47,7 +48,7 @@ Redistributed unmodified unless noted. Under `tools/rime/linux/`:
     melt_eng.schema.yaml, melt_eng.dict.yaml
     radical_pinyin.schema.yaml
     rime_ice.schema.yaml, rime_ice.dict.yaml
-    symbols.yaml, symbols_v.yaml, symbols_caps_v.yaml
+    symbols_v.yaml, symbols_caps_v.yaml
     en_dicts/**                         10 files
     opencc/**                           3 files
     lua/**                              30 files
@@ -75,6 +76,21 @@ copyright line, so it is reproduced here.
 
 Bundled with rime-ice. The original author is not named in the files and was
 not traced. Treat as GPL-3.0 with the rest of rime-ice.
+
+
+## rime/rime-prelude - LGPL-3.0
+
+    https://github.com/rime/rime-prelude
+
+Redistributed unmodified. Under `tools/rime/linux/`:
+
+    symbols.yaml                        byte-identical to upstream 3c602fd (2025-04-20)
+
+rime-ice does not ship a `symbols.yaml`; this one is rime-prelude's. LGPL-3.0
+adds permissions on top of GPL-3.0, so both texts go with it:
+`LICENSES/LGPL-3.0.txt` and the GPL-3.0 text above. The LGPL-3.0 copy was taken
+on 2026-11-18 from Ubuntu's `/usr/share/common-licenses/LGPL-3` (package
+base-files), whose GPL-3 file is byte-identical to the gnu.org copy above.
 
 
 ## sahaj-b/cursor-shaders - MIT
