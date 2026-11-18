@@ -100,7 +100,8 @@ Rime 的 patch 机制本来就是这么设计的：上游给 schema，你用 cus
 > 真要用只能用 `github.com/lewangdev/scel2txt` 从搜狗重新转换。
 >
 > **订正（2026-11-18）**：「没有备份」不对。这台的部署目录 `~/.local/share/fcitx5/rime/cn_dicts_cell/`
-> 里还有一份（22 个文件，23 MB，2026-07-27 的），只是不在 git 里。留不留还没定。
+> 里还有一份（22 个文件，23 MB，2026-07-27 的），只是不在 git 里。这份留在这台上，不进仓库：
+> 2026-11-18 起 `tools/rime/.dofignore` 挡着它，不限定范围的 `dof adopt rime` 也收不回去。
 
 **`linux/`（55 个，1.8 MB）：其余一切：**
 

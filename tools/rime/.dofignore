@@ -43,6 +43,12 @@ japanese.kana.dict.yaml
 japanese.mozc.dict.yaml
 japanese.jmdict.dict.yaml
 
+# ── Not redistributable, kept on this machine only ──────────────────────────
+# Sogou cell dictionaries of unknown licence. They were purged from the whole
+# history before the repo went public (2026-09-03); this line keeps an
+# unscoped dof adopt from bringing them back. See notes/rime.md.
+cn_dicts_cell/
+
 # ── Upstream schemas cloned at deploy time ──────────────────────────────────
 upstream/
 
