@@ -4,6 +4,10 @@ macOS 的 Homebrew 包清单，`tools/brew/macos/Brewfile`，link 到 `~/.homebr
 Linux 不部署（manifest 是 `-`）：Linux 版 Homebrew 没有 cask，`brew bundle` 会在第一个
 `cask` 行直接失败，不是「那边不用」这么简单。
 
+> **订正（2026-11-18）：这个理由过时了，不部署的决定不变。** Homebrew 4.5.0（2025-04）起 Linux 也支持 cask，
+> `brew bundle` 遇到只能装在 macOS 上的 cask 会跳过并警告，不会失败。现在的理由就是「那边不用」：
+> Linux 这台没装 Homebrew，软件走 apt；清单里也大多是 macOS 专用的 cask。
+
 ## 为什么是 `~/.homebrew/`（2026-09-15）
 
 `brew bundle --global` 的查找顺序：`$HOMEBREW_BUNDLE_FILE_GLOBAL` → `$XDG_CONFIG_HOME/homebrew/Brewfile`

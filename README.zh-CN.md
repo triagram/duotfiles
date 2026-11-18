@@ -21,7 +21,7 @@
 | agents | link | `~/.config/agents` | `~/.config/agents` |
 | claude | link | `~/.claude` | `~/.claude` |
 | zsh | link | `~` | `~` |
-| brew | link | -（Linux 没有 cask） | `~/.homebrew` |
+| brew | link | -（只用于 macOS） | `~/.homebrew` |
 
 加新软件 = 在 [`manifest`](manifest) 里加一行，然后 `mkdir tools/<名字>/{common,linux,macos}`。
 
