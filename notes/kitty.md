@@ -17,6 +17,10 @@
 | 四个主题文件 | 见下，单独一节 |
 | `kitty.conf.bak` | 纳入版本控制之前的手工备份。内建的 `*.dof-bak-*` 匹配不到 `.bak` |
 
+> 2026-11-18 订正 `backgrounds/` 那一行的后果：2026-08-30 起 `theme-overrides.conf` 不再设背景图
+> （那一行注释掉了），新机器上没有任何东西指向缺失的图；`backgrounds/` 不在，只是 Ctrl+中键找不到 PNG、
+> 脚本直接退出。`tools/kitty/.dofignore` 里早就是这么写的，这张表没跟上。
+
 ## 主题文件为什么不收
 
 `current-theme.conf`、`dark-theme.auto.conf`、`light-theme.auto.conf`、
@@ -173,6 +177,31 @@ gsettings 快捷键和自定义快捷键；fcitx5 实际生效的热键；Rime `
   都不处理「接着原来的 Claude 对话」。要做的话：`~/.claude/sessions/<PID>.json` 里有
   `sessionId`，可以写成 `claude --resume <sessionId>`（内部文件，无文档）。
 - 存下来的 session 文件里有项目目录名，**只能放在 `~/.local/share/kitty/sessions/`，不进仓库**。
+
+### 0.50.0 的 `restore_session_after_logout`：试不试还没定（2026-11-18 记）
+
+上面「它发布后先看它」那条的条件满足了：0.50.0 在 2026-11-03 发布，本机装的就是 0.50.0；Inhibit portal 是
+第 3 版（`busctl --user get-property org.freedesktop.portal.Desktop /org/freedesktop/portal/desktop
+org.freedesktop.portal.Inhibit version` 返回 `u 3`）。2026-11-18 把下面这些讲给了用户，用户说下一轮对话再定。
+**在那之前，上面「不做」的决定不变。**
+
+本机文档原文的要点（`~/.local/kitty.app/share/doc/kitty/html/sessions.html#restore-after-logout`）：
+
+- **开法**：`kitty.conf` 里一行 `restore_session_after_logout yes`。
+- **存什么**：注销、重启或关机时，存**每个** kitty 实例的状态：每个窗口的大小、位置、状态，和每个窗口的
+  回滚内容。上面 `save_as_session` 只存一个进程的局限，它没有。
+- **怎么恢复**：下次启动 kitty 时，命令行参数相同的那个实例原地恢复，其余的各自另起一个 kitty，带着原来的
+  参数、工作目录和环境变量。先恢复回滚内容，再启动 shell，下面加一行保存时间。只恢复文字、格式和链接。
+  **shell 以外的程序不重新启动**：`claude`、`nvim` 回不来，`rm` 之类也不会被重跑。
+- **Linux 上不加密**：存在 kitty 的缓存目录里，只有自己能读，和 shell 历史一样；回滚里出现过的内容都会落盘。
+  macOS 上是加密的。
+- **什么时候存**：只在桌面通知「会话要结束了」时存，注销被取消就删掉；断电、强制关机不存。
+  出错信息写到 kitty 的 stderr。
+
+**怎么试**（`kitty.conf` 是配置文件，改之前先问）：在仓库的 `tools/kitty/linux/kitty.conf` 里加上那一行，
+link 模式下改的就是 `~/.config/kitty/kitty.conf`。已经开着的 kitty 是按旧配置启动的，保险起见关掉、新开几个窗口，
+再注销重登，看窗口和回滚有没有回来。不要了就删掉那一行。接着原来的 Claude 对话这件事它不管，
+上面 `claude --resume` 那条仍然是唯一的线索。
 
 ## 新窗口里一闪而过别处的画面（2026-11-02 查明，还没决定修不修）
 
