@@ -246,7 +246,7 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 
 ## 五、演进路线
 
-**阶段一 · 现在**：两台机器上分别 `dof adopt`，把现有配置原样收进 `linux/` 和 `macos/`。
+**阶段一 · 已完成**：两台机器上分别 `dof adopt`，把现有配置原样收进 `linux/` 和 `macos/`。
 不建 `common/`，不写融合规则。目标是先让所有东西进仓库、有历史。
 
 **阶段二 · 两套都在了**：让 AI 逐个软件 diff 两个平台层。
@@ -256,6 +256,10 @@ rime       copy   ~/.local/share/fcitx5/rime        ~/Library/Rime
 **阶段三 · 按需收敛**：只对「差异确实小、且你确实烦了改两遍」的软件动手：
 把共同部分移进 `common/`，剩下的用软件自带的 include 机制串起来，
 并在 `notes/<软件>.md` 里记下「为什么剩下这几行必须分平台」。
+
+**现状（2026-11-18）**：已经在阶段三。rime 的大部分自定义、zsh、agents、claude 的 `statusline.sh`
+在 `common/`；kitty、fcitx5-guard 只有 Linux 层，ghostty、brew 只有 macOS 层；agy 不再由 dof 管理；
+tmux 还没收进来。
 
 **以后可能加的**（都等到真的烦了再说）：
 `dof upstream`（自动拉 rime-ice 这类上游）、
