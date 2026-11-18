@@ -12,8 +12,8 @@
 # nothing points at a missing file. Ctrl+middle simply finds no PNG and the
 # toggle script exits 0. Dropping an image into backgrounds/ is enough to
 # restore it; no config edit is needed, the script globs the directory.
-# That, and why the images must be PNG (kitty bundles libpng only, every other
-# format needs ImageMagick), are in ~/.config/kitty/README.md.
+# That, and why only PNG files are picked up (toggle-bg.sh globs *.png, and the
+# .jpg originals live in the same folder), are in ~/.config/kitty/README.md.
 backgrounds/
 
 # ── Icons ───────────────────────────────────────────────────────────────────
@@ -37,10 +37,6 @@ kitty.app.png
 # the set would commit the same third-party palette twice over for one line
 # that is actually ours. The theme names are recorded in README.md instead -
 # regenerating from them is one command per file.
-#
-# It also removes a recurring annoyance: the themes kitten rewrites these as
-# real files, which would replace dof's symlinks and leave dof status
-# reporting UNLINKED after every theme change.
 current-theme.conf
 *-theme.auto.conf
 

@@ -3,7 +3,8 @@
 #   toggle          開↔關（用上次選的圖，預設第一張）
 #   next            換下一張（若目前是關閉狀態則直接開啟）
 # 預設是「關」：新視窗不帶背景圖，要背景得自己按一次。
-# 依賴 kitty.conf 裡的 listen_on：沒有它，背景行程呼叫 kitty @ 會找不到 /dev/tty。
+# 依賴 kitty.conf 裡 map / mouse_map 的 --allow-remote-control：它給本行程 KITTY_LISTEN_ON=fd:N，
+# 漏了它，kitty @ 會回退去找 /dev/tty 而失敗。listen_on 不是前提。
 set -u
 DIR="$HOME/.config/kitty/backgrounds"
 

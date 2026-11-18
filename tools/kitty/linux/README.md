@@ -77,9 +77,6 @@ GNOME Shell 把窗口匹配到 desktop 文件之后，**只用 desktop 文件里
 第三方配色存四遍（`current-theme.conf` 与 `dark-theme.auto.conf`
 逐字节相同），只为一行真正属于自己的东西。
 
-不收还顺带消掉了一个反复出现的麻烦：`kitten themes` 重跑时写的是真文件，
-如果原文件是指向仓库的软链，软链会被替换掉。
-
 | 文件 | 主题名 |
 |---|---|
 | `current-theme.conf` | `Catppuccin-Mocha` |
@@ -119,9 +116,8 @@ done
 要恢复：把 PNG 放进 `backgrounds/` 就行，**不需要改配置**，
 脚本是扫目录取的（`find backgrounds -maxdepth 1 -name '*.png' | sort`）。
 
-**必须是 PNG。** kitty 只捆绑了 `libpng`，JPEG/WEBP 等格式要靠外部
-ImageMagick 解码；没装 ImageMagick 的机器上，非 PNG 的背景图会
-**静默不显示、且不报任何错**。转换：
+**只认 PNG。** 脚本只找 `*.png`：`backgrounds/` 里同时放着 `.jpg` 原图，不能让它们混进轮换。
+kitty 本身能直接显示 JPEG、WEBP 等格式（0.36.0 起），不需要 ImageMagick。把别的格式转成 PNG：
 
 ```sh
 python3 -c "
@@ -202,19 +198,15 @@ GNOME 在「深色样式」未启用时，通过 portal 上报的是 **`no-prefe
 所以实际生效的是 `no-preference-theme.auto.conf`；
 `light-theme.auto.conf` 反而永远轮不到。
 
-### 坑 4：背景图 toggle 依赖两处设置
+### 坑 4：背景图 toggle 依赖 `--allow-remote-control`
 
-`Ctrl+Shift+I` / `Ctrl+中键` 开关背景、`Ctrl+Shift+Alt+I` / `Ctrl+Shift+中键` 换图，需要：
+`Ctrl+Shift+I` / `Ctrl+中键` 开关背景、`Ctrl+Shift+Alt+I` / `Ctrl+Shift+中键` 换图，靠的是
+map / mouse_map 里的 **`--allow-remote-control`**。`launch --type=background` 默认**不会**给子进程设置
+`KITTY_LISTEN_ON`，只有显式加了它才会（kitty 文档明言），值是 `fd:N` 这种专用通道。
+漏了的话脚本能跑起来，但里面的 `kitty @` 找不到通道，静默失败。
 
-1. `kitty.conf` 里的 `listen_on unix:@kitty`
-2. map / mouse_map 里的 **`--allow-remote-control`**
-
-第 2 条尤其容易漏：`launch --type=background` 默认**不会**给子进程设置
-`KITTY_LISTEN_ON`，只有显式加了 `--allow-remote-control` 才会
-（kitty 文档明言）。漏了的话脚本能跑起来，但里面的 `kitty @`
-找不到通道，静默失败。
-
-改完 `listen_on` 只对**新开的窗口**生效，老窗口里手势不会有反应。
+`kitty.conf` 里的 `listen_on unix:@kitty` **不是**它的前提（实测：`-o listen_on=none` 照样能切）。
+留着它，是给外部的 `kitty @ --to unix:@kitty-<PID>` 用。
 
 ### 坑 4b：手势在 tmux、Claude Code 里用不了，这是刻意的
 
