@@ -50,7 +50,7 @@ Redistributed unmodified unless noted. Under `tools/rime/linux/`:
     symbols.yaml, symbols_v.yaml, symbols_caps_v.yaml
     en_dicts/**                         10 files
     opencc/**                           3 files
-    lua/**                              23 files
+    lua/**                              30 files
 
 And under `tools/rime/common/`:
 
@@ -77,9 +77,10 @@ Bundled with rime-ice. The original author is not named in the files and was
 not traced. Treat as GPL-3.0 with the rest of rime-ice.
 
 
-## sahaj-b/ghostty-cursor-shaders - MIT
+## sahaj-b/cursor-shaders - MIT
 
-    https://github.com/sahaj-b/ghostty-cursor-shaders
+    https://github.com/sahaj-b/cursor-shaders
+    (renamed from sahaj-b/ghostty-cursor-shaders; the old URL redirects)
     Copyright (c) 2026 Sahaj Bhatt
 
 Under `tools/ghostty/macos/shaders/`:
@@ -101,9 +102,9 @@ These are dependencies, not redistributed content - a fresh machine clones them
 directly from upstream (see `notes/rime.md`):
 
     iDvel/rime-ice          cn_dicts/, radical_pinyin.dict.yaml     GPL-3.0
-    rime/rime-essay         essay.txt                               GPL-3.0
-    rime/rime-luna-pinyin   luna_pinyin.dict.yaml                   GPL-3.0
-    rime/rime-stroke        stroke.dict.yaml                        GPL-3.0
+    rime/rime-essay         essay.txt                               LGPL-3.0
+    rime/rime-luna-pinyin   luna_pinyin.dict.yaml                   LGPL-3.0
+    rime/rime-stroke        stroke.dict.yaml                        LGPL-3.0
     gkovacs/rime-japanese   japanese.*.yaml                         see upstream
 
 
