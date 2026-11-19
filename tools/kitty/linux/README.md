@@ -279,7 +279,6 @@ B 窗口再点   → 这次才关掉
 | `dark-theme.auto.conf` | ❌ | 系统深色时生效 |
 | `light-theme.auto.conf` | ❌ | 系统明确为 `prefer-light` 时生效（本机实际用不到，见坑 3） |
 | `no-preference-theme.auto.conf` | ❌ | 系统未表态时生效：**GNOME 浅色模式走的是这个** |
-| `kitty.app.png` | ❌ | kitty 读来当窗口图标，本机不起作用（见上文第 4 条）。由 `switch-icon.py` 覆写 |
 | `icons/` | ❌ | 图标库，供 `switch-icon.py` 选用 |
 | `backgrounds/` | ❌ | 背景图。`.png` 是实际使用的，`.jpg` 是重裁用的源图 |
 | `kitty.conf.bak` | ❌ | 纳入版本控制之前的手工备份，留着仅作参考 |

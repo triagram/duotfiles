@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""切换 kitty 图标（窗口图标 + Dock/应用网格图标）。
+"""切换 kitty 的 Dock / 应用网格图标（装进 hicolor 图标主题）。
 
 用法:
     ./switch-icon.py            列出可用图标
@@ -19,7 +19,6 @@ from gi.repository import GdkPixbuf
 
 CONF = os.path.expanduser('~/.config/kitty')
 LIB = os.path.join(CONF, 'icons')
-WINDOW_ICON = os.path.join(CONF, 'kitty.app.png')
 HICOLOR = os.path.expanduser('~/.local/share/icons/hicolor')
 SIZES = [16, 24, 32, 48, 64, 128, 256, 512]
 
@@ -54,12 +53,7 @@ def install(src):
     w, h = pixbuf.get_width(), pixbuf.get_height()
     print(f'源图: {src} ({w}x{h})')
 
-    # 1. 窗口图标：kitty 启动时读取 config 目录下的 kitty.app.png
-    if os.path.abspath(src) != WINDOW_ICON:
-        shutil.copy2(src, WINDOW_ICON)
-    print(f'窗口图标 -> {WINDOW_ICON}')
-
-    # 2. 启动器图标：装进 hicolor 主题，供 .desktop 的 Icon=kitty 解析
+    # 启动器图标：装进 hicolor 主题，供 .desktop 的 Icon=kitty 解析
     #    只缩不放，避免生成比源图还大的糊图
     sizes = [s for s in SIZES if s <= max(w, h)] or [max(w, h)]
     for size in sizes:

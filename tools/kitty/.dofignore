@@ -18,11 +18,13 @@ backgrounds/
 
 # ── Icons ───────────────────────────────────────────────────────────────────
 # icons/ is the same trade as backgrounds/: image assets, not configuration.
+# switch-icon.py installs the Dock icon from it; README.md has the steps.
 #
-# kitty.app.png is excluded for a second reason. switch-icon.py copies the
-# chosen icon onto it, so under link mode that write would land straight in
-# the repo - a 128 KB binary churning on every icon switch.
-# Rebuilding both is switch-icon.py's whole job; README.md has the steps.
+# Nothing on Linux uses kitty.app.png any more: kitty drops window icons over
+# 128x128 on X11, GNOME never shows a window's own icon, and switch-icon.py no
+# longer writes it (2026-11-19). The entry stays because this file also covers
+# macOS, where kitty.app.png sets the Dock icon: an adopt there must not pull
+# that binary into the public repo.
 icons/
 kitty.app.png
 
