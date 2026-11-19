@@ -286,6 +286,7 @@ gnome-session 发 `QueryEndSession` → portal 发 `StateChanged`（session-stat
   不想要这一份，就在那之前 `rm -rf ~/.cache/kitty/saved-at-logout`（源码：恢复时只扫这个目录）。
 - **还没见过真 kitty 注册上**：本机只验证了 portal 接受订阅请求。下次 Ctrl+Alt+T 开出第一个新进程时，
   跑一次注销前那两条计数命令，两个数都应该是 1。
+  **2026-11-19 见到了**：用户在新开的窗口（0.50.0，21:34 启动）里跑，两个数都是 1。剩下没验证的只有真注销那一步。
 
 ## 新窗口里一闪而过别处的画面（2026-11-02 查明，还没决定修不修）
 
@@ -372,6 +373,9 @@ GNOME 只按 desktop 文件的 `Icon=kitty` 去图标主题的路径里找。用
 > **2026-11-19 删了**，用户原话「删，删完一起推送」。文件放进了 GNOME 回收站（`gio trash`，找得回来）；
 > `switch-icon.py` 去掉了复制那一步，在假 HOME 里换 nyan、whiskers 各一次，hicolor 照常生成，都没再写出它；
 > README 文件一览表里那行删了；`.dofignore` 那条留着，只改了注释。下面是当时提议的理由。
+>
+> 删后实测（同日，删除之后新开的 0.50.0 窗口）：`xprop -id "$WINDOWID" _NET_WM_ICON` 返回
+> `Icon (128 x 128)`，即 kitty 自带的图标；这个进程启动后日志里没有 `The window icon is too large`。
 
 - 删了不丢东西：它和 `icons/nyan.png` 逐字节相同。删了之后 kitty 改用自带的 128 像素图标当窗口图标
   （GNOME 下照样看不见），日志里每次启动那行报错也没了。
