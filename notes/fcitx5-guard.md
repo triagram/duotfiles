@@ -60,3 +60,27 @@
 外加任何来源的休眠。Super+L 是 GNOME 自带的锁屏键（`media-keys` 的 `screensaver`），
 自定义快捷键只有 Kitty 一个。脚本注释原来写「补 Super+L 包装脚本管不到的路径」，
 那个包装脚本仓库里从来没有过，大概是建仓库之前有、后来撤掉了，注释已改。
+
+## 2026-11-22：登录变成 Wayland 会话，fcitx5 不再自启动（还没决定怎么处理）
+
+**现象**：11-22 装更新重启后，fcitx5 开机不自己起来，要手动开。`loginctl show-session <id> -p Type` 是
+`wayland`；会话环境变量是 `XMODIFIERS=@im=ibus`、`QT_IM_MODULE=ibus`，GNOME 自己拉起了 ibus。
+
+**原因**（本机实测 + 读本机脚本）：
+
+1. 这台以前一直是 X11：更新前那次开机的用户日志里有 7881 行 `gdm-x-session`，更新后两次开机一行都没有。
+   登录界面记的会话是 `ubuntu`（AccountsService），24.04 上这个名字既有 X11 版也有 Wayland 版，
+   由 GDM 按显卡规则挑；X11 版的名字是 `ubuntu-xorg`。
+2. 11-22 那次更新把 gdm3 从 46.2-1ubuntu1~24.04.6 升到 ~24.04.9，中间的 ~24.04.7 是
+   「Fix incorrect setting preferred display server (LP: #2143015)」。上游补丁（salsa gdm MR 39）同时删了
+   NVIDIA 混合显卡笔记本、NVIDIA 挂起服务这两类「禁用 Wayland」的规则；本机现在的 `61-gdm.rules` 里确实没有了。
+   这台是 AMD 核显 + NVIDIA 580 open 驱动。旧规则里具体是哪条让它走 X11，已经没法回看（`/run/gdm3` 只有 root 能读，
+   旧规则文件被覆盖了），所以「gdm3 更新导致变成 Wayland」是按时间和改动推的，不是逐条核实的。
+3. fcitx5 在 X11 下是 `/etc/X11/Xsession.d/70im-config_launch` 拉起的（读 `~/.xinputrc` 的 `run_im fcitx5`）。
+   Wayland 会话不跑 Xsession.d；自启动项 `im-launch.desktop` 虽然在 Wayland 下会往下走，但
+   `IM_CONFIG_PHASE=1` 只在那个 Xsession.d 脚本里设，Wayland 下没有，`im-launch` 就什么也不做
+   （`/usr/bin/im-launch`、`/usr/share/im-config/data/23_fcitx5.rc`）。
+
+**推荐的处理**（待用户定）：在登录界面右下角齿轮里选「Ubuntu on Xorg」。这会把 AccountsService 里的会话
+记成 `ubuntu-xorg`，以后不再由 GDM 的显卡规则决定，fcitx5 和其他按 X11 写的设置（kitty 的 X11 选项、Alt+F2 r）
+都回到原样。不改任何配置文件。
