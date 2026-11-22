@@ -283,6 +283,20 @@ portal 监视也是 3 个，下一次 GNOME 的注销或重启就是第一次真
 这次登录进的是 Wayland 会话（gdm3 更新后的变化，见 `notes/fcitx5-guard.md` 2026-11-22 那节），所以恢复在 Wayland 下也验证了；
 X11 下只验证到 portal 订阅成功。
 
+**2026-11-22 21:05 那次重启（X11 会话）只回来一个窗口：和输入法失效是同一个原因，登录后头 90 秒门户卡死**
+（`notes/fcitx5-guard.md`「2026-11-22 晚」一节）。日志（`journalctl --user -b -1`）：
+
+- 关机时活着的 kitty 有三个：5939、8368（19:46 到 19:47 登录时恢复出来的那批）和 118649（20:09 用 Ctrl+Alt+T 新开的）。
+- 5939、8367、8368 都是在门户卡死期间启动的，订阅会话状态失败：`Inhibit portal: Failed to monitor the session state ...
+  NoReply`（19:47:51、19:48:17、19:48:18）。门户 19:48:50 恢复后，它们再没有任何 Inhibit 日志，关机时没存，
+  直接 `XIO: fatal IO error` 退出。**推断 kitty 订阅失败后不会重试**（只看了日志，没核对源码）；
+  订阅成功过、之后门户退出的情况它会重新订阅，就是关机时那行 `monitoring the session state again`。
+- 只有 118649 关机时打出了 `The desktop portal exited, monitoring the session state again`，被存了下来。
+  21:14 用 Ctrl+Alt+T 开的 kitty（25761）认领了这份快照，`~/.cache/kitty/saved-at-logout/` 的修改时间就是 21:14，现在是空的。
+- 门户卡死修好以后（fcitx5 改由 `fcitx5.service` 启动），这次登录后 3 个 kitty 进程对应 3 个 `glfw_session_monitor`，
+  全部订阅成功。X11 下能不能全部恢复，要等下一次 GNOME 重启或注销才算验证。
+- 那两个没存下的窗口，回滚内容找不回来了。里面的 Claude 对话按下面「接 Claude 对话的手动办法」接。
+
 #### 什么时候存，什么时候不存（2026-11-18 查的，用户问到）
 
 - **存**：GNOME 的结束流程。右上角菜单的注销、重启、关机；那个对话框 60 秒倒计时走完会自动按下确认

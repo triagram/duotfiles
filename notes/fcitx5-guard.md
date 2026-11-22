@@ -204,3 +204,13 @@ kitty 新窗口闪一下别处画面的问题按协议不会出现（没实测�
 **还没验证的**：真正的登录。下次登录后要看：没有 `Dependency failed for xdg-desktop-portal-gnome`、kitty 没有 NoReply；
 fcitx5 是 `fcitx5.service` 起的（`org.fcitx.Fcitx5` 可被 D-Bus 自动激活，若有程序抢先找它，它会在单元之外被提前拉起）；
 没有残留 ibus-daemon；登录恢复的 kitty 有输入上下文；锁一次屏确认是英文。
+
+**第一次真登录：通过（2026-11-22 21:11，X11）。**
+- 日志里没有 `Dependency failed for xdg-desktop-portal-gnome`，kitty 没有 NoReply，也没有 IBus 失败。
+- `fcitx5.service` 21:11:08.030 启动，比 `graphical-session.target` 晚 11 ms；MainPID 等于 `pgrep -x fcitx5`，
+  父进程是 systemd 用户实例，不是被 D-Bus 自动激活的。GNOME 的 IBus 单元 21:11:07.87 先起来，随后被顶掉，没有残留 ibus-daemon。
+- 用户确认：Chrome 和 kitty 都能打中文，锁屏是英文，Chrome 感觉快了一点。
+- 这次最早问门户的是 GNOME 自启动的 `gnome-software --gapplication-service`，比 target 早 44 ms，门户的 GNOME 后端
+  照样起来了。这和今天两次 Wayland 开机是同一个窄竞速，与 fcitx5 无关；如果哪天输了，门户卡死会再出现，
+  届时看第一条 `Activating ... org.freedesktop.portal.Desktop` 是谁发起的。
+- 副作用之一已经发生过：上一次登录卡死期间启动的 kitty 订阅注销通知失败，那次重启没被保存，见 `notes/kitty.md`。
