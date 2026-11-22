@@ -276,6 +276,13 @@ portal 监视也是 3 个，下一次 GNOME 的注销或重启就是第一次真
 「软件更新器」装完点「立即重启」走的是 gnome-session：本机 `UpdateManager/Dialogs.py` 调
 `org.gnome.SessionManager.RequestReboot()`，失败才退到 logind。所以这条路算数；这次是不是走的这条，日志里看不出来。
 
+**2026-11-22 第一次真测：成功。** 用户在 3 个 0.50.0 kitty 开着时重启（19:09 关机），登录后按 Ctrl+Alt+T：
+第一个 kitty 19:15:23 启动，同一秒拉起另外两个（父进程就是它），正好是重启前的 3 个实例；用户确认窗口和文字回来了，
+`~/.cache/kitty/saved-at-logout/` 恢复完是空的。关机时日志里每个 kitty 有一行
+`Inhibit portal: The desktop portal exited, monitoring the session state again`：那是存完之后 portal 先退出，不影响结果。
+这次登录进的是 Wayland 会话（gdm3 更新后的变化，见 `notes/fcitx5-guard.md` 2026-11-22 那节），所以恢复在 Wayland 下也验证了；
+X11 下只验证到 portal 订阅成功。
+
 #### 什么时候存，什么时候不存（2026-11-18 查的，用户问到）
 
 - **存**：GNOME 的结束流程。右上角菜单的注销、重启、关机；那个对话框 60 秒倒计时走完会自动按下确认
