@@ -84,3 +84,34 @@
 **推荐的处理**（待用户定）：在登录界面右下角齿轮里选「Ubuntu on Xorg」。这会把 AccountsService 里的会话
 记成 `ubuntu-xorg`，以后不再由 GDM 的显卡规则决定，fcitx5 和其他按 X11 写的设置（kitty 的 X11 选项、Alt+F2 r）
 都回到原样。不改任何配置文件。
+
+### 全面转向 Wayland 要付出什么（2026-11-22 评估，用户还没定）
+
+本机实测：
+
+- 两台显示器都接在 NVIDIA 卡上（`card1`，nvidia-drm）。Wayland 在 NVIDIA 上的前提都满足：
+  `nvidia-suspend/resume/hibernate.service` 都是 enabled，`PreserveVideoMemoryAllocations: 1`。
+  以前「只能用 X11」不是硬性不兼容，是 GDM 的规则替这台挑了 Xorg。
+- 用户手动启动 fcitx5 之后，它顶替了 GNOME 拉起的 ibus-daemon（之后没有任何 ibus 进程），
+  `busctl --user call org.fcitx.Fcitx5 /controller org.fcitx.Fcitx.Controller1 DebugInfo` 显示输入上下文在
+  `wayland` 组、`frontend:ibus`：原生 Wayland 程序（kitty 也是原生 Wayland）的输入经 GNOME 按 ibus 协议转给 fcitx5。
+- fcitx5-guard 只用 `gdbus monitor`（GNOME ScreenSaver、logind）和 `fcitx5-remote`，与会话类型无关。
+- Ubuntu 的 mutter 46.2 故意关掉了显式同步协议（changelog：`wayland-Disable-linux-drm-syncobj-v1.patch`，
+  「to avoid enabling major new features in Noble updates」），XWayland 23.2.6 也没有。NVIDIA 上 XWayland 程序
+  因此可能闪烁或掉帧，这是风险，用户还没观察到（用了不到一小时）。
+
+要做的事（fcitx 官方 wiki「Using Fcitx 5 on Wayland」的 GNOME 节）：
+
+1. fcitx5 开机自启：`~/.config/autostart/` 放一份 `org.fcitx.Fcitx5.desktop`。wiki：自启的 fcitx5 会替换已有的 ibus-daemon。
+2. 环境变量：XWayland 程序 `XMODIFIERS=@im=fcitx`，Qt `QT_IM_MODULE=fcitx`。GNOME 现在把它们设成 ibus，
+   写进 `~/.config/environment.d/` 能不能压过 GNOME 的值，没试。
+3. 候选框位置：wiki 说 GNOME Wayland 下候选框盖不到 GNOME Shell 的界面上、原生 Wayland 窗口里位置也拿不准，
+   「Only solution is to use Kimpanel」（GNOME 扩展，要装）。
+4. Chrome：wiki 建议走 XWayland 并设 `GTK_IM_MODULE=fcitx`；原生 Wayland 要加 `--enable-wayland-ime` 一类参数。
+
+会丢的：Alt+F2 r（Wayland 下不能原地重启 GNOME Shell，`switch-icon.py` 换完图标要注销）；以前排查用的 `xprop`、
+`XGetImage` 看不到原生 Wayland 窗口。kitty 只对 X11 生效的选项（`--position`、`remember_window_position`）本来就没用。
+会得到的：kitty 新窗口闪一下别处画面的问题按协议不会出现（见 `notes/kitty.md` 那节，没在 Wayland 下实测）。
+
+推荐（同日给用户的）：先切回「Ubuntu on Xorg」，一个点击、零配置；想要 Wayland 再单独做上面 1 到 4，
+重点在逐类程序试输入法和观察 NVIDIA 下 XWayland 程序有没有闪烁。
