@@ -268,6 +268,14 @@ gnome-session 发 `QueryEndSession` → portal 发 `StateChanged`（session-stat
 `Ignoring unknown config key: restore_session_after_logout`，都还活着；同一天 16:55 改 kitty.conf 时它们也重载过一次，
 没出事。0.50.0 用 `kitty +runpy` 读这份配置，`restore_session_after_logout` 是 `True`。
 
+**2026-11-22 装更新后重启，Ctrl+Alt+T 没恢复：不算失败，是那一刻没有能存的 kitty。** 日志（`journalctl --user -b -1`）：
+11-19 测试用的那个 0.50.0 窗口 21:47 就关了；重启时还开着的 4 个 kitty 都是 11-02 启动的旧进程，
+X server 一退它们就报 `XIO: fatal IO error` 退出，没有任何 `Inhibit portal` / `logout` 报错，
+`~/.cache/kitty/saved-at-logout` 也不存在。真注销测试仍然没做成。重启之后开的 3 个 kitty 都是 0.50.0，
+portal 监视也是 3 个，下一次 GNOME 的注销或重启就是第一次真测。
+「软件更新器」装完点「立即重启」走的是 gnome-session：本机 `UpdateManager/Dialogs.py` 调
+`org.gnome.SessionManager.RequestReboot()`，失败才退到 logind。所以这条路算数；这次是不是走的这条，日志里看不出来。
+
 #### 什么时候存，什么时候不存（2026-11-18 查的，用户问到）
 
 - **存**：GNOME 的结束流程。右上角菜单的注销、重启、关机；那个对话框 60 秒倒计时走完会自动按下确认
