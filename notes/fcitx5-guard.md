@@ -85,6 +85,10 @@
 记成 `ubuntu-xorg`，以后不再由 GDM 的显卡规则决定，fcitx5 和其他按 X11 写的设置（kitty 的 X11 选项、Alt+F2 r）
 都回到原样。不改任何配置文件。
 
+> **更正（2026-11-22 晚）**：用户照做了，并没有「回到原样」。X11 下登录后头 90 秒桌面门户卡死，
+> 这段时间里开的 kitty 拿不到输入法；这从 7 月起每次 X11 登录都有，只是以前很少碰上。
+> 见下面「2026-11-22 晚」一节。
+
 ### 全面转向 Wayland 要付出什么（2026-11-22 评估，用户还没定）
 
 本机实测：
@@ -115,3 +119,45 @@
 
 推荐（同日给用户的）：先切回「Ubuntu on Xorg」，一个点击、零配置；想要 Wayland 再单独做上面 1 到 4，
 重点在逐类程序试输入法和观察 NVIDIA 下 XWayland 程序有没有闪烁。
+（更正：「零配置」不成立，X11 也要改 fcitx5 的启动方式，见下一节。第 1 步的自启动 .desktop 有竞速问题，也见下一节。）
+
+## 2026-11-22 晚：切回 Xorg 后，登录头 90 秒桌面门户卡死，期间开的 kitty 拿不到输入法
+
+用户 19:46 在登录界面选了「Ubuntu on Xorg」（`Type=x11`，`DESKTOP_SESSION=ubuntu-xorg`），反馈两条：
+输入法用不了；比 Wayland 慢很多。
+
+**实测到的链条**（本次开机的用户日志）：
+
+1. 19:46:50.388，`fcitx5 -d` 通过 D-Bus 激活了 `xdg-desktop-portal`。这个 fcitx5 是 Xsession.d 经 `im-launch`
+   拉起的（`23_fcitx5.rc` 的 `IM_CONFIG_PHASE=2`），比 gnome-session 早。
+2. 12 ms 后 systemd 报 `Dependency failed for xdg-desktop-portal-gnome.service`：这个单元是
+   `Requisite=graphical-session.target`，而该 target 19:46:51.527 才到。
+3. `xdg-desktop-portal` 于是一直等 GNOME 后端（每次 `StartServiceByName` 25 秒超时），19:48:20 被 systemd
+   按 90 秒启动超时杀掉；19:48:50 再次被激活时 target 早已到达，一切正常。
+4. 这 90 多秒里，凡是问门户的程序都要等满 25 秒：每个 kitty 进程启动多花 26 秒（`get_color_scheme`、
+   `process_desktop_settings` 都是 NoReply），Telegram 的 `Settings.ReadAll` 也一样。
+5. 同一段时间里，kitty 向 fcitx5 的 IBus 前端发 `CreateInputContext` 也是 NoReply。当时活着的三个 kitty 进程
+   都在 19:46:58 到 19:47:24 之间启动（登录后恢复的窗口），全部失败。**fcitx5 为什么在门户卡住时不回应，没查实**；
+   只知道四次 X11 开机里，kitty 的 IBus 失败都只出现在门户卡住的区间内。
+
+**不是这次才有的**：7 月 28 日、10 月 20 日、11 月 2 日三次 X11 开机的日志里是同一条链（发起者都是 `fcitx5 -d`，
+都是 `Dependency failed` 加 90 秒超时，前两次 kitty 也有 IBus 失败）。以前一次开机用几周，很少撞上；今天重启了
+四次，而 `restore_session_after_logout` 让 kitty 在登录后几秒内开窗，正好落进卡死区间，于是每次登录都中招。
+
+**Wayland 下为什么没事**：Wayland 会话不跑 Xsession.d，fcitx5 不会早启动。今天两次 Wayland 开机，最早问门户的是
+GNOME 自启动的 nautilus / gnome-software，比 target 早约 46 ms，门户的 GNOME 后端仍然起来了。这是**刚好赢了竞速**，
+不是有顺序保证。
+
+**「放一份自启动 .desktop」的方案因此有风险**：gnome-session 拉起 XDG 自启动程序的时刻比 `graphical-session.target`
+早 0.10 到 0.34 秒（三次开机都是）。fcitx5 用 `~/.config/autostart/` 自启动，会和 nautilus 一样处在竞速里。
+有顺序保证的写法是 systemd 用户单元 `After=graphical-session.target`，`fcitx5-lock-guard.service` 已经这样挂。
+（GNOME 自己的 `org.freedesktop.IBus.session.GNOME.service` 也是 systemd 用户单元，但它挂在
+`gnome-session-initialized.target` 之后、`gnome-session.target` 之前；ibus-daemon 不碰门户，所以没问题。）
+
+**当时的状态**（19:55 前后实测）：门户和 fcitx5 的 IBus 前端都在 4 ms 内回应；从 shell 起一个临时 kitty，
+IBus 输入上下文立刻建立（`DebugInfo` 里 `frontend:ibus` 从 1 个变 2 个，stderr 没有报错）。所以「X11 下输入法
+用不了」只针对登录头 90 秒里开的窗口。另外 fcitx5 在 19:50:56 被换成了 `fcitx5 -r`（父进程 1，多半是托盘的
+「重新启动」），这正是上面「绝不要跑 `fcitx5 -r`」那条说的锁屏隐患。
+
+**「慢」只量到了一部分**：量到的是登录后头两分钟的 25 秒超时。渲染、拖窗口、滚动这类持续性的快慢没有测；
+用户在 X11 下一共只用了约 8 分钟。
