@@ -18,7 +18,23 @@
 
   ```bash
   systemctl --user enable --now fcitx5-lock-guard.service
+  systemctl --user enable fcitx5.service   # 2026-11-22 起；fcitx5 已在跑时不要加 --now
   ```
+
+- **fcitx5 由 `fcitx5.service` 启动（2026-11-22 起），新机器上还要改 `~/.xinputrc`**，否则 X11 下 im-config
+  照样在 Xsession 里抢先启动 fcitx5，登录头 90 秒门户卡死（原因见「2026-11-22 晚」一节）。
+  `~/.xinputrc` 是 im-config 生成的本机文件，不进仓库；先 `im-config -n fcitx5` 生成，再改成只在第一阶段生效：
+
+  ```sh
+  if [ "$IM_CONFIG_PHASE" = 1 ]; then
+      run_im fcitx5
+  fi
+  ```
+
+  im-config 把改过的文件认作 `custom`（`im-config -m` 第二行），直接运行 `im-config` 只会提示「已手工修改」、不动它；
+  **但「语言支持」里改「键盘输入法系统」走的是 `im-config -n`，会直接覆盖**（`/usr/bin/im-config` 的 `-n` 分支
+  不查 custom），卡顿就回来了。本机的原件备份在
+  `~/.xinputrc.bak-20261122`。回滚：把备份拷回去，再 `systemctl --user disable fcitx5.service`。
 
 - **仓库移动之后，光跑 `dof pull` 不够，还要 `systemctl --user reenable`。**
   2026-08-31 把仓库从 `~/.duotfiles` 改名成 `~/duotfiles` 时实测到的：
@@ -171,3 +187,20 @@ IBus 输入上下文立刻建立（`DebugInfo` 里 `frontend:ibus` 从 1 个变 
 kitty 新窗口闪一下别处画面的问题按协议不会出现（没实测，该线程用户搁置中）。
 下一步：fcitx5 改由 `After=graphical-session.target` 的 systemd 用户单元启动，`~/.xinputrc` 只保留设环境变量的
 第一阶段（具体文件内容待用户确认）。
+
+**已部署（2026-11-22 20:43，用户确认后）**：`fcitx5.service` 进仓库并 enable，`~/.xinputrc` 改为只跑第一阶段
+（部署步骤和回滚见上面「部署注意事项」）。im-config 两个阶段用真实 HOME 空跑过：五个环境变量和改之前一样，
+第二阶段只剩 `[ 2 = 1 ]` 然后直接进会话，不再启动 fcitx5。
+
+注销前的演练（模拟以后登录时的新顺序：GNOME 的 ibus-daemon 先起，fcitx5 后起）：`fcitx5-remote -e` 停掉旧 fcitx5，
+`systemctl --user start org.freedesktop.IBus.session.GNOME.service`（ibus-daemon 起来了），再
+`systemctl --user start fcitx5.service`。结果：ibus-daemon 被顶掉、GNOME 的 IBus 单元变成 inactive 且没有重启；
+`fcitx5.service` 的 MainPID 等于 `pgrep -x fcitx5`；临时 kitty 立刻建立 IBus 输入上下文、无报错；Telegram、Chrome
+自己重连；gnome-shell 也重连了（日志里那条 `Unknown ... property Engines` 和平时登录时一样）。
+
+顺带查实了是 fcitx5 的哪部分去碰门户：日志 `portalsettingmonitor.cpp:91] A new portal show up, start a new query`，
+即 fcitx5 读系统外观设置的门户监视器。它卡住 fcitx5 主循环的机制仍没查实。
+
+**还没验证的**：真正的登录。下次登录后要看：没有 `Dependency failed for xdg-desktop-portal-gnome`、kitty 没有 NoReply；
+fcitx5 是 `fcitx5.service` 起的（`org.fcitx.Fcitx5` 可被 D-Bus 自动激活，若有程序抢先找它，它会在单元之外被提前拉起）；
+没有残留 ibus-daemon；登录恢复的 kitty 有输入上下文；锁一次屏确认是英文。

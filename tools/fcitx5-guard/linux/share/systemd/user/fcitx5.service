@@ -1,0 +1,14 @@
+[Unit]
+Description=Fcitx5 input method, started once the desktop session is up
+# Not from Xsession (im-launch): started that early, fcitx5 activates
+# xdg-desktop-portal before graphical-session.target, the portal's GNOME
+# backend refuses to start, and the portal hangs for 90 s; kitty windows
+# opened meanwhile get no input method. See notes/fcitx5-guard.md.
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/fcitx5
+
+[Install]
+WantedBy=graphical-session.target
