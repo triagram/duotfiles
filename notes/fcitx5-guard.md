@@ -163,10 +163,12 @@
 **Wayland 下为什么没事**：Wayland 会话不跑 Xsession.d，fcitx5 不会早启动。今天两次 Wayland 开机，最早问门户的是
 GNOME 自启动的 nautilus / gnome-software，比 target 早约 46 ms，门户的 GNOME 后端仍然起来了。这是**刚好赢了竞速**，
 不是有顺序保证。
+> **更正（2026-11-22 21:50）**：不是竞速，是有顺序保证的。见本文件末尾「更正：GNOME 自启动程序早问门户不是竞速」。
 
 **「放一份自启动 .desktop」的方案因此有风险**：gnome-session 拉起 XDG 自启动程序的时刻比 `graphical-session.target`
 早 0.10 到 0.34 秒（三次开机都是）。fcitx5 用 `~/.config/autostart/` 自启动，会和 nautilus 一样处在竞速里。
 有顺序保证的写法是 systemd 用户单元 `After=graphical-session.target`，`fcitx5-lock-guard.service` 已经这样挂。
+> **更正（2026-11-22 21:50）**：这个风险判断错了。gnome-session 拉起的自启动程序同样受顺序保证，自启动 .desktop 也不会触发卡死；选 systemd 单元的结果不受影响，只是否决 .desktop 的理由不成立（提交 29fa37e 的说明里也写了这个错误理由，已推送，改不了）。见本文件末尾那节更正。
 （GNOME 自己的 `org.freedesktop.IBus.session.GNOME.service` 也是 systemd 用户单元，但它挂在
 `gnome-session-initialized.target` 之后、`gnome-session.target` 之前；ibus-daemon 不碰门户，所以没问题。）
 
@@ -213,4 +215,37 @@ fcitx5 是 `fcitx5.service` 起的（`org.fcitx.Fcitx5` 可被 D-Bus 自动激�
 - 这次最早问门户的是 GNOME 自启动的 `gnome-software --gapplication-service`，比 target 早 44 ms，门户的 GNOME 后端
   照样起来了。这和今天两次 Wayland 开机是同一个窄竞速，与 fcitx5 无关；如果哪天输了，门户卡死会再出现，
   届时看第一条 `Activating ... org.freedesktop.portal.Desktop` 是谁发起的。
+  > **更正（2026-11-22 21:50）**：「窄竞速」「哪天输了」都不对，gnome-software 是 gnome-session 拉起的，有顺序保证。见下一节。
 - 副作用之一已经发生过：上一次登录卡死期间启动的 kitty 订阅注销通知失败，那次重启没被保存，见 `notes/kitty.md`。
+
+## 更正：GNOME 自启动程序早问门户不是竞速（2026-11-22 21:50，用户问「隐患能不能修、GNOME 没考虑吗」时查的）
+
+**结论**：门户的 GNOME 后端只在「会话还没开始排队」时才会失败。gnome-session 一启动会话就把
+`graphical-session.target` 排进 systemd 的任务队列，之后谁来叫门户，后端都会排队等这个 target 到达再启动。
+所以 gnome-session 自己拉起的自启动程序（gnome-software、nautilus、Telegram）再早也没事；
+会出事的只有**在 gnome-session 开始之前**就去叫门户的程序，这台上就是原来经 im-launch 启动的 fcitx5。
+
+证据：
+
+1. **时间**：门户被激活后，12 到 22 ms 就会去请求 GNOME 后端（19:46:50.388 激活，.400 失败；19:48:50.388 激活，
+   .410 后端开始启动）。四次正常开机里门户都是在 target 之前 42 到 47 ms 被激活的，照此后端请求发生在 target 之前
+   20 到 35 ms，若是竞速应当失败；实际上四次的后端都在 target 到达后 2 到 14 ms 才开始启动，是排队等待的样子。
+2. **systemd 源码**（v255 `src/core/job.c`，本机 24.04 是 255）：`Requisite=` 产生的 `JOB_VERIFY_ACTIVE` 与已在
+   队列里的 `JOB_START` 合并，合并表里 `JOB_VERIFY_ACTIVE` + `JOB_START` = `JOB_START`；`job_install()` 遇到处于
+   `JOB_WAITING` 的已有任务就并进去。只有 target 既没启动、也没排队时，这个检查才以 inactive 失败。
+   `man systemd.unit` 对 `Requisite=` 只写了「not started already ... fail immediately」，没提排队的情况。
+3. **本机单元**：会话 target（模板 `gnome-session-x11@.target`，实例名 ubuntu）BindsTo `gnome-session.target`，后者 BindsTo
+   `graphical-session.target`。旧 fcitx5 的请求（19:46:50.388）早于 gnome-session 启动会话（`gnome-session-x11.target`
+   50.512 才到），所以没有可合并的任务。最近 6 次开机里，在 gnome-session 之前叫过门户的只有 `fcitx5 -d`。
+
+**上游的态度**（Launchpad 2042301「Apps fail to connect to the portal shortly after login under X11 session」，
+症状和这台一样）：Ubuntu 把 xdg-desktop-portal 和 xdg-desktop-portal-gnome 都标成 Won't Fix，查出的元凶是
+随 `default.target` 启动的 snapd-desktop-integration（比 gnome-session 早），修法是改它自己的启动顺序；
+snapd 开发者明确说**不要删** `Requisite=graphical-session.target`。删过的人报告文件选择对话框没了，
+还有一人陷入重启循环。也就是说上游的做法和这里一样：谁在会话之前叫门户，就改谁的启动顺序。
+GNOME 那边的 xdg-desktop-portal-gnome #117（「increases GNOME start up time under X11」）没读到，抓取被拒（406）。
+
+**这台还要留意的**：snapd-desktop-integration 也装着（0.9，rev 391），随 `default.target` 启动，但 6 次开机里它都没提前
+叫过门户。Launchpad 上说 snapd-desktop-integration 已经带了绕开的办法（2026-06-19，没写版本）。哪天卡死重现，
+先看本次开机第一条 `Activating ... org.freedesktop.portal.Desktop` 的发起者，以及它是否早于
+`Reached target gnome-session-x11.target`。
